@@ -362,9 +362,9 @@ scripts.
 **As a developer, I want fast-check properties that hold for all inputs, so that the game
 logic is provably correct.**
 
-The following properties are mandated by `tech.md` and SHALL be implemented as fast-check
-property-based tests in `/tests/`. Each property SHALL hold for any arbitrary input
-sequence.
+The following properties are mandated by `tech.md` and by requirement 14, and SHALL be
+implemented as fast-check property-based tests in `/tests/`. Each property SHALL hold for
+any arbitrary input sequence.
 
 13.1 **Monster health:** For any sequence of brushing signals, a monster's health SHALL
 decrease only while its own zone is active and the signal matches that zone (camera mode).
@@ -395,32 +395,89 @@ of scope.)
 verified/unverified seconds-per-zone flags), saving to `localStorage` then loading SHALL
 return an identical set of sessions.
 
+13.6 **Kind-proximity starting health:** For any history of past sessions, each zone
+monster's starting health SHALL never exceed normal health and SHALL never fall below the
+floor (60% of normal health).
+
+13.7 **Kind-proximity session duration:** For any history of past sessions and any
+sequence of brushing signals, the total session duration SHALL always be exactly 120
+seconds (4 × 30 s); kind proximity SHALL NOT change it.
+
+13.8 **Kind-proximity "so close" rescue:** For any zone, a monster with 15% of normal
+health or less remaining when its 30 s end SHALL always be counted defeated. A monster
+above 15% of normal health at zone end SHALL be trapped (not defeated).
+
+13.9 **Kind-proximity miss-score source:** For any history of sessions, miss scores SHALL
+be derived only from camera-mode sessions (verified seconds per zone below 30).
+Timer-only sessions SHALL NOT change any miss score.
+
 ---
 
-## Open questions for Dr. Yatin
+### 14. Kind proximity
 
-These items need Dr. Yatin Shinde's confirmation before the design phase can finalise
-them. Items marked **[TO CONFIRM]** come directly from `dental-rules.md`.
+**As a child who keeps missing a spot, I want that spot's monster to be easier to beat, so
+that I win there and learn to brush it.**
 
-1. **Zone order [TO CONFIRM]:** Is the order upper right → upper left → lower left →
-   lower right correct, or should it be changed?
+"Kind proximity" is Dr. Yatin's adaptation of the "pass proximity" mechanic from
+match-three games, with every manipulative part removed. It makes a zone's monster easier
+on spots the child often misses, so the child can win there and build the habit of
+brushing that area. It never changes the rules of the session, never pressures the child,
+and never shows guilt.
 
-2. **Morning vs. night hours:** What clock hours define "morning" and "night" for the
-   rare-monster unlock rule? For example, is morning before 12:00 and night after 17:00?
-   What about a session at 3 PM — does it count as morning, night, or neither?
+14.1 THE SYSTEM SHALL compute a miss score per zone from the child's past camera-mode
+sessions on the device. A zone's miss score SHALL be based on the verified seconds
+recorded in that zone that fell below 30. SESSIONS recorded with mode flag "timer-only"
+SHALL NOT contribute to the miss score.
 
-3. **Benefit of the doubt — monster health:** When tracking is uncertain or absent
-   (guided-timer mode), should the active monster still take damage (benefit of the doubt
-   extends to monster health), or should only a fully matching signal reduce health? This
-   affects whether guided-timer-mode children can ever defeat a monster.
+14.2 WHEN a session starts THE SYSTEM SHALL lower the starting health of each zone's
+monster according to its miss score, with a floor so the monster is never already
+defeated: starting health SHALL never fall below 60% of normal health. The exact scaling
+of miss score to starting health above that floor SHALL be defined in the design.
 
-4. **Seconds per zone in guided-timer mode:** Should guided-timer-mode sessions record the
-   full 30 s per zone (benefit of the doubt — child gets credit), or zero (cannot confirm
-   brushing)? This affects the "zone most often missed" stat.
+14.3 WHEN a zone's 30 seconds end AND its monster has 15% of normal health or less
+remaining, THE SYSTEM SHALL mark that monster as DEFEATED (it "flees into smoke") rather
+than trapped — the "so close" rescue. This refines requirement 7.5 for the kind-proximity
+case.
 
-5. **Morning + night — minimum requirement:** Does the rare-monster rule need exactly one
-   morning and one night session, or at least one of each? What if the child brushes three
-   or more times in a day?
+14.4 THE SYSTEM SHALL NOT change session length (still exactly 120 seconds, 4 × 30
+seconds), zone order (requirement 3.2), or the morning/night rules (requirement 10.5) as a
+result of kind proximity.
 
-6. **Monster count:** Should the Monster Book contain 10 or 12 designs? How many should
-   be classified as "rare"?
+14.5 THE SYSTEM SHALL NOT offer extra time, moves, retries, purchases, ads, or anything
+to buy. THE SYSTEM SHALL NOT use hidden randomness to manipulate outcomes. THE SYSTEM
+SHALL NOT display "you almost lost" or any guilt message.
+
+14.6 THE PARENT SCREEN (defined in a later spec) SHALL disclose kind proximity in plain
+words: "The game gets easier on spots your child often misses."
+
+14.7 THE SYSTEM SHALL store miss scores only in `localStorage` on the device alongside the
+sessions; nothing about miss scores SHALL leave the device. The "Clear all data" button
+SHALL clear miss scores.
+
+---
+
+## Decisions (2026-11-14)
+
+The following items were confirmed with Dr. Yatin Shinde on 14 November 2026 and are
+reflected in the requirements above.
+
+1. **Zone order** confirmed: upper right → upper left → lower left → lower right
+   (requirement 3.2).
+
+2. **Morning and night hours:** morning = 04:00–11:59, night = 17:00–23:59; any other
+   start time counts as neither (requirement 10.5).
+
+3. **Timer-only monster health:** in guided-timer mode the active monster's health drains
+   with the zone timer so it is always defeated by the end of its 30 seconds (requirements
+   7.7 and 8.5).
+
+4. **Timer-only session recording:** timer-only sessions are flagged and their seconds per
+   zone are marked unverified, not counted as verified brushing (requirement 9.3).
+
+5. **Rare monster rule:** a day needs at least one morning and at least one night session
+   for rare monsters to be eligible (requirement 10.6).
+
+6. **Monster count:** the Monster Book has 12 designs — 8 common and 4 rare (requirement
+   10.4).
+
+7. **Kind proximity adopted:** see requirement 14.
