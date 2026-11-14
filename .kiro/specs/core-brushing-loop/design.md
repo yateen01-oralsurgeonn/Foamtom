@@ -1,0 +1,614 @@
+# Design: core-brushing-loop
+
+## 1. Overview
+
+This design covers the pure game logic for a 2-minute brushing session (4 zones × 30 s),
+the guided-timer fallback when no camera is available, a plain placeholder screen, and the
+property-based tests that guard the logic.
+
+All game logic lives in pure modules under `/src/logic/` with no DOM or camera access. The
+only thing that crosses the boundary from the outside world is a per-second brushing signal
+(or its absence in guided-timer mode). This separation lets every rule be property-tested
+with fast-check without a browser or camera.
+
+**Key design decisions (all flagged "Design choice" inline for Dr. Yatin's review):**
+
+- Tick granularity is 1 second (not per-frame) to keep the logic and tests simple.
+- `H_MAX = 60` so all health constants are integers.
+- Linear kind-proximity scaling from 100% to 60% of `H_MAX`.
+- Timer-mode drain is computed from elapsed time, not accumulated.
+- Rare eligibility is evaluated at session start, not retroactively.
+- Tab-hidden pauses the zone timer (distinct from "child not brushing").
+
+---
+
+## 2. Architecture
+
+```mermaid
+graph TD
+    subgraph Tracking ["Tracking — src/tracking"]
+        CAM["Camera + MediaPipe<br/>→ BrushingSignal | null"]
+    end
+    subgraph Logic ["Pure Game Logic — src/logic"]
+        SESSION["session.ts<br/>state machine, tick"]
+        MONSTERS["monsters.ts<br/>monster table, health,<br/>defeat / trap / rescue"]
+        BOOK["monster-book.ts<br/>unlock rules,<br/>rare eligibility"]
+        MISS["miss-score.ts<br/>miss score,<br/>starting health"]
+        TOD["time-of-day.ts<br/>morning / night / neither"]
+        STATS["stats.ts<br/>verified time,<br/>zone most missed"]
+        TYPES["types.ts<br/>shared interfaces"]
+    end
+    subgraph Storage ["Storage — src/storage"]
+        STORE["storage.ts<br/>localStorage wrapper<br/>schema v1"]
+    end
+    subgraph UI ["UI — src/ui"]
+        SCREEN["placeholder-screen.ts<br/>preview, monster,<br/>countdown, caption"]
+    end
+    subgraph Audio ["Audio — src/audio"]
+        LINES["lines.ts<br/>voice lines + captions"]
+    end
+
+    CAM -- "BrushingSignal | null (per second)" --> SESSION
+    SESSION --> MONSTERS
+    SESSION --> TOD
+    MISS --> SESSION
+    SESSION --> BOOK
+    SESSION --> STATS
+    SESSION -- "SessionState" --> SCREEN
+    SCREEN -- "play line" --> LINES
+    SESSION -- "SessionResult" --> STORE
+    STORE -- "past sessions" --> MISS
+    STORE -- "past sessions" --> STATS
+    STORE -- "past sessions" --> BOOK
+```
+
+**Data flow:** The tracking layer produces one `BrushingSignal` (or `null`) per second.
+The UI calls `tick(state, signal)` each second. The logic updates state and the UI renders
+it. When the session ends, the logic produces a `SessionResult` that the storage layer
+persists. Before a new session, `miss-score.ts` reads past sessions to compute starting
+health adjustments.
+
+The dashed boundary around "Pure Game Logic" is the property-testable surface: everything
+inside it has no DOM, no camera, no network, and no `Date` dependency. Inputs are plain
+data; outputs are plain data.
+
+---
+
+## 3. Module list
+
+Modules matching `structure.md`. One concept per file, kebab-case names.
+
+| Module | Responsibility |
+|--------|---------------|
+| `src/logic/types.ts` | Shared TypeScript interfaces: `BrushingSignal`, `Zone`, `MonsterDef`, `MonsterState`, `SessionState`, `SessionResult`, `ZoneResult`, `MonsterBook`, `MissScores`, `TimeOfDay`, `SessionMode`. No logic, no DOM. |
+| `src/logic/session.ts` | Session state machine: `startSession`, `tick`, `toSessionResult`. Zone advancement, timer countdown, damage/drain application, defeat/trap/resolve. Pure functions — same input always produces same output, no side effects. |
+| `src/logic/monsters.ts` | Monster table (12 entries: 8 common, 4 rare), each `{ id, name, rarity, unlockRule }`. `assignMonsters(zones, rareEligible)`: picks one monster per zone from the eligible pool. `resolveMonster(state)`: applies defeat, trap, or rescue at zone end. |
+| `src/logic/monster-book.ts` | `computeMonsterBook(sessions)`: union of all `monstersEarned` across sessions. `isRareEligible(sessions, date)`: returns true only when the day has ≥ 1 morning AND ≥ 1 night session. |
+| `src/logic/miss-score.ts` | `computeMissScores(sessions)`: per-zone normalized miss score from camera-mode sessions only. `startingHealth(zone, missScores)`: applies kind-proximity scaling with the 60% floor. |
+| `src/logic/time-of-day.ts` | `classifyTimeOfDay(hour)`: returns `'morning'`, `'night'`, or `'neither'` from the session start hour (0–23). Pure — no `Date` object needed. |
+| `src/logic/stats.ts` | `computeVerifiedTime(sessions)`: total verified seconds across all sessions. `zoneMostMissed(sessions)`: zone with the highest miss from camera-mode sessions. Pure. (Parent screen UI is out of scope; only the computation is here.) |
+| `src/storage/storage.ts` | `saveSession(result)`, `loadSessions()`, `saveMissScores(scores)`, `loadMissScores()`, `clearAll()`. Schema versioning. localStorage only. Throws caught by caller. |
+| `src/tracking/tracking.ts` | Camera + MediaPipe → `BrushingSignal`. Placeholder stub for this spec (real tracking in another spec). Returns `null` when camera unavailable or quality is poor. |
+| `src/ui/placeholder-screen.ts` | Mirrored camera preview (if allowed), one monster drawn over the active zone, countdown, zone caption. Portrait orientation, 48 px touch targets, no colour-only signals. |
+| `src/audio/lines.ts` | Voice line table: `{ id, text, caption }`. Every line has a caption. Zone announcements and all spoken instructions live here. |
+
+---
+
+## 4. TypeScript types
+
+All types live in `src/logic/types.ts`. Field names match the requirements verbatim.
+
+```typescript
+// ── Brushing signal (req 5.1) ──
+// The only thing that crosses from tracking into game logic.
+// null in guided-timer mode (req 5.2).
+interface BrushingSignal {
+  readonly handNearMouth: boolean;
+  readonly side: 'left' | 'right' | 'unknown';
+  readonly level: 'upper' | 'lower' | 'unknown';
+  readonly moving: boolean;
+}
+
+// ── Zone (req 3) ──
+type Side = 'left' | 'right';
+type Level = 'upper' | 'lower';
+
+// Zone identifiers in session order: upper-right → upper-left → lower-left → lower-right.
+type ZoneId = 'upper-right' | 'upper-left' | 'lower-left' | 'lower-right';
+
+interface Zone {
+  readonly id: ZoneId;
+  readonly side: Side;
+  readonly level: Level;
+  readonly index: number;  // 0–3, position in zone order
+  readonly label: string;  // spoken/displayed name, e.g. "upper right"
+}
+
+// ── Monster (req 7, 10) ──
+type Rarity = 'common' | 'rare';
+type MonsterOutcome = 'pending' | 'defeated' | 'trapped';
+
+// Static definition — lives in the src/logic/monsters.ts table (req 7.6, 10.4).
+interface MonsterDef {
+  readonly id: string;
+  readonly name: string;
+  readonly rarity: Rarity;
+  readonly unlockRule: string;  // human-readable
+}
+
+// Per-zone monster state during a session.
+interface MonsterState {
+  readonly def: MonsterDef;
+  readonly zoneId: ZoneId;
+  health: number;               // current, clamped to [0, startingHealth]
+  readonly startingHealth: number;  // after kind-proximity adjustment
+  readonly maxHealth: number;       // H_MAX (normal health)
+  outcome: MonsterOutcome;
+}
+
+// ── Session state (req 2, 5) ──
+type SessionMode = 'camera' | 'timer-only';
+type TimeOfDay = 'morning' | 'night' | 'neither';
+
+// Full session state, advanced one tick at a time by tick().
+interface SessionState {
+  readonly mode: SessionMode;
+  readonly zones: readonly Zone[];          // 4 zones, ordered per req 3.2
+  activeZoneIndex: number;                   // 0–3
+  zoneTimeRemaining: number;                  // seconds left in current zone (30 → 0)
+  readonly monsters: MonsterState[];         // one per zone
+  readonly secondsBrushedPerZone: number[];   // [0,0,0,0], increments when signal matches
+  readonly startedAt: number;                 // epoch ms
+  readonly date: string;                      // YYYY-MM-DD
+  readonly timeOfDay: TimeOfDay;
+  isRunning: boolean;
+}
+
+// ── Session result (req 9) ──
+// Per-zone outcome.
+interface ZoneResult {
+  readonly zoneId: ZoneId;
+  readonly monsterId: string;
+  readonly secondsBrushed: number;  // 0–30; verified seconds (camera) or 30 (timer-only)
+  readonly verified: boolean;       // true only in camera mode for matched time
+  readonly monsterOutcome: 'defeated' | 'trapped';
+}
+
+// Produced when the session ends.
+interface SessionResult {
+  readonly date: string;          // YYYY-MM-DD
+  readonly timeOfDay: TimeOfDay;
+  readonly mode: SessionMode;
+  readonly zoneResults: readonly ZoneResult[];
+  readonly monstersEarned: readonly string[];
+  readonly startedAt: number;     // epoch ms
+  readonly durationSeconds: number;  // always 120
+}
+
+// ── Monster Book (req 10) ──
+// Derived from all stored sessions (union of monstersEarned), not stored separately.
+interface MonsterBook {
+  readonly unlockedIds: ReadonlySet<string>;
+}
+
+// ── Miss scores (req 14) ──
+// Per-zone normalized miss score, [0, 1]. Computed from camera-mode sessions only.
+type MissScores = Record<ZoneId, number>;
+```
+
+---
+
+## 5. Session state machine
+
+The state machine is **identical** for camera and timer-only modes. The only difference is
+in `tick` behaviour: camera mode applies damage only when the signal fully matches the
+active zone; timer mode drains health every tick regardless of signal.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Zone0: startSession(mode, missScores, now)
+    Zone0 --> Zone1: zoneTimer = 0 → resolve monster
+    Zone1 --> Zone2: zoneTimer = 0 → resolve monster
+    Zone2 --> Zone3: zoneTimer = 0 → resolve monster
+    Zone3 --> Ended: zoneTimer = 0 → resolve monster
+    Ended --> [*]: toSessionResult → save
+
+    note right of Zone0
+        Each tick (1 s):
+        1. zoneTimeRemaining--
+        2. Camera + signal matches: health -= 2
+           Timer: health = startHealth × (elapsed/30)
+        3. If health ≤ 0: defeated
+        4. If zoneTimer = 0:
+           health ≤ 9 → defeated (rescue)
+           health > 9 → trapped
+           advance or end
+    end note
+```
+
+### Tick pseudocode
+
+```
+tick(state, signal):
+  if not state.isRunning: return state
+
+  zone    = state.zones[state.activeZoneIndex]
+  monster = state.monsters[state.activeZoneIndex]
+
+  // 1. Advance zone timer (never pauses — req 2.5)
+  state.zoneTimeRemaining -= 1
+  elapsed = ZONE_DURATION - state.zoneTimeRemaining
+
+  // 2. Apply damage / drain
+  if state.mode == 'camera':
+    if isBrushing(signal, zone):          // req 5.4
+      monster.health -= DAMAGE_PER_SECOND
+      state.secondsBrushedPerZone[zone.index] += 1
+    // else: no damage (req 7.3)
+  else:  // timer-only (req 7.7)
+    monster.health = monster.startingHealth * (1 - elapsed / ZONE_DURATION)
+
+  monster.health = clamp(monster.health, 0, monster.startingHealth)
+
+  // 3. Defeat check (req 7.4)
+  if monster.health <= 0 and monster.outcome == 'pending':
+    monster.outcome = 'defeated'
+
+  // 4. Zone end (req 7.5, 14.3)
+  if state.zoneTimeRemaining == 0:
+    if monster.outcome == 'pending':
+      if monster.health <= RESCUE_THRESHOLD:   // 15% rescue
+        monster.outcome = 'defeated'
+      else:
+        monster.outcome = 'trapped'
+    if state.activeZoneIndex == 3:
+      state.isRunning = false
+    else:
+      state.activeZoneIndex += 1
+      state.zoneTimeRemaining = ZONE_DURATION
+
+  return state
+```
+
+### `isBrushing(signal, zone)` — req 5.4–5.5, 6.3
+
+```
+isBrushing(signal, zone):
+  return signal != null
+    and signal.handNearMouth == true
+    and signal.moving == true
+    and signal.side == zone.side          // 'unknown' never matches
+    and signal.level == zone.level        // 'unknown' never matches
+```
+
+When any field is `'unknown'`, the signal does not match (req 6.3). The zone timer still
+runs (req 6.1). No nag is shown (req 6.2).
+
+### `toSessionResult(state)` — req 9.1–9.3
+
+Called when `state.isRunning == false`. Builds a `SessionResult` from the final state:
+
+- Each zone's `secondsBrushed` comes from `secondsBrushedPerZone[i]` (camera mode) or `30`
+  (timer mode).
+- `verified = true` for camera mode, `false` for timer mode.
+- `monstersEarned` = all monster ids whose outcome is `'defeated'` or `'trapped'` (req
+  10.1–10.2).
+- `durationSeconds = 120` always.
+
+### `startSession(mode, missScores, now)` — req 2.1, 3.2, 14.2
+
+```
+startSession(mode, missScores, now):
+  zones = ZONE_ORDER.map((id, i) => makeZone(id, i))
+  date = formatDate(now)            // YYYY-MM-DD
+  timeOfDay = classifyTimeOfDay(now.getHours())
+  monsters = zones.map(zone => makeMonster(zone, missScores, rareEligible))
+  return { mode, zones, activeZoneIndex: 0, zoneTimeRemaining: 30,
+           monsters, secondsBrushedPerZone: [0,0,0,0],
+           startedAt: now.getTime(), date, timeOfDay, isRunning: true }
+```
+
+`makeMonster` sets `startingHealth` via kind-proximity scaling (section 6) and assigns a
+monster from `monsters.ts` based on `rareEligible`.
+
+> **Design choice:** The logic processes 1-second ticks. Per-frame camera signals (20+ fps)
+> are aggregated by the tracking layer into one signal per second before being passed to
+> `tick`. This keeps the logic simple and testable (120 ticks per session, not 2400). The
+> UI may interpolate the countdown and monster health between ticks for smoothness — that
+> is a rendering concern, not a logic one. Dr. Yatin to confirm.
+
+---
+
+## 6. Health maths
+
+### Constants
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `ZONE_DURATION` | 30 s | Seconds per zone (req 2.1) |
+| `ZONE_COUNT` | 4 | Zones per session |
+| `SESSION_DURATION` | 120 s | Total session (req 2.1) |
+| `H_MAX` | 60 | Normal monster health (max) |
+| `DAMAGE_PER_SECOND` | 2 | Camera-mode damage per second of correct brushing (`= H_MAX / ZONE_DURATION`) |
+| `KIND_FLOOR_RATIO` | 0.6 | Kind-proximity floor: starting health ≥ 60% of `H_MAX` (req 14.2) |
+| `KIND_FLOOR` | 36 | `KIND_FLOOR_RATIO × H_MAX` |
+| `RESCUE_THRESHOLD` | 9 | 15% of `H_MAX`; monster at ≤ 9 health at zone end is rescued (req 14.3) |
+
+> **Design choice:** `H_MAX = 60` so that `DAMAGE_PER_SECOND = 2`, `KIND_FLOOR = 36`, and
+> `RESCUE_THRESHOLD = 9` are all integers. This keeps property tests free of floating-point
+> drift. Any value where `H_MAX / 30` is an integer would work. Dr. Yatin to confirm.
+
+### Normal health (req 7.1)
+
+Each zone monster's `maxHealth = H_MAX = 60`. Before kind-proximity adjustment, starting
+health equals `maxHealth`. A child who brushes all 30 seconds correctly deals
+`30 × 2 = 60` damage and defeats the monster.
+
+### Camera-mode per-second damage (req 7.2)
+
+When `isBrushing(signal, activeZone)` is true, the active monster loses
+`DAMAGE_PER_SECOND = 2` health per second.
+
+| Seconds brushed correctly | Damage | Remaining health | Outcome |
+|---------------------------|--------|-----------------|---------|
+| 30 | 60 | 0 | Defeated |
+| 26 | 52 | 8 | Defeated (rescued: 8 ≤ 9) |
+| 25 | 50 | 10 | Trapped (10 > 9) |
+| 0 | 0 | 60 | Trapped |
+
+### Timer-only drain (req 7.7, 8.5)
+
+Health is computed as a function of elapsed time, not accumulated:
+
+```
+health = startingHealth × (1 - elapsed / ZONE_DURATION)
+```
+
+| Elapsed (s) | Health (startingHealth = 60) | Health (startingHealth = 36) |
+|-------------|-------------------------------|-------------------------------|
+| 0 | 60.0 | 36.0 |
+| 15 | 30.0 | 18.0 |
+| 30 | 0.0 | 0.0 |
+
+Health reaches exactly 0 at `elapsed = 30`, regardless of starting health. The monster is
+always defeated by the end of its 30 seconds. The drain is steady and synchronized with the
+zone timer countdown.
+
+> **Design choice:** Timer-mode health is computed from elapsed time (not accumulated per
+> tick) to guarantee it reaches exactly 0 at 30 s with no floating-point drift. Camera-mode
+> damage is accumulated (subtracted per tick) because it depends on the child's input, not
+> on time alone. Dr. Yatin to confirm.
+
+### Kind-proximity starting health (req 14)
+
+**Step 1 — Miss score per zone** (req 14.1, 13.9):
+
+```
+For each camera-mode session s, zone z:
+  miss(s, z) = max(0, 30 - verified_seconds(s, z))
+
+totalMiss(z)  = Σ miss(s, z)          over all camera-mode sessions
+maxMiss(z)    = 30 × cameraSessionCount
+missScore(z)  = cameraSessionCount > 0 ? totalMiss(z) / maxMiss(z) : 0
+```
+
+`missScore(z) ∈ [0, 1]`. Timer-only sessions contribute nothing (req 13.9). A zone the
+child always brushes fully has `missScore = 0`; a zone never brushed has `missScore = 1`.
+
+**Step 2 — Starting health** (req 14.2):
+
+```
+startingHealth(z) = H_MAX × (1 - (1 - KIND_FLOOR_RATIO) × missScore(z))
+                  = 60 × (1 - 0.4 × missScore(z))
+```
+
+| Miss score | Starting health | % of normal |
+|------------|-----------------|-------------|
+| 0.0 (never missed) | 60 | 100% |
+| 0.25 | 54 | 90% |
+| 0.5 | 48 | 80% |
+| 1.0 (always missed) | 36 | 60% (floor) |
+
+Range: `[36, 60]` = `[60% × H_MAX, H_MAX]`. The monster is never already defeated (req 14.2).
+
+> **Design choice:** Linear scaling from 100% to 60% of `H_MAX` as miss score goes from 0
+> to 1. This is the simplest transparent mapping. A curved (eased) mapping could make the
+> first few misses matter more, but linear is easiest to explain to a parent and to test.
+> Dr. Yatin to confirm the curve shape.
+
+### 15% rescue rule (req 14.3, 13.8)
+
+At zone end (`zoneTimeRemaining == 0`), if the monster is still `'pending'`:
+
+- `health ≤ RESCUE_THRESHOLD (9)` → **defeated** ("flees into smoke").
+- `health > RESCUE_THRESHOLD` → **trapped**.
+
+In timer mode, health is always 0 at zone end, so the monster is already defeated and the
+rescue rule is satisfied trivially.
+
+With kind proximity (starting health = 36), a child needs to brush only
+`ceil((36 - 9) / 2) = 14` seconds correctly to defeat the monster (with rescue), instead of
+26 seconds at full health. That is the kindness: often-missed zones need less brushing to
+win.
+
+---
+
+## 7. Morning / night classification (req 10.5)
+
+```typescript
+// src/logic/time-of-day.ts
+
+function classifyTimeOfDay(hour: number): TimeOfDay {
+  if (hour >= 4 && hour <= 11) return 'morning';   // 04:00–11:59
+  if (hour >= 17 && hour <= 23) return 'night';    // 17:00–23:59
+  return 'neither';                                 // 00:00–03:59 or 12:00–16:59
+}
+```
+
+Input is the session start hour (0–23) in local time. Pure — no `Date` object dependency,
+so tests pass any hour directly.
+
+### Rare eligibility (req 10.6–10.8)
+
+```typescript
+// src/logic/monster-book.ts
+
+function isRareEligible(sessions: SessionRecord[], date: string): boolean {
+  const daySessions = sessions.filter(s => s.date === date);
+  return daySessions.some(s => s.timeOfDay === 'morning')
+      && daySessions.some(s => s.timeOfDay === 'night');
+}
+```
+
+Sessions classified `'neither'` count as normal sessions (saved, monsters earned) but do
+not contribute to rare eligibility (req 10.8).
+
+> **Design choice:** Rare eligibility is evaluated at session start, not retroactively. The
+> first session of the day (typically morning) is never rare-eligible because no night
+> session exists yet. The night session (if a morning session was recorded earlier) is
+> rare-eligible. This rewards the child for brushing both times. Dr. Yatin to confirm.
+
+---
+
+## 8. Storage schema
+
+```typescript
+// src/storage/storage.ts
+
+interface StorageData {
+  readonly version: 1;                    // schema version
+  readonly sessions: SessionRecord[];     // all past sessions
+  readonly missScores: MissScores;         // per-zone [0, 1], updated after each camera session
+}
+
+// SessionRecord mirrors SessionResult for storage (req 9.1, 9.5).
+interface SessionRecord {
+  readonly date: string;          // YYYY-MM-DD
+  readonly timeOfDay: TimeOfDay;
+  readonly mode: SessionMode;
+  readonly zoneResults: readonly ZoneResult[];
+  readonly monstersEarned: readonly string[];
+  readonly startedAt: number;     // epoch ms
+  readonly durationSeconds: number;  // always 120
+}
+```
+
+- **localStorage key:** `foamtom:v1`.
+- **Version:** The `version` field allows future migration. On load, if `version` is
+  missing or lower than current, the loader discards old data with a console warning (for
+  v1 there are no prior versions to migrate from).
+- **Monster Book** is derived from `sessions` (union of all `monstersEarned`), not stored
+  separately. This keeps stored data to exactly what req 9.5 permits: sessions + miss
+  scores.
+- **Miss scores** are stored denormalized alongside sessions (req 14.7). They are
+  recomputed and saved after each camera-mode session. The "Clear all data" button calls
+  `clearAll()`, which removes both sessions and miss scores.
+
+> **Design choice:** Miss scores are stored denormalized (they are also derivable from
+> sessions) for O(1) lookup at session start without scanning all past sessions. They are
+> recomputed after each camera-mode session to stay consistent. Dr. Yatin to confirm.
+
+---
+
+## 9. Error handling
+
+| Condition | Behaviour | Requirement |
+|-----------|-----------|-------------|
+| **Camera permission refused** | Switch to timer-only mode. No prompt, no nag, no retry. Session runs fully. | 8.1, 8.3, kid-safety |
+| **Camera unavailable** (no device, API missing) | Same as refused: timer-only mode. | 8.1 |
+| **Poor light / tracking quality** | Tracking layer returns `null` signal. Logic treats the tick as timer-only drain. If `null` persists for an entire zone (30 s), the UI silently switches the mode indicator to timer-only. No nag to the child. | 6.1–6.3, 8.1 |
+| **Tab hidden** (`document.hidden`) | Camera stream stops immediately. Zone timer pauses. When the tab returns, camera restarts (if camera mode) and timer resumes. No data lost. | 11.6, kid-safety |
+| **`localStorage` full** (`QuotaExceededError`) | Session result is not saved. Game continues to work; Monster Book only reflects the current session. No crash, no nag. | 9.4, kid-safety |
+| **`localStorage` blocked** (private browsing, disabled) | Same as full: in-memory only. Game works fully for the session; nothing persists. | 9.4, kid-safety |
+
+> **Design choice (tab hidden):** The zone timer pauses when the tab is hidden because the
+> child cannot see the screen. This is distinct from req 2.5, which covers the child not
+> brushing (the timer must not pause for that). Tab-hidden is a visibility event: the
+> child left the screen, so the timer pauses and resumes on return. Dr. Yatin to confirm.
+
+> **Design choice (poor light, sustained):** If tracking returns `null` for an entire zone,
+> the UI silently switches the mode indicator to timer-only so the parent knows the session
+> was unverified. The switch is silent (no nag to the child). Whether to switch mid-session
+> or wait for the next session is a UI detail left to implementation. Dr. Yatin to confirm.
+
+---
+
+## 10. Placeholder screen (req 11)
+
+A plain, functional screen. Haunted-mirror art, CSS frame, fog, candle flicker, and
+cracked-glass effects are out of scope for this spec.
+
+- **Camera preview:** If permission granted, show a mirrored live `<video>` of the front
+  camera. If not, show the screen without a preview (timer-only mode). (req 11.1–11.2)
+- **Monster:** Draw one monster over the active zone on a canvas above the video. (req 11.3)
+- **Countdown:** Display remaining seconds in the current zone. (req 11.4)
+- **Zone caption:** Display the zone name as a caption and speak it aloud when the zone
+  becomes active. (req 11.5, 4.1–4.5)
+- **Camera stop:** Stop the camera stream immediately when the session ends or the tab
+  becomes hidden. (req 11.6)
+- **Privacy:** No frame, image, video, landmark, or derived measurement is sent over the
+  network, saved, or logged. No screenshot, recording, or share features. (req 11.7–11.8)
+- **Layout:** Portrait orientation. Touch targets ≥ 48 px. Colour is never the only signal.
+  (req 11.9–11.11)
+- **Performance:** 20+ fps on a mid-range Android phone (2022) in Chrome. (req 11.12)
+
+---
+
+## 11. Testing strategy
+
+All tests use **fast-check** property-based tests in `/tests/`. Each property holds for any
+arbitrary input. The pure logic functions take plain data and return plain data, so no
+browser or camera is needed.
+
+| # | Test name | Req | Arbitrary input | Property assertion |
+|---|-----------|-----|----------------|-------------------|
+| 1 | `monsterHealthOnlyDecreasesWhenOwnZoneBrushed` | 13.1 | Array of 120 `BrushingSignal \| null` (both modes) | Camera: health decreases only on ticks where `isBrushing(signal, activeZone)` is true. Timer: health decreases every tick and reaches 0 by zone end. Health never decreases while a different zone is active, signal doesn't match, or signal has `unknown` fields. |
+| 2 | `totalSessionDurationAlways120` | 13.2 | Array of 120 `BrushingSignal \| null` (none, wrong, partial, all-correct) | `toSessionResult(finalState).durationSeconds === 120` for all inputs. |
+| 3 | `rareMonsterUnlockRequiresMorningAndNight` | 13.3 | Array of `SessionRecord` on one day with random `timeOfDay` | `isRareEligible(sessions, date)` is true only when ≥ 1 morning AND ≥ 1 night session exist. Rare monsters in `monstersEarned` only when eligible. |
+| 4 | `statsNeverExceedElapsed` | 13.4 | Array of `SessionRecord` (mixed modes, random seconds per zone) | `computeVerifiedTime(sessions) ≤ sessions.length × 120`. Timer-only sessions contribute 0 verified seconds. |
+| 5 | `storageRoundTripPreservesSessions` | 13.5 | Array of `SessionRecord` with random modes and verified/unverified flags | `loadSessions(saveSessions(input))` deep-equals `input`. Uses a mock `localStorage`. |
+| 6 | `kindProximityStartingHealthWithinBounds` | 13.6 | Array of past `SessionRecord` (mixed modes) | For every zone: `36 ≤ startingHealth(zone, missScores) ≤ 60` (60% floor to 100% of `H_MAX`). |
+| 7 | `kindProximityDoesNotChangeDuration` | 13.7 | Array of past sessions + array of 120 signals | `toSessionResult(finalState).durationSeconds === 120` regardless of miss scores. |
+| 8 | `soCloseRescueAtOrBelow15Percent` | 13.8 | Zone with monster health ∈ [0, 60] at zone end | `health ≤ 9 → outcome == 'defeated'`. `health > 9 → outcome == 'trapped'`. |
+| 9 | `missScoreOnlyFromCameraSessions` | 13.9 | Array of `SessionRecord` (arbitrary mix of camera and timer-only) | Miss scores computed only from camera-mode sessions. Adding or removing timer-only sessions does not change any miss score. |
+
+### Test helpers
+
+**Mock `localStorage`:** An in-memory `Map` implementing `getItem`, `setItem`,
+`removeItem`, used by tests 5, 6, 9. No real browser storage needed.
+
+**Signal arbitrary:**
+
+```typescript
+const signalArb = fc.record({
+  handNearMouth: fc.boolean(),
+  side: fc.constantFrom('left', 'right', 'unknown'),
+  level: fc.constantFrom('upper', 'lower', 'unknown'),
+  moving: fc.boolean(),
+});
+// Nullable for timer mode: fc.option(signalArb, { nil: null })
+// Per session: fc.array(signalArb, { minLength: 120, maxLength: 120 })
+```
+
+**Session record arbitrary:**
+
+```typescript
+const zoneResultArb = fc.record({
+  zoneId: fc.constantFrom('upper-right', 'upper-left', 'lower-left', 'lower-right'),
+  monsterId: fc.string(),
+  secondsBrushed: fc.integer({ min: 0, max: 30 }),
+  verified: fc.boolean(),
+  monsterOutcome: fc.constantFrom('defeated', 'trapped'),
+});
+
+const sessionRecordArb = fc.record({
+  date: fc.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+  timeOfDay: fc.constantFrom('morning', 'night', 'neither'),
+  mode: fc.constantFrom('camera', 'timer-only'),
+  zoneResults: fc.array(zoneResultArb, { minLength: 4, maxLength: 4 }),
+  monstersEarned: fc.array(fc.string()),
+  startedAt: fc.integer({ min: 0 }),
+  durationSeconds: fc.constant(120),
+});
+```
