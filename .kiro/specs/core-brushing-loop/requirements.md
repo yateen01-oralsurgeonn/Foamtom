@@ -34,10 +34,9 @@ every rule below be property-tested with fast-check without a browser or camera.
 
 ### Steering references
 
-All requirements below comply with the steering files in `.kiro/steering/`. Where a
-steering rule is marked **[TO CONFIRM]** in `dental-rules.md`, that marker is preserved
-here. Kid-safety and privacy rules override any other requirement; if a feature cannot
-meet them, the feature is dropped.
+All requirements below comply with the steering files in `.kiro/steering/`. Kid-safety
+and privacy rules override any other requirement; if a feature cannot meet them, the
+feature is dropped.
 
 ---
 
@@ -89,7 +88,8 @@ dentist-approved order, so that no area is skipped.**
 3.1 THE SYSTEM SHALL define four zones: **upper left**, **upper right**, **lower left**,
 and **lower right**.
 
-3.2 Zone order **[TO CONFIRM]**: upper right → upper left → lower left → lower right.
+3.2 THE SYSTEM SHALL order zones as: upper right → upper left → lower left → lower
+right.
 
 3.3 THE SYSTEM SHALL treat zones as rough areas of the mouth (side + upper/lower), never
 claiming to detect individual teeth.
@@ -161,10 +161,11 @@ running the active zone timer; the timer SHALL NOT pause or stall.
 6.2 THE SYSTEM SHALL NOT nag, prompt, or interrupt the child when tracking is uncertain
 or absent.
 
-6.3 Whether uncertain or absent tracking also reduces the active monster's health is an
-**open question** for Dr. Yatin (see Open questions). Until confirmed, the system SHALL
-NOT reduce monster health on uncertain or absent signals; only a fully matching signal
-(per 5.4) reduces health.
+6.3 IF the tracking signal is present but any field is `unknown` (uncertain tracking) THE
+SYSTEM SHALL NOT reduce the active monster's health; only a fully matching signal (per
+5.4) reduces health in camera mode. WHEN the signal is absent (guided-timer mode) THE
+SYSTEM SHALL reduce the active monster's health steadily with the zone timer, as
+specified in requirement 7.7.
 
 ---
 
@@ -190,6 +191,10 @@ monster as **trapped** (not defeated).
 7.6 Every monster SHALL live in one table (`src/logic/monsters.ts`) with the fields: id,
 name, rarity, and unlock rule.
 
+7.7 WHILE in guided-timer mode (signal absent) THE SYSTEM SHALL reduce the active
+monster's health steadily with the zone timer so that the monster is always defeated by
+the end of its 30 seconds.
+
 ---
 
 ### 8. Guided-timer mode
@@ -209,8 +214,9 @@ any prompt or nag for camera permission.
 8.4 THE SYSTEM SHALL make guided-timer mode fully functional — every zone, every
 announcement, every Monster Book unlock rule works identically to camera mode.
 
-8.5 Whether monsters take damage in guided-timer mode (no signal) follows the same open
-question as requirement 6.3.
+8.5 WHILE in guided-timer mode THE SYSTEM SHALL reduce the active monster's health
+steadily with the zone timer so that the monster is always defeated by the end of its 30
+seconds (per requirement 7.7).
 
 ---
 
@@ -220,19 +226,22 @@ question as requirement 6.3.
 can see the facts later.**
 
 9.1 WHEN a session ends THE SYSTEM SHALL produce a session result containing: **date**,
-**time of day** (morning or night), **seconds per zone**, and **monsters earned**.
+**time of day** (morning, night, or neither), **mode** (camera or timer-only), **seconds
+per zone** (each marked as verified or unverified), and **monsters earned**.
 
 9.2 "Seconds per zone" SHALL mean the number of seconds the child spent brushing (signal
 matching per 5.4) in that zone; this value SHALL NOT exceed 30.
 
-9.3 Whether guided-timer-mode sessions record full 30 s per zone (benefit of the doubt) or
-zero is an **open question** for Dr. Yatin (see Open questions).
+9.3 SESSIONS with mode flag "timer-only" SHALL record 30 seconds per zone, but each
+zone's seconds SHALL be marked as **unverified**. SESSIONS with mode flag "camera" SHALL
+mark each zone's seconds as **verified** only for the time the signal matched that zone
+(per 5.4).
 
 9.4 THE SYSTEM SHALL store the session result in `localStorage` on the device and SHALL
 NOT transmit it over the network.
 
-9.5 THE SYSTEM SHALL store no data other than brushing sessions (date, time of day,
-seconds per zone, monsters earned).
+9.5 THE SYSTEM SHALL store no data other than brushing sessions (date, time of day, mode,
+seconds per zone with verified/unverified flags, monsters earned).
 
 9.6 THE SYSTEM SHALL NOT store names, ages, email, photos, camera frames, landmarks, or
 any derived measurement.
@@ -255,12 +264,13 @@ earned for the Monster Book.
 
 10.3 THE SYSTEM SHALL add all earned monsters from the session to the Monster Book.
 
-10.4 THE SYSTEM SHALL define 10–12 monster designs, each with an id, name, rarity, and
-unlock rule, in one table (`src/logic/monsters.ts`).
+10.4 THE SYSTEM SHALL define exactly 12 monster designs — 8 common and 4 rare — each
+with an id, name, rarity, and unlock rule, in one table (`src/logic/monsters.ts`).
 
-10.5 WHEN a session starts THE SYSTEM SHALL record the time of day as **morning** or
-**night** based on the current clock time. The exact hour boundaries that separate
-"morning" from "night" are an **open question** for Dr. Yatin (see Open questions).
+10.5 WHEN a session starts THE SYSTEM SHALL record the time of day as **morning**,
+**night**, or **neither** based on the session start time in local time: morning =
+04:00–11:59, night = 17:00–23:59, neither = any other time (00:00–03:59 or
+12:00–16:59).
 
 10.6 IF a day has at least one morning session AND at least one night session THE SYSTEM
 SHALL make rare monsters eligible to unlock for that day.
@@ -268,9 +278,9 @@ SHALL make rare monsters eligible to unlock for that day.
 10.7 IF a day does not have both a morning and a night session THE SYSTEM SHALL NOT unlock
 rare monsters for that day.
 
-10.8 Whether sessions that fall outside defined morning or night hours (for example, an
-afternoon brush) count toward the morning+night requirement is an **open question** for
-Dr. Yatin (see Open questions).
+10.8 SESSIONS recorded as **neither** (outside morning and night hours) SHALL count as
+normal sessions (saved, monsters earned) but SHALL NOT count toward the morning+night
+requirement for rare-monster eligibility.
 
 ---
 
@@ -357,24 +367,33 @@ property-based tests in `/tests/`. Each property SHALL hold for any arbitrary in
 sequence.
 
 13.1 **Monster health:** For any sequence of brushing signals, a monster's health SHALL
-decrease only while its own zone is active and the signal matches that zone. Health SHALL
-NOT decrease while a different zone is active, while the signal does not match, or while
-no signal is present (unless confirmed per the open question in 6.3).
+decrease only while its own zone is active and the signal matches that zone (camera mode).
+In guided-timer mode (signal absent), the active monster's health SHALL decrease steadily
+with the zone timer and SHALL reach zero by the end of its 30 s. Health SHALL NOT decrease
+while a different zone is active, while the signal does not match (camera mode), or while
+an uncertain signal is present.
 
 13.2 **Session duration:** For any sequence of brushing signals — including none, wrong,
 partial, or all-correct — the total session duration SHALL always be exactly 120 seconds
 (4 × 30 s).
 
 13.3 **Rare monster unlock:** A rare monster SHALL unlock only when the set of sessions
-for a given calendar day includes both a morning and a night session. For any set of
-sessions on a day without both, no rare monster SHALL unlock.
+for a given calendar day includes at least one morning session (start time 04:00–11:59
+local) AND at least one night session (start time 17:00–23:59 local). Sessions started at
+other times (00:00–03:59 or 12:00–16:59) SHALL count as neither and SHALL NOT contribute to
+rare-monster eligibility. For any set of sessions on a day without both a morning and a
+night session, no rare monster SHALL unlock.
 
-13.4 **Stats ceiling:** The total brushing time computed from stored sessions SHALL never
-exceed the total elapsed wall-clock time of those sessions. (This tests the stats
-computation logic in `/src/logic/`, not the parent screen UI, which is out of scope.)
+13.4 **Stats ceiling:** The total verified brushing time computed from stored sessions
+SHALL never exceed the total elapsed wall-clock time of those sessions. Sessions with
+mode flag "timer-only" SHALL have their seconds-per-zone marked as unverified and SHALL
+NOT be counted as verified brushing in parent stats or in "zone most often missed". (This
+tests the stats computation logic in `/src/logic/`, not the parent screen UI, which is out
+of scope.)
 
-13.5 **Storage round-trip:** For any set of sessions, saving to `localStorage` then
-loading SHALL return an identical set of sessions.
+13.5 **Storage round-trip:** For any set of sessions (including mode flag and
+verified/unverified seconds-per-zone flags), saving to `localStorage` then loading SHALL
+return an identical set of sessions.
 
 ---
 

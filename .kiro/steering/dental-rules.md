@@ -13,7 +13,7 @@ Where a rule is marked **[TO CONFIRM]**, ask before building on it.
   Front teeth are brushed as part of the zones on either side.
 - Zones are **rough areas of the mouth** (side + upper/lower), not single teeth.
   The game must never claim it can see individual teeth.
-- Zone order **[TO CONFIRM]**: upper right, upper left, lower left, lower right.
+- Zone order: upper right, upper left, lower left, lower right.
 
 ## What "brushing a zone" means to the game
 - The brush hand is near the mouth on the side of the active zone, and moving.
