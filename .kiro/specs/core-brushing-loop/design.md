@@ -14,7 +14,7 @@ with fast-check without a browser or camera.
 **Key design decisions (all flagged "Design choice" inline for Dr. Yatin's review):**
 
 - Tick granularity is 1 second (not per-frame) to keep the logic and tests simple.
-- `H_MAX = 60` so all health constants are integers.
+- `H_MAX = 60`, `DAMAGE_PER_SECOND = 3`: a normal monster is defeated after 20 s of matching brushing.
 - Linear kind-proximity scaling from 100% to 60% of `H_MAX`.
 - Timer-mode drain is computed from elapsed time, not accumulated.
 - Rare eligibility is evaluated at session start, not retroactively.
@@ -217,7 +217,7 @@ stateDiagram-v2
     note right of Zone0
         Each tick (1 s):
         1. zoneTimeRemaining--
-        2. Camera + signal matches: health -= 2
+        2. Camera + signal matches: health -= 3
            Timer: health = startHealth × (elapsed/30)
         3. If health ≤ 0: defeated
         4. If zoneTimer = 0:
@@ -330,31 +330,32 @@ monster from `monsters.ts` based on `rareEligible`.
 | `ZONE_COUNT` | 4 | Zones per session |
 | `SESSION_DURATION` | 120 s | Total session (req 2.1) |
 | `H_MAX` | 60 | Normal monster health (max) |
-| `DAMAGE_PER_SECOND` | 2 | Camera-mode damage per second of correct brushing (`= H_MAX / ZONE_DURATION`) |
+| `DAMAGE_PER_SECOND` | 3 | Camera-mode damage per second of correct brushing (normal monster defeated after 20 s: `H_MAX / DAMAGE_PER_SECOND = 60 / 3 = 20`) |
 | `KIND_FLOOR_RATIO` | 0.6 | Kind-proximity floor: starting health ≥ 60% of `H_MAX` (req 14.2) |
 | `KIND_FLOOR` | 36 | `KIND_FLOOR_RATIO × H_MAX` |
 | `RESCUE_THRESHOLD` | 9 | 15% of `H_MAX`; monster at ≤ 9 health at zone end is rescued (req 14.3) |
 
-> **Design choice:** `H_MAX = 60` so that `DAMAGE_PER_SECOND = 2`, `KIND_FLOOR = 36`, and
-> `RESCUE_THRESHOLD = 9` are all integers. This keeps property tests free of floating-point
-> drift. Any value where `H_MAX / 30` is an integer would work. Dr. Yatin to confirm.
+> **Design choice:** `H_MAX = 60` and `DAMAGE_PER_SECOND = 3` so that a normal-strength
+> monster is defeated after exactly 20 seconds of matching brushing (`60 / 3 = 20`).
+> `KIND_FLOOR = 36` and `RESCUE_THRESHOLD = 9` are all integers, keeping property tests free
+> of floating-point drift. Approved: defeat after 20 s of matching brushing.
 
 ### Normal health (req 7.1)
 
 Each zone monster's `maxHealth = H_MAX = 60`. Before kind-proximity adjustment, starting
-health equals `maxHealth`. A child who brushes all 30 seconds correctly deals
-`30 × 2 = 60` damage and defeats the monster.
+health equals `maxHealth`. A child who brushes correctly for 20 seconds deals
+`20 × 3 = 60` damage and defeats the monster.
 
 ### Camera-mode per-second damage (req 7.2)
 
 When `isBrushing(signal, activeZone)` is true, the active monster loses
-`DAMAGE_PER_SECOND = 2` health per second.
+`DAMAGE_PER_SECOND = 3` health per second.
 
 | Seconds brushed correctly | Damage | Remaining health | Outcome |
 |---------------------------|--------|-----------------|---------|
-| 30 | 60 | 0 | Defeated |
-| 26 | 52 | 8 | Defeated (rescued: 8 ≤ 9) |
-| 25 | 50 | 10 | Trapped (10 > 9) |
+| 20 | 60 | 0 | Defeated |
+| 17 | 51 | 9 | Defeated (rescued: 9 ≤ 9) |
+| 16 | 48 | 12 | Trapped (12 > 9) |
 | 0 | 0 | 60 | Trapped |
 
 ### Timer-only drain (req 7.7, 8.5)
@@ -374,6 +375,11 @@ health = startingHealth × (1 - elapsed / ZONE_DURATION)
 Health reaches exactly 0 at `elapsed = 30`, regardless of starting health. The monster is
 always defeated by the end of its 30 seconds. The drain is steady and synchronized with the
 zone timer countdown.
+
+The timer-mode drain rate is `startingHealth / 30` per second (2 per second at normal
+health), which is slower than camera-mode damage (3 per second). In camera mode a
+normal-strength monster is defeated after 20 s of matching brushing; in timer mode it is
+defeated at 30 s. Timer mode gives the child the full zone to brush.
 
 > **Design choice:** Timer-mode health is computed from elapsed time (not accumulated per
 > tick) to guarantee it reaches exactly 0 at 30 s with no floating-point drift. Camera-mode
@@ -428,8 +434,8 @@ In timer mode, health is always 0 at zone end, so the monster is already defeate
 rescue rule is satisfied trivially.
 
 With kind proximity (starting health = 36), a child needs to brush only
-`ceil((36 - 9) / 2) = 14` seconds correctly to defeat the monster (with rescue), instead of
-26 seconds at full health. That is the kindness: often-missed zones need less brushing to
+`ceil((36 - 9) / 3) = 9` seconds correctly to defeat the monster (with rescue), instead of
+17 seconds at full health. That is the kindness: often-missed zones need less brushing to
 win.
 
 ---
@@ -525,12 +531,14 @@ interface SessionRecord {
 > **Design choice (tab hidden):** The zone timer pauses when the tab is hidden because the
 > child cannot see the screen. This is distinct from req 2.5, which covers the child not
 > brushing (the timer must not pause for that). Tab-hidden is a visibility event: the
-> child left the screen, so the timer pauses and resumes on return. Dr. Yatin to confirm.
+> child left the screen, so the timer pauses and resumes on return. Approved by Dr. Yatin
+> 2026-11-14.
 
 > **Design choice (poor light, sustained):** If tracking returns `null` for an entire zone,
 > the UI silently switches the mode indicator to timer-only so the parent knows the session
 > was unverified. The switch is silent (no nag to the child). Whether to switch mid-session
-> or wait for the next session is a UI detail left to implementation. Dr. Yatin to confirm.
+> or wait for the next session is a UI detail left to implementation. Approved by Dr. Yatin
+> 2026-11-14.
 
 ---
 
@@ -572,6 +580,12 @@ browser or camera is needed.
 | 7 | `kindProximityDoesNotChangeDuration` | 13.7 | Array of past sessions + array of 120 signals | `toSessionResult(finalState).durationSeconds === 120` regardless of miss scores. |
 | 8 | `soCloseRescueAtOrBelow15Percent` | 13.8 | Zone with monster health ∈ [0, 60] at zone end | `health ≤ 9 → outcome == 'defeated'`. `health > 9 → outcome == 'trapped'`. |
 | 9 | `missScoreOnlyFromCameraSessions` | 13.9 | Array of `SessionRecord` (arbitrary mix of camera and timer-only) | Miss scores computed only from camera-mode sessions. Adding or removing timer-only sessions does not change any miss score. |
+
+> **Consequence of `DAMAGE_PER_SECOND = 3`:** At normal health (`H_MAX = 60`), 20 consecutive
+> matching ticks defeat the monster (20 × 3 = 60). Test 1 asserts the direction of health
+> change; the defeat time follows from `H_MAX / DAMAGE_PER_SECOND = 20`. Timer-mode drain
+> reaches 0 at 30 s (2 per second), not 20 s, because it is computed from elapsed time, not
+> accumulated damage.
 
 ### Test helpers
 
