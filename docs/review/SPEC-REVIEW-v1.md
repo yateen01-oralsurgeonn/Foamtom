@@ -425,3 +425,19 @@ timer drain from elapsed time, linear kindness curve, rare eligibility at sessio
 stored miss scores). After the fixes above: the first and third stand; the second and
 fifth are replaced by B4 and S7; the fourth is corrected by B5. I will fold them into the
 questions above rather than ask five more.
+
+---
+
+## 14. Your answers (15 Nov 2026)
+
+| # | Answer |
+|---|---|
+| Q1 | **Confirmed.** Upper right → upper left → lower left → lower right, 30 s each. |
+| Q2 | **A.** Every monster met in a session goes in the Monster Book, beaten or not. |
+| Q3 | **A.** After a monster is beaten its smoke stays; "Keep brushing to blow the smoke away!"; no new win or lose. |
+| Q4 | **A.** Tracker cannot see → monster loses 2 per second; a camera-mode zone with more than 10 unseen seconds is saved as unverified. |
+| Q5 | **A.** Floor 36 and rescue 9 stay; the miss score looks at the last 7 camera sessions only. |
+| Q6 | **Approved.** Four specs, the five-step cut order, plus two extras from me: prompts that create specs 2 to 4, and 12 monster names for approval. |
+| Q7 | **A, as a fallback only if the level test fails.** Side only; level counts as matching; parents told in one line. The mirror-flip check and the both-hands check are added to the first hand-tracking test task. |
+
+These answers are carried into the spec by the prompts listed in `KIRO-CHANGES-v1.md`.
