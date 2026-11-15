@@ -140,7 +140,7 @@ are not, and what to fake:
 | Criterion | Fake to use | Test |
 |---|---|---|
 | "Tick once a second", pause, 60 s drop (2.x, S3, S4) | **Fake clock**: `game-loop` takes `{ now(): number }` and a scheduler; the test advances time by hand. | 120 fake seconds → exactly 120 ticks, even if the scheduler fires late or in bursts. |
-| Camera refused / unavailable / slow (8.1, 8.3, S6) | **Fake signal source** with the interface in section 6: `start()` resolves `'ready'`, `'unavailable'`, or never. | Mode is timer-only for the last two; `start()` is called exactly once. |
+| Camera refused / unavailable / slow (8.1, 8.3, S6) | **Fake signal source** with the interface in section 5: `start()` resolves `'ready'`, `'unavailable'`, or never. | Mode is timer-only for the last two; `start()` is called exactly once. |
 | Camera stops on end or hidden (11.6) | Fake signal source that counts `stop()` calls. | `stop()` called once at end, once on hidden. |
 | Any tracking rule (5.4, side, level, moving) | **Fake landmark stream**: arrays of plain `{x, y}` points for mouth and hand, saved as fixture files. | Pure `classifyFrame(landmarks)` and `aggregateSecond(frames)` (hand-tracking spec). |
 | What the screen shows (11.3, 11.4, 11.5) | No fake needed: a pure `toView(state)` that returns `{ zoneId, countdown, captionLineId, healthFraction, monsterId }`. | Test `toView`; the DOM code just paints it. |
