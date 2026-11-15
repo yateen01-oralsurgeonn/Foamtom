@@ -395,8 +395,8 @@ monster drawings (the video shows about five; the table can hold 12 names with s
 placeholder art).
 
 **Kind proximity is also never shown in the video.** It is your idea and the logic is one
-small module, so I would keep it, but it is the first thing to cut if days run short
-(Q6).
+small module, so I would keep it. It is fourth in the approved cut order (Q6), the last
+of the logic cuts.
 
 ---
 
@@ -417,7 +417,7 @@ for later: `tech.md` signal is "per second" not "per frame" (S12); `tech.md` Web
 | Q3 | What does the child do in a zone after its monster is beaten? | "Keep brushing to blow the smoke away" until the 30 s end. No new win or lose. |
 | Q4 | Camera mode, tracker cannot see: what happens to the monster? | Drain at 2 per second; zone saved as unverified if more than 10 s were untracked. |
 | Q5 | Kindness numbers: floor, rescue, and how far back the miss score looks | Keep floor 36 and rescue 9; look at the last 7 camera sessions only. |
-| Q6 | Scope: which specs and screens for 4 Dec, and what is cut first | Four specs as in section 10; cut order: demo link, kind proximity, parent stats beyond one line. |
+| Q6 | Scope: which specs and screens for 4 Dec, and what is cut first | **Approved 15 Nov.** Four specs as in section 10. Cut order, first cut first: (1) the `?demo` link for judges; (2) upper/lower detection, leaving side only; (3) parent screen reduced to one line of facts plus the disclosure and Clear all data; (4) kind proximity; (5) haunted art reduced to a CSS frame and one monster drawing reused in different colours. Never cut: the timer-only game, the privacy guard test, the hooks, the property tests. |
 | Q7 | If the feasibility test shows upper/lower cannot be told apart | Judge side only; treat level as matching. Tell parents in one line. |
 
 The design also has five notes still marked "Dr. Yatin to confirm" (1-second tick,
