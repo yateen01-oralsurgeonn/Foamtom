@@ -19,7 +19,11 @@ SCOPE OF THIS SPEC
    it and records pass or fail for each check in
    `docs/review/TRACKING-TEST-RESULTS.md` (words only, no images):
    - Side check: brush each of the four zones; does `side` read the side being brushed?
-   - Level check: for each zone, does `level` read upper or lower correctly?
+     Do it three times per zone and record each separately: outer surfaces (cheek side),
+     chewing surfaces, inner surfaces (tongue side). The handle leaves the mouth at a
+     different place for each, so the hand may read a different side.
+   - Level check: for each zone, does `level` read upper or lower correctly? Record it
+     for the same three surfaces.
    - Mirror-flip check: raise the left hand (the child's own left). The signal must say
      `left`, and the hand must appear on the left of the mirrored preview.
    - Both-hands check: (a) repeat the side check with the brush in the right hand, then
