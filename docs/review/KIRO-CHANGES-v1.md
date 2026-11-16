@@ -105,7 +105,7 @@ and the answer may change the plan. Runs 15 to 20 can wait until the camera work
 
 | Item | Who | When |
 |---|---|---|
-| Monster names in prompt `c02` are my proposal | Dr. Yatin approves or changes them | Before run 2 |
+| ~~Monster names in prompt `c02`~~ | **Approved by Dr. Yatin, 16 Nov 2026, as written** | Done |
 | "Keep brushing to blow the smoke away!" wording | Dr. Yatin | Before run 2 |
 | Does the brushing hand sit on the side being brushed? Upper vs lower? | The feasibility test (hand-tracking task 1) | Before hand-tracking task 2 |
 | Storyboard shot 6 says "back-left"; the zones are upper-left and lower-left | Dr. Yatin picks the wording for the shot | Before filming |

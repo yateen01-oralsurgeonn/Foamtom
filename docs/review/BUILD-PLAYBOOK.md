@@ -207,7 +207,7 @@ three runs, compare the real cost with the budget and scale the rest of the tabl
 
 What this means:
 
-- **With the 4,000-credit code:** comfortable. Keep going in order.
+- **With the 4,000-credit code:** comfortable. Keep going in order. (Code arrived by email 16 Nov 2026; redeem it and write the new balance in section 8.)
 - **Without it:** a small monthly allowance will not reach the live game. Spend what
   there is in this order: stage A runs 1-4 (requirements), then 5-9, then build tasks
   1-8. Stop there and wait for the code rather than starting a task that cannot finish.
