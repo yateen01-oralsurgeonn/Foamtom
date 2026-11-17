@@ -85,7 +85,7 @@ THE 14 TASKS
 
 8. **Session screen, wired up (PLAYABLE timer-only game)**
    Files: `src/ui/session-screen.ts`, `src/ui/end-card.ts`, `src/main.ts`, `index.html`,
-   one CSS file.
+   `src/ui/styles.css`.
    Sub-tasks: start button; monster (a simple drawn shape is enough) over the active
    zone; countdown; caption; smoke; end card; `main.ts` wires clock, `nullSignalSource`,
    game loop and screen. Captions only in this task (speech comes in task 9). No storage
@@ -96,13 +96,16 @@ THE 14 TASKS
    still pass.
 
 9. **Speaker and first deployment (LIVE LINK)**
-   Files: `src/audio/speaker.ts`, `tests/speaker.test.ts`,
-   `.github/workflows/pages.yml`, `README.md`.
+   Files: `src/audio/speaker.ts`, `tests/speaker.test.ts`, `src/ui/session-screen.ts`,
+   `src/ui/end-card.ts`, `src/main.ts`, `.github/workflows/pages.yml`, `README.md`.
    Sub-tasks: `rampGain`; play a clip if present, else a local Web Speech voice, else
-   caption only; a GitHub Actions workflow that runs the tests, builds, and publishes
+   caption only; wire the speaker into the screens so that every line that is captioned
+   is also spoken (start button, zone lines, smoke line, end card), with the start tap
+   unlocking sound; a GitHub Actions workflow that runs the tests, builds, and publishes
    `dist/` to GitHub Pages; a short README (what it is, privacy line, how to run, MIT).
    Tests: design test 19; a test that a non-local voice is never chosen.
-   Requirements: 4.4, 12.9, 15.6.
+   Requirements: 4.1, 4.3, 4.4, 7.8, 11.5, 12.9, 15.1, 15.6.
+   (`LICENSE` already exists in the repo root; do not create or change it.)
 
 10. **Storage**
     Files: `src/storage/storage.ts`, `tests/storage.test.ts`.
@@ -128,8 +131,8 @@ THE 14 TASKS
     Files: `src/main.ts`, `src/logic/session.ts`, `tests/integration.test.ts`,
     `tests/session.test.ts` (only if a test needs the new behaviour).
     Sub-tasks: remove the two TEMPORARY constants from task 4 so that `startSession` uses
-    `isRareEligibleForNewSession`, `computeMissScores` and `startingHealth`; load past sessions at start; save the result at the end; the end card shows
-    the monsters earned.
+    `isRareEligibleForNewSession`, `computeMissScores` and `startingHealth`; load past sessions at start; save the result at the end. (The end card
+    already shows the session's four monsters from task 8; no change to `end-card.ts`.)
     Test: with a fake backend and fake clock, play a morning timer-only session, then a
     night one on the same date: both are saved; the second is rare-eligible and has
     exactly one rare monster on the last zone; a third session's commons follow the
