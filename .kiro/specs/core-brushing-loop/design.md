@@ -334,11 +334,16 @@ startSession(input):
 | `KIND_FLOOR_RATIO` | 0.6 | Kind-proximity floor: starting health ≥ 60% of `H_MAX` (req 14.2) |
 | `KIND_FLOOR` | 36 | `KIND_FLOOR_RATIO × H_MAX` |
 | `RESCUE_THRESHOLD` | 9 | 15% of `H_MAX`; monster at ≤ 9 health at zone end is rescued (req 14.3) |
+| `UNTRACKED_DRAIN` | 2 | Health lost per second when the signal is `null` (req 7.7); `H_MAX / ZONE_DURATION` |
+| `UNTRACKED_LIMIT` | 10 | A camera-mode zone with more untracked seconds than this is unverified (req 9.3) |
+| `MISS_WINDOW` | 7 | Number of most recent camera-mode sessions used for miss scores (req 14.1) |
+| `REQUIRE_LEVEL_MATCH` | true | When false, level is ignored and only side is checked (req 5.7) |
 
 > **Design choice:** `H_MAX = 60` and `DAMAGE_PER_SECOND = 3` so that a normal-strength
 > monster is defeated after exactly 20 seconds of matching brushing (`60 / 3 = 20`).
-> `KIND_FLOOR = 36` and `RESCUE_THRESHOLD = 9` are all integers, keeping property tests free
-> of floating-point drift. Approved: defeat after 20 s of matching brushing.
+> Starting health is rounded to a whole number and every change is −2 or −3, so health is
+> always a whole number. Approved: defeat after 20 s of matching brushing. The 20 s leaves
+> slack for seconds the tracker misses.
 
 ### Normal health (req 7.1)
 
@@ -354,60 +359,44 @@ When `isBrushing(signal, activeZone)` is true, the active monster loses
 | Seconds brushed correctly | Damage | Remaining health | Outcome |
 |---------------------------|--------|-----------------|---------|
 | 20 | 60 | 0 | Defeated |
-| 17 | 51 | 9 | Defeated (rescued: 9 ≤ 9) |
+| 17 | 51 | 9 | Fled (rescued: 9 ≤ 9) |
 | 16 | 48 | 12 | Trapped (12 > 9) |
 | 0 | 0 | 60 | Trapped |
 
-### Timer-only drain (req 7.7, 8.5)
+### Untracked drain (req 7.7, 8.5)
 
-Health is computed as a function of elapsed time, not accumulated:
-
-```
-health = startingHealth × (1 - elapsed / ZONE_DURATION)
-```
-
-| Elapsed (s) | Health (startingHealth = 60) | Health (startingHealth = 36) |
-|-------------|-------------------------------|-------------------------------|
-| 0 | 60.0 | 36.0 |
-| 15 | 30.0 | 18.0 |
-| 30 | 0.0 | 0.0 |
-
-Health reaches exactly 0 at `elapsed = 30`, regardless of starting health. The monster is
-always defeated by the end of its 30 seconds. The drain is steady and synchronized with the
-zone timer countdown.
-
-The timer-mode drain rate is `startingHealth / 30` per second (2 per second at normal
-health), which is slower than camera-mode damage (3 per second). In camera mode a
-normal-strength monster is defeated after 20 s of matching brushing; in timer mode it is
-defeated at 30 s. Timer mode gives the child the full zone to brush.
-
-> **Design choice:** Timer-mode health is computed from elapsed time (not accumulated per
-> tick) to guarantee it reaches exactly 0 at 30 s with no floating-point drift. Camera-mode
-> damage is accumulated (subtracted per tick) because it depends on the child's input, not
-> on time alone. Dr. Yatin to confirm.
+- When the signal is `null`, in either mode, the active monster loses
+  `UNTRACKED_DRAIN = 2` per second. It is subtracted each tick, like camera damage.
+- Timer-only mode: every signal is `null` and every monster starts at 60, so health is
+  `60 − 2 × elapsed` and reaches 0 exactly at 30 s.
+- Camera mode: a second the tracker cannot see costs the monster 2 instead of 3. Mixed
+  example: 12 untracked seconds (−24) and 12 matched seconds (−36) defeat a normal
+  monster.
+- A camera-mode zone with more than 10 untracked seconds is saved as unverified.
 
 ### Kind-proximity starting health (req 14)
 
 **Step 1 — Miss score per zone** (req 14.1, 13.9):
 
 ```
-For each camera-mode session s, zone z:
-  miss(s, z) = max(0, 30 - verified_seconds(s, z))
-
-totalMiss(z)  = Σ miss(s, z)          over all camera-mode sessions
-maxMiss(z)    = 30 × cameraSessionCount
-missScore(z)  = cameraSessionCount > 0 ? totalMiss(z) / maxMiss(z) : 0
+recent        = the MISS_WINDOW (7) most recent camera-mode sessions, by startedAt
+For each session s in recent, each zone z whose result is verified:
+  miss(s, z) = max(0, 30 - secondsBrushed - secondsUntracked)
+n(z)          = number of verified results for z in recent
+missScore(z)  = n(z) > 0 ? Σ miss(s, z) / (30 × n(z)) : 0
 ```
 
-`missScore(z) ∈ [0, 1]`. Timer-only sessions contribute nothing (req 13.9). A zone the
+`missScore(z) ∈ [0, 1]`. Timer-only sessions, unverified zones and sessions older than the
+7 most recent contribute nothing. A zone the
 child always brushes fully has `missScore = 0`; a zone never brushed has `missScore = 1`.
 
 **Step 2 — Starting health** (req 14.2):
 
 ```
-startingHealth(z) = H_MAX × (1 - (1 - KIND_FLOOR_RATIO) × missScore(z))
-                  = 60 × (1 - 0.4 × missScore(z))
+startingHealth(z) = clamp(round(60 × (1 − 0.4 × missScore(z))), 36, 60)
 ```
+
+Not applied in timer-only mode (starting health is always 60).
 
 | Miss score | Starting health | % of normal |
 |------------|-----------------|-------------|
@@ -421,22 +410,32 @@ Range: `[36, 60]` = `[60% × H_MAX, H_MAX]`. The monster is never already defeat
 > **Design choice:** Linear scaling from 100% to 60% of `H_MAX` as miss score goes from 0
 > to 1. This is the simplest transparent mapping. A curved (eased) mapping could make the
 > first few misses matter more, but linear is easiest to explain to a parent and to test.
-> Dr. Yatin to confirm the curve shape.
+> Linear curve
+> confirmed by Dr. Yatin 2026-11-15.
 
 ### 15% rescue rule (req 14.3, 13.8)
 
 At zone end (`zoneTimeRemaining == 0`), if the monster is still `'pending'`:
 
-- `health ≤ RESCUE_THRESHOLD (9)` → **defeated** ("flees into smoke").
+- `health ≤ RESCUE_THRESHOLD (9)` → **fled** ('flees into smoke'; counts as beaten).
 - `health > RESCUE_THRESHOLD` → **trapped**.
 
-In timer mode, health is always 0 at zone end, so the monster is already defeated and the
-rescue rule is satisfied trivially.
+In timer-only mode health is 0 at zone end, so the monster is already defeated and the
+rescue never applies.
 
 With kind proximity (starting health = 36), a child needs to brush only
 `ceil((36 - 9) / 3) = 9` seconds correctly to defeat the monster (with rescue), instead of
 17 seconds at full health. That is the kindness: often-missed zones need less brushing to
 win.
+
+### After a monster is beaten: smoke (req 7.8)
+
+- When a monster is defeated before its zone ends, the zone keeps running and the screen
+  shows smoke over the zone.
+- `smokeFraction = 1 − secondsSmokeCleared / max(1, ZONE_DURATION − defeatedAtElapsed)`,
+  clamped to [0, 1]. It is worked out for drawing only.
+- The line "Keep brushing! Brush the smoke away!" is spoken and captioned once.
+- Nothing is won or lost: no outcome, stored value or message depends on the smoke.
 
 ---
 
@@ -455,25 +454,63 @@ function classifyTimeOfDay(hour: number): TimeOfDay {
 Input is the session start hour (0–23) in local time. Pure — no `Date` object dependency,
 so tests pass any hour directly.
 
+The date and time of day are fixed when the session starts. A session that crosses
+midnight keeps its start date.
+
 ### Rare eligibility (req 10.6–10.8)
 
 ```typescript
 // src/logic/monster-book.ts
-
-function isRareEligible(sessions: SessionRecord[], date: string): boolean {
-  const daySessions = sessions.filter(s => s.date === date);
-  return daySessions.some(s => s.timeOfDay === 'morning')
-      && daySessions.some(s => s.timeOfDay === 'night');
+function isRareEligibleForNewSession(
+  todaysSessions: readonly SessionResult[],   // stored sessions with today's date
+  newTimeOfDay: TimeOfDay,                    // the session about to start
+): boolean {
+  const times = [...todaysSessions.map(s => s.timeOfDay), newTimeOfDay];
+  return times.includes('morning') && times.includes('night');
 }
 ```
 
 Sessions classified `'neither'` count as normal sessions (saved, monsters earned) but do
 not contribute to rare eligibility (req 10.8).
 
-> **Design choice:** Rare eligibility is evaluated at session start, not retroactively. The
-> first session of the day (typically morning) is never rare-eligible because no night
-> session exists yet. The night session (if a morning session was recorded earlier) is
-> rare-eligible. This rewards the child for brushing both times. Dr. Yatin to confirm.
+> **Design choice:** Rare eligibility is decided when the session starts and counts the
+> session that is starting. So tonight's session is rare-eligible when a morning session
+> was saved earlier today. (Corrected 2026-11-15: the earlier version needed a night
+> session to be stored already, which could not be true at the first night session.)
+
+### Monster assignment (req 10.9, 10.10)
+
+```
+assignMonsters(pastSessions, rareEligible):
+  owned    = union of monstersEarned over pastSessions
+  commons  = the 8 common monsters in table order
+  start    = (pastSessions.length × 4) mod 8
+  rotated  = commons from position start, wrapping round
+  ordered  = [commons not owned, in table order] followed by [rotated, owned only]
+  if rareEligible:
+    rare   = first rare in table order not owned, else first rare in table order
+    return [ordered[0], ordered[1], ordered[2], rare]      // rare on the last zone
+  return [ordered[0], ordered[1], ordered[2], ordered[3]]
+```
+
+No randomness. The same past sessions always give the same four monsters.
+
+Table order (req 10.4):
+
+| # | Name | Rarity |
+|---|------|--------|
+| 1 | Plaque Puff | common |
+| 2 | Sugar Sprite | common |
+| 3 | Gummy Gloop | common |
+| 4 | Fuzzlefang | common |
+| 5 | Crumb Goblin | common |
+| 6 | Sticky Wisp | common |
+| 7 | Molar Mumbler | common |
+| 8 | Tartar Tot | common |
+| 9 | Midnight Molar Ghoul | rare |
+| 10 | Dawn Drool Dragon | rare |
+| 11 | Moonlit Mint Phantom | rare |
+| 12 | Twilight Toffee Wraith | rare |
 
 ---
 
