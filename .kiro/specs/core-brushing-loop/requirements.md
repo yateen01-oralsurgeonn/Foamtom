@@ -417,9 +417,12 @@ exactly −3 when the signal matches the active zone (per 5.4), by exactly −2 
 signal is `null`, and by 0 otherwise, never going below zero. Only the active zone's
 monster SHALL change. Health SHALL always be a whole number and SHALL never increase.
 
-13.2 **Session duration:** For any sequence of brushing signals — including none, wrong,
-partial, or all-correct — the total session duration SHALL always be exactly 120 seconds
-(4 × 30 s).
+13.2 **Session duration:** For any sequence of signals, in either mode: after each of
+seconds 1 to 119 the session SHALL still be running and its active zone SHALL be zone
+number floor(seconds done ÷ 30) in the order of requirement 3.2; after second 120 the
+session SHALL have ended; a further second SHALL change nothing. The recorded duration
+SHALL be the count of seconds actually processed, and SHALL equal 120 for every
+completed session. Seconds offered while the session is paused SHALL NOT be counted.
 
 13.3 **Rare monster unlock:** For any set of stored sessions for a calendar day and
 any time of day for the session now starting, the new session SHALL be rare-eligible
@@ -430,8 +433,8 @@ rare-eligible SHALL contain no rare monster. A rare-eligible session SHALL conta
 exactly one rare monster, on the last zone.
 
 13.4 **Stats ceiling:** The total verified brushing time computed from stored sessions
-SHALL never exceed the total elapsed wall-clock time of those sessions. Sessions with
-mode flag "timer-only" SHALL have their seconds-per-zone marked as unverified and SHALL
+SHALL never exceed 30 seconds per zone or 120 seconds per session. Timer-only
+sessions and unverified zones SHALL have their seconds-per-zone marked as unverified and SHALL
 NOT be counted as verified brushing in parent stats or in "zone most often missed". (This
 tests the stats computation logic in `/src/logic/`, not the parent screen UI, which is out
 of scope.)
@@ -442,19 +445,22 @@ return an identical set of sessions.
 
 13.6 **Kind-proximity starting health:** For any history of past sessions, each zone
 monster's starting health SHALL never exceed normal health and SHALL never fall below the
-floor (60% of normal health).
+floor (60% of normal health). Starting health SHALL always be a whole number. In
+guided-timer mode it SHALL always equal normal health.
 
-13.7 **Kind-proximity session duration:** For any history of past sessions and any
-sequence of brushing signals, the total session duration SHALL always be exactly 120
-seconds (4 × 30 s); kind proximity SHALL NOT change it.
+13.7 **Kind-proximity session duration:** Property 13.2 SHALL hold for any history of
+past sessions. Kind proximity SHALL NOT change the duration, the zone order, or the
+time-of-day classification.
 
 13.8 **Kind-proximity "so close" rescue:** For any zone, a monster with 15% of normal
-health or less remaining when its 30 s end SHALL always be counted defeated. A monster
+health or less remaining when its 30 s end SHALL always be marked fled (counted as
+beaten). A monster
 above 15% of normal health at zone end SHALL be trapped (not defeated).
 
-13.9 **Kind-proximity miss-score source:** For any history of sessions, miss scores SHALL
-be derived only from camera-mode sessions (verified seconds per zone below 30).
-Timer-only sessions SHALL NOT change any miss score.
+13.9 **Kind-proximity miss-score source:** For any history of sessions, miss scores
+SHALL depend only on the verified zones of the 7 most recent camera-mode sessions.
+Adding, removing or changing timer-only sessions, unverified zones, or camera-mode
+sessions older than those 7 SHALL NOT change any miss score.
 
 ---
 
@@ -469,19 +475,24 @@ on spots the child often misses, so the child can win there and build the habit 
 brushing that area. It never changes the rules of the session, never pressures the child,
 and never shows guilt.
 
-14.1 THE SYSTEM SHALL compute a miss score per zone from the child's past camera-mode
-sessions on the device. A zone's miss score SHALL be based on the verified seconds
-recorded in that zone that fell below 30. SESSIONS recorded with mode flag "timer-only"
-SHALL NOT contribute to the miss score.
+14.1 THE SYSTEM SHALL compute a miss score per zone from the child's 7 most recent
+camera-mode sessions on the device (fewer if fewer exist), using only zones marked
+verified (requirement 9.3). A zone's miss seconds in one session SHALL be 30 minus its
+brushed seconds minus its untracked seconds, never below zero. A zone's miss score
+SHALL be its total miss seconds divided by (30 × the number of verified results for
+that zone), and SHALL be 0 when there are none. Timer-only sessions and unverified
+zones SHALL NOT contribute.
 
-14.2 WHEN a session starts THE SYSTEM SHALL lower the starting health of each zone's
-monster according to its miss score, with a floor so the monster is never already
-defeated: starting health SHALL never fall below 60% of normal health. The exact scaling
-of miss score to starting health above that floor SHALL be defined in the design.
+14.2 WHEN a camera-mode session starts THE SYSTEM SHALL set each zone monster's
+starting health to normal health × (1 − 0.4 × miss score), rounded to the nearest whole
+number. Starting health SHALL never fall below 60% of normal health and SHALL never
+exceed normal health. In guided-timer mode kind proximity SHALL NOT be applied
+(requirement 8.5).
 
 14.3 WHEN a zone's 30 seconds end AND its monster has 15% of normal health or less
-remaining, THE SYSTEM SHALL mark that monster as DEFEATED (it "flees into smoke") rather
-than trapped — the "so close" rescue. This refines requirement 7.5 for the kind-proximity
+remaining, THE SYSTEM SHALL mark that monster as **fled** (it "flees into smoke")
+rather than trapped. A fled monster SHALL count as beaten everywhere a defeated monster
+does — the "so close" rescue. This refines requirement 7.5 for the kind-proximity
 case.
 
 14.4 THE SYSTEM SHALL NOT change session length (still exactly 120 seconds, 4 × 30
@@ -492,12 +503,14 @@ result of kind proximity.
 to buy. THE SYSTEM SHALL NOT use hidden randomness to manipulate outcomes. THE SYSTEM
 SHALL NOT display "you almost lost" or any guilt message.
 
-14.6 THE PARENT SCREEN (defined in a later spec) SHALL disclose kind proximity in plain
-words: "The game gets easier on spots your child often misses."
+14.6 THE PARENT SCREEN (defined in the parent-screen spec) SHALL disclose kind
+proximity in plain words, using both sentences: 'The game gets easier on spots your
+child often misses.' and 'A monster that is nearly beaten when the time is up counts as
+beaten.'
 
-14.7 THE SYSTEM SHALL store miss scores only in `localStorage` on the device alongside the
-sessions; nothing about miss scores SHALL leave the device. The "Clear all data" button
-SHALL clear miss scores.
+14.7 Miss scores SHALL be worked out from the stored sessions each time a session
+starts. THE SYSTEM SHALL NOT store miss scores separately. The 'Clear all data' button
+clears them because it clears the sessions.
 
 ---
 
