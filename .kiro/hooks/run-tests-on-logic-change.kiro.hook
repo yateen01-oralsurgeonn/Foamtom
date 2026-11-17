@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Run tests on logic change",
+  "description": "When a file under src/logic or tests is saved, run the test suite and report failing tests by name.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/logic/**", "tests/**"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file under src/logic/ or tests/ was saved. Run `npm run test:run`. If every test passes, say so in one line. If any test fails, list each failing test by its full name (file and test title) with the one-line failure message, and for property-based tests include the fast-check counterexample and seed. Do not change any code, tests, specs or steering files. Only report."
+  }
+}

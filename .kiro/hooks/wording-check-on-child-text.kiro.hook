@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Wording check on child-facing text",
+  "description": "When voice lines or UI files are saved, check new or changed child-facing text against the dental wording rules and the content rules.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/audio/lines.ts", "src/ui/**"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file with child-facing text was saved (src/audio/lines.ts or a file under src/ui/). Identify the new or changed text that is shown or spoken to the child (captions, voice lines, labels, alt text). Check it against the 'Wording rules' section of `.kiro/steering/dental-rules.md` (no claims of preventing cavities, curing anything or replacing a dental visit; no clinic name, phone number, address or registration number; monsters only as a playful idea, not a diagnosis) and the 'Content' section of `.kiro/steering/kid-safety-privacy.md` (cute-spooky only, no blood, gore, realistic teeth damage or jump scares; no sudden loud sounds; no text-only instructions, so each instruction needs voice plus a picture; no dark patterns such as streak-loss guilt, pressure timers or purchases). Report each problem as file:line, the offending text, and the rule it breaks. If there are no problems, say so in one line. Do not change any code, specs or steering files. Only report."
+  }
+}

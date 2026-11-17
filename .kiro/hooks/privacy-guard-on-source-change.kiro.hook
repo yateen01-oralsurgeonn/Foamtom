@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Privacy guard on source change",
+  "description": "When a file under src or index.html is saved, run the privacy guard test and report any violation.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/**", "index.html"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file under src/ or index.html was saved. Run `npx vitest run tests/privacy-guard.test.ts`. If it passes, say so in one line. If it fails, state which file violates the guard and which banned item it contains (for example a network call, a stored frame, a cookie, or a third-party script), then point the reader to `.kiro/steering/kid-safety-privacy.md`. Do not change any code, tests, specs or steering files. Only report."
+  }
+}
