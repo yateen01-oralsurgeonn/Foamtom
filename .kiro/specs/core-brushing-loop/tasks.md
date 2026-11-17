@@ -2,115 +2,151 @@
 
 ## Implementation plan
 
-Tasks are ordered: pure logic with property tests first, then storage, then timer-only
-mode integration, then the placeholder screen and camera preview, then voice and
-captions. Each task is small enough for one coding session. Property tests are written in
-the same task as the logic they test — not left to the end.
+Fourteen small tasks. A playable timer-only game exists at task 8 and is live on GitHub
+Pages at task 9. Storage, the Monster Book, miss scores and parent stats come after that
+and are wired into the game in task 14.
 
-Hand tracking, haunted-mirror art, the parent screen, and deployment are handled by later
-specs and are not included here.
+### Rules for every task
+
+- One task per run. One module (or two small ones) plus its tests per task.
+- Every task ends with `npm run test:run` and `npm run build` both passing.
+- A task changes only the files it names. It never edits anything in `.kiro/`.
+- Property tests are written in the same task as the code they test.
+- Test names follow design section 11.
+- Test helpers (arbitraries, fakes) are written inside the test file that uses them. There
+  is no shared helper file.
 
 ---
 
-- [ ] 1. **Project setup**
-  - [ ] 1.1 Scaffold a Vite + TypeScript (strict) project in the repo root
-  - [ ] 1.2 Install Vitest and fast-check as dev dependencies
-  - [ ] 1.3 Create the folder structure from `structure.md`: `src/logic/`, `src/tracking/`, `src/ui/`, `src/audio/`, `src/storage/`, `public/models/`, `public/assets/`, `tests/`
-  - [ ] 1.4 Add npm scripts: `dev` (vite), `build` (tsc + vite build), `test` (vitest), `test:run` (vitest run)
-  - [ ] 1.5 Configure `tsconfig.json` with `strict: true`, target ES2020, module resolution bundler
-  - [ ] 1.6 Verify with `npm run test:run` (no tests yet, should pass with zero tests)
-  - _Requirements: 1.1_
-  - No test file (build configuration only)
+- [ ] 1. **Project setup and guards**
+  - [ ] 1.1 Create `package.json`, `tsconfig.json`, `vite.config.ts`, `index.html` and a shell `src/main.ts` that renders only the game title
+  - [ ] 1.2 Vite + TypeScript with `strict: true`; Vite `base: './'`; set `build.assetsInlineLimit` to `0` so no asset becomes a `data:` URI under the Content-Security-Policy
+  - [ ] 1.3 Install Vitest and fast-check as dev dependencies
+  - [ ] 1.4 Add npm scripts: `dev`, `build` (`tsc --noEmit && vite build`), `test`, `test:run`
+  - [ ] 1.5 Create the folders from `structure.md`: `src/logic/`, `src/tracking/`, `src/ui/`, `src/audio/`, `src/storage/`, `public/models/`, `public/assets/`, `tests/` (keep empty folders in git with a `.gitkeep`)
+  - [ ] 1.6 Add the Content-Security-Policy `<meta>` tag to `index.html`: same-origin scripts, styles, images, media and connections only (req 12.8)
+  - [ ] 1.7 Write the privacy guard test (design test 16, `privacyGuard`) exactly as requirement 13.10 states
+  - [ ] 1.8 Write one smoke test so the test run is never empty
+  - _Requirements: 1.1, 12.7, 12.8, 13.10, 15.6_
+  - Test file: `tests/privacy-guard.test.ts`, `tests/smoke.test.ts`
 
-- [ ] 2. **Shared types and constants**
-  - [ ] 2.1 Define all TypeScript interfaces in `src/logic/types.ts` per section 4 of the design: `BrushingSignal`, `Side`, `Level`, `ZoneId`, `Zone`, `Rarity`, `MonsterOutcome`, `MonsterDef`, `MonsterState`, `SessionMode`, `TimeOfDay`, `SessionState`, `ZoneResult`, `SessionResult`, `MonsterBook`, `MissScores`
-  - [ ] 2.2 Define shared constants in `src/logic/constants.ts`: `ZONE_DURATION = 30`, `ZONE_COUNT = 4`, `SESSION_DURATION = 120`, `H_MAX = 60`, `DAMAGE_PER_SECOND = 3`, `KIND_FLOOR_RATIO = 0.6`, `KIND_FLOOR = 36`, `RESCUE_THRESHOLD = 9`, `ZONE_ORDER`
-  - _Requirements: 1.2, 5.1, 5.2, 5.3_
-  - No test file (type and constant definitions only)
+- [ ] 2. **Types, constants, time of day**
+  - [ ] 2.1 Define all interfaces in `src/logic/types.ts` per design section 4
+  - [ ] 2.2 Define every constant from design section 6 and `ZONE_ORDER` in `src/logic/constants.ts`
+  - [ ] 2.3 Implement `classifyTimeOfDay(hour)` in `src/logic/time-of-day.ts`
+  - [ ] 2.4 Test `timeOfDayAllHours` (design test 14): all 24 hours match the stated ranges
+  - [ ] 2.5 Constants tests: `ZONE_COUNT × ZONE_DURATION == SESSION_DURATION`; `KIND_FLOOR == 36`; `RESCUE_THRESHOLD == 9`; `UNTRACKED_DRAIN × ZONE_DURATION == H_MAX`; `ZONE_ORDER` is upper-right, upper-left, lower-left, lower-right
+  - _Requirements: 1.2, 3.1, 3.2, 5.1, 5.7, 10.5_
+  - Test file: `tests/constants.test.ts`, `tests/time-of-day.test.ts`
 
-- [ ] 3. **Time-of-day classification**
-  - [ ] 3.1 Implement `classifyTimeOfDay(hour: number): TimeOfDay` in `src/logic/time-of-day.ts` — morning 04:00–11:59, night 17:00–23:59, neither otherwise
-  - [ ] 3.2 Property test: for every hour 0–23, classification matches the defined ranges; morning and night ranges are disjoint; neither covers the remainder
-  - _Requirements: 10.5_
-  - Test file: `tests/time-of-day.test.ts`
-
-- [ ] 4. **Monster table and assignment**
-  - [ ] 4.1 Define the 12 monster entries in `src/logic/monsters.ts`: 8 common, 4 rare, each `{ id, name, rarity, unlockRule }`
-  - [ ] 4.2 Implement `assignMonsters(zones, rareEligible)`: picks one monster per zone from the eligible pool (common always eligible; rare only when `rareEligible`)
-  - [ ] 4.3 Implement `resolveMonster(monster)`: at zone end, if still pending, rescue (defeated) when `health ≤ RESCUE_THRESHOLD`, else trapped
-  - [ ] 4.4 Property test: exactly 12 monsters, 8 common and 4 rare; `assignMonsters` never assigns a rare monster when `rareEligible` is false; every zone gets exactly one monster
-  - [ ] 4.5 Property test: at zone end, `health ≤ 9 → outcome == 'defeated'`; `health > 9 → outcome == 'trapped'` (req 13.8)
-  - _Requirements: 7.4, 7.5, 7.6, 10.4, 14.3_
+- [ ] 3. **Monster table, assignment, rescue**
+  - [ ] 3.1 Define the 12 named monsters (8 common, 4 rare) in `src/logic/monsters.ts`, each `{ id, name, rarity, unlockRule }`, in the order of design section 7
+  - [ ] 3.2 Implement `assignMonsters(pastSessions, rareEligible)` by the fixed rule in design section 7, with no randomness
+  - [ ] 3.3 Implement `resolveMonster`: at zone end a pending monster is `fled` at health ≤ 9, else `trapped`
+  - [ ] 3.4 Test `monsterTableAndAssignment` (design test 8)
+  - [ ] 3.5 Test `rescueAtOrBelow9` (design test 5)
+  - _Requirements: 7.5, 7.6, 10.4, 10.9, 10.10, 14.3_
   - Test file: `tests/monsters.test.ts`
 
-- [ ] 5. **Miss scores and kind-proximity starting health**
-  - [ ] 5.1 Implement `computeMissScores(sessions)` in `src/logic/miss-score.ts`: per-zone normalized miss score from camera-mode sessions only; timer-only sessions contribute nothing
-  - [ ] 5.2 Implement `startingHealth(zone, missScores)`: linear scaling from 100% to 60% of `H_MAX` as miss score goes 0 → 1
-  - [ ] 5.3 Property test: for any history of sessions, `36 ≤ startingHealth(zone, missScores) ≤ 60` for every zone (req 13.6)
-  - [ ] 5.4 Property test: miss scores computed only from camera-mode sessions; adding or removing timer-only sessions does not change any miss score (req 13.9)
-  - _Requirements: 14.1, 14.2_
-  - Test file: `tests/miss-score.test.ts`
-
-- [ ] 6. **Session state machine**
-  - [ ] 6.1 Implement `startSession(mode, missScores, now)` in `src/logic/session.ts`: creates 4 zones in order (upper-right → upper-left → lower-left → lower-right), assigns monsters with kind-proximity starting health, classifies time of day, sets `zoneTimeRemaining = 30`
-  - [ ] 6.2 Implement `tick(state, signal)`: advances zone timer, applies camera-mode damage (`DAMAGE_PER_SECOND = 3` per matching tick) or timer-mode drain (computed from elapsed time), checks defeat at health ≤ 0, calls `resolveMonster` at zone end, advances to next zone or ends session
-  - [ ] 6.3 Implement `isBrushing(signal, zone)`: true only when `handNearMouth && moving && side === zone.side && level === zone.level`; `'unknown'` never matches
-  - [ ] 6.4 Implement `toSessionResult(state)`: builds `SessionResult` with per-zone `secondsBrushed` (camera: counted from matching ticks; timer: 30), `verified` flag, `monstersEarned` (defeated + trapped), `durationSeconds = 120`
-  - [ ] 6.5 Property test: monster health decreases only on ticks where `isBrushing(signal, activeZone)` is true (camera mode); timer-mode health decreases every tick and reaches 0 by zone end; health never decreases for a different zone or non-matching signal (req 13.1)
-  - [ ] 6.6 Property test: `toSessionResult(finalState).durationSeconds === 120` for any input sequence of 120 signals including none, wrong, partial, and all-correct (req 13.2)
-  - [ ] 6.7 Property test: kind proximity does not change session duration — `durationSeconds === 120` regardless of miss scores (req 13.7)
-  - _Requirements: 1.3, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 5.4, 5.5, 6.1, 6.3, 7.1, 7.2, 7.3, 7.7, 9.1, 9.2, 9.3_
+- [ ] 4. **Session core**
+  - [ ] 4.1 At the top of `src/logic/session.ts` add two named constants, each with the comment `// TEMPORARY: replaced in task 14`: the rare-eligible value (`false`) and the starting health for every zone (`H_MAX`)
+  - [ ] 4.2 Implement `startSession(input)` exactly as design section 5, except that it uses the two TEMPORARY constants. `monster-book.ts` and `miss-score.ts` do not exist yet and are NOT created in this task
+  - [ ] 4.3 Implement `isBrushing`, `tick`, `pause`, `resume` exactly as design section 5
+  - [ ] 4.4 Test `isBrushingTruthTable` (design test 1)
+  - [ ] 4.5 Test `healthChangesOnlyByTheRule` (design test 2)
+  - [ ] 4.6 Test `sessionIsExactly120Ticks` (design test 3). `toSessionResult` does not exist yet, so assert tick count and phase here; the `durationSeconds == 120` check moves to task 5
+  - [ ] 4.7 Test `timerOnlyDefeatsEveryMonsterAt30` (design test 4). The "result has 30 brushed, 0 untracked, unverified" check moves to task 5; here assert health, outcome and the defeat tick
+  - _Requirements: 1.3, 2.1–2.6, 3.3–3.5, 5.2–5.6, 6.1, 6.3, 7.1–7.4, 7.7, 8.2, 8.5_
   - Test file: `tests/session.test.ts`
 
-- [ ] 7. **Monster Book unlocks**
-  - [ ] 7.1 Implement `isRareEligible(sessions, date)` in `src/logic/monster-book.ts`: true only when the day has ≥ 1 morning AND ≥ 1 night session
-  - [ ] 7.2 Implement `computeMonsterBook(sessions)`: union of all `monstersEarned` across sessions
-  - [ ] 7.3 Property test: rare eligibility is true only when ≥ 1 morning AND ≥ 1 night session exist on that day; sessions classified `'neither'` do not contribute; no rare monster unlocks when not eligible (req 13.3)
-  - _Requirements: 10.1, 10.2, 10.3, 10.6, 10.7, 10.8_
+- [ ] 5. **Session result and view**
+  - [ ] 5.1 Implement `toSessionResult(state)` in `src/logic/session-result.ts` per design section 5
+  - [ ] 5.2 Implement `toView(state)` in `src/logic/view.ts`: `{ phase, zoneId, countdown, captionLineId, monsterId, healthFraction, smokeFraction }`. Document the `captionLineId` values it can produce, so task 7 can match them
+  - [ ] 5.3 Test `resultInvariants` (design test 6)
+  - [ ] 5.4 Test `smokeChangesNothingThatCounts` (design test 7)
+  - [ ] 5.5 Test `viewMatchesState` (design test 18)
+  - [ ] 5.6 Carry-over from task 4: a completed session has `durationSeconds == 120`; a timer-only result has 30 brushed, 0 untracked and every zone unverified
+  - _Requirements: 7.8, 9.1–9.3, 10.1–10.3, 11.3, 11.4_
+  - Test file: `tests/session-result.test.ts`, `tests/view.test.ts`
+
+- [ ] 6. **Signal source and game loop**
+  - [ ] 6.1 Define the `SignalSource` interface and `nullSignalSource` (`'unavailable'`, `null`) in `src/tracking/signal-source.ts`
+  - [ ] 6.2 Implement `src/ui/game-loop.ts` as in design section 3: clock, scheduler, visibility source and wake-lock helper are all passed in; the loop is given a function that builds the session from the mode, because the mode is known only after `start()` answers or 8 s pass
+  - [ ] 6.3 Test `gameLoopExactTicks` (design test 15)
+  - [ ] 6.4 Test: `start()` is called exactly once per session
+  - [ ] 6.5 Test: `stop()` is called at the end of the session and when the tab is hidden
+  - [ ] 6.6 Test: a source that is not ready within 8 s gives a timer-only session
+  - _Requirements: 2.6, 2.7, 8.1, 8.3, 11.6, 13.12, 15.2, 15.3, 15.4_
+  - Test file: `tests/game-loop.test.ts`
+
+- [ ] 7. **Voice lines and wording guard**
+  - [ ] 7.1 Write `src/audio/lines.ts` with lines `{ id, text, caption }` for: the start button, the four zones, the smoke line ("Keep brushing! Brush the smoke away!"), and the end card
+  - [ ] 7.2 Make the line ids match the `captionLineId` values that `toView` produces (task 5), and check this in the test
+  - [ ] 7.3 Test `wordingGuard` (design test 17)
+  - _Requirements: 4.1–4.3, 4.5, 6.2, 12.1–12.6, 13.11_
+  - Test file: `tests/lines.test.ts`
+
+- [ ] 8. **Session screen, wired up (PLAYABLE timer-only game)**
+  - [ ] 8.1 `src/ui/session-screen.ts`: start button (large, with an icon, ≥ 48 px); a simple drawn monster over the active zone; countdown; caption; smoke after a defeat; everything painted from `toView(state)`
+  - [ ] 8.2 `src/ui/end-card.ts`: the session's four monsters, the closing line caption, one button back to the start screen, no urge to play again
+  - [ ] 8.3 `src/main.ts`: wire the clock, `nullSignalSource`, the browser's visibility and wake-lock adapters, the game loop and the screens. A session dropped after 60 s hidden returns to the start screen. No storage yet: `pastSessions` is an empty list
+  - [ ] 8.4 `index.html` and `src/ui/styles.css`: portrait layout, usable in landscape and on desktop, no "rotate" block; colour is never the only signal. Link the stylesheet from `index.html` and set styles through classes or `element.style`, so the Content-Security-Policy from task 1 stays same-origin only
+  - [ ] 8.5 Captions only in this task. Speech comes in task 9, and the game is not published before then (req 4.3)
+  - [ ] 8.6 Check by hand: `npm run dev`, tap start, watch a full 2-minute timer-only session through to the end card
+  - _Requirements: 8.4, 11.2–11.5, 11.7–11.11, 15.1, 15.5_
+  - Test file: none new (the logic it paints is already tested); the privacy guard must still pass
+
+- [ ] 9. **Speaker and first deployment (LIVE LINK)**
+  - [ ] 9.1 `src/audio/speaker.ts`: pure `rampGain(msSinceStart)`; a pure voice chooser that picks only a voice marked local; play a clip if present, else a local Web Speech voice, else caption only
+  - [ ] 9.2 Wire the speaker into `src/ui/session-screen.ts`, `src/ui/end-card.ts` and `src/main.ts` so that every captioned line is also spoken: start button, zone lines, smoke line, end card. The start tap unlocks sound
+  - [ ] 9.3 `.github/workflows/pages.yml`: on push, run `npm run test:run`, run `npm run build`, publish `dist/` to GitHub Pages
+  - [ ] 9.4 `README.md`: what the game is, the privacy line ("The camera stays on this phone. Nothing is saved or sent."), how to run it, MIT licence. No clinic name, phone number, address or registration number; no health claims
+  - [ ] 9.5 Test `rampGainIsGentle` (design test 19)
+  - [ ] 9.6 Test: a non-local voice is never chosen
+  - [ ] 9.7 Check by hand after the first push: the Pages link opens and a timer-only session plays with sound (the repo's Pages source must be set to GitHub Actions in its settings)
+  - _Requirements: 4.1, 4.3, 4.4, 7.8, 11.5, 12.9, 15.1, 15.6_
+  - Test file: `tests/speaker.test.ts`
+  - `LICENSE` already exists in the repo root; do not create or change it.
+
+- [ ] 10. **Storage**
+  - [ ] 10.1 Implement `createStorage(backend)` in `src/storage/storage.ts` with `saveSession`, `loadSessions`, `clearAll`; key `foamtom:v1`; schema per design section 8
+  - [ ] 10.2 Missing, unreadable or other-version data loads as no sessions; a throwing backend never throws out of save or load
+  - [ ] 10.3 Test `storageRoundTrip` (design test 13)
+  - _Requirements: 9.4–9.7, 14.7_
+  - Test file: `tests/storage.test.ts`
+
+- [ ] 11. **Monster Book logic**
+  - [ ] 11.1 Implement `isRareEligibleForNewSession(todaysSessions, newTimeOfDay)` in `src/logic/monster-book.ts`
+  - [ ] 11.2 Implement `computeMonsterBook(sessions)`: the union of `monstersEarned`
+  - [ ] 11.3 Test `rareNeedsMorningAndNightCountingNewSession` (design test 9)
+  - [ ] 11.4 Test: `computeMonsterBook` is the union of `monstersEarned`
+  - _Requirements: 10.1–10.3, 10.6–10.8_
   - Test file: `tests/monster-book.test.ts`
 
-- [ ] 8. **Parent stats computation**
-  - [ ] 8.1 Implement `computeVerifiedTime(sessions)` in `src/logic/stats.ts`: total verified seconds across all camera-mode sessions
-  - [ ] 8.2 Implement `zoneMostMissed(sessions)`: zone with the highest miss from camera-mode sessions
-  - [ ] 8.3 Property test: `computeVerifiedTime(sessions) ≤ sessions.length × 120`; timer-only sessions contribute 0 verified seconds (req 13.4)
+- [ ] 12. **Miss scores and starting health**
+  - [ ] 12.1 Implement `computeMissScores(sessions)` in `src/logic/miss-score.ts`: verified zones of the 7 most recent camera-mode sessions only
+  - [ ] 12.2 Implement `startingHealth(zone, missScores)`: linear, rounded, clamped to 36–60
+  - [ ] 12.3 Test `missScoreSources` (design test 10)
+  - [ ] 12.4 Test `startingHealthBounds` (design test 11)
+  - _Requirements: 14.1, 14.2, 14.4, 14.5_
+  - Test file: `tests/miss-score.test.ts`
+
+- [ ] 13. **Parent stats (logic only)**
+  - [ ] 13.1 Implement `computeVerifiedTime(sessions)` and `zoneMostMissed(sessions)` in `src/logic/stats.ts`
+  - [ ] 13.2 Test `statsCeiling` (design test 12)
+  - [ ] 13.3 Test: `zoneMostMissed` uses verified zones only
   - _Requirements: 13.4_
   - Test file: `tests/stats.test.ts`
 
-- [ ] 9. **Storage layer**
-  - [ ] 9.1 Implement `StorageData` schema (version, sessions, missScores) with localStorage key `foamtom:v1` in `src/storage/storage.ts`
-  - [ ] 9.2 Implement `saveSession(result)`, `loadSessions()`, `saveMissScores(scores)`, `loadMissScores()`, `clearAll()`
-  - [ ] 9.3 Handle `QuotaExceededError` and blocked localStorage gracefully (in-memory fallback, no crash)
-  - [ ] 9.4 Schema versioning: discard old data with console warning if version is missing or lower
-  - [ ] 9.5 Property test: `loadSessions(saveSessions(input))` deep-equals `input` using a mock localStorage (req 13.5)
-  - _Requirements: 9.4, 9.5, 9.6, 9.7, 14.7_
-  - Test file: `tests/storage.test.ts`
+- [ ] 14. **Wire memory in**
+  - [ ] 14.1 In `src/logic/session.ts`, remove the two TEMPORARY constants from task 4. `startSession` now uses `isRareEligibleForNewSession`, `computeMissScores` and `startingHealth` (timer-only still starts every monster at `H_MAX`)
+  - [ ] 14.2 In `src/main.ts`, load past sessions at start and save the result at the end. The end card already shows the session's four monsters from task 8; `end-card.ts` does not change
+  - [ ] 14.3 Update `tests/session.test.ts` only if a test needs the new behaviour
+  - [ ] 14.4 Integration test with a fake backend and fake clock, composing the same calls `main.ts` makes (load, `startSession`, ticks, `toSessionResult`, save), without importing `main.ts`: play a morning timer-only session, then a night one on the same date. Both are saved; the second is rare-eligible and has exactly one rare monster, on the last zone; a third session's commons follow the assignment rule
+  - [ ] 14.5 Check by hand: `npm run dev`, play two sessions, reload the page, confirm the saved sessions change which monsters appear
+  - _Requirements: 8.4, 9.4, 10.6, 10.9, 15.5_
+  - Test file: `tests/integration.test.ts`, `tests/session.test.ts` (only if needed)
 
-- [ ] 10. **Timer-only mode integration**
-  - [ ] 10.1 Implement placeholder stub in `src/tracking/tracking.ts`: returns `null` (no camera available); real tracking in a later spec
-  - [ ] 10.2 Integration test: full 120-second timer-only session — 4 zones advance correctly, all monsters defeated, `secondsBrushed = 30` per zone, `verified = false`, `durationSeconds = 120`, `monstersEarned` contains all 4 monster ids
-  - [ ] 10.3 Integration test: mode selection — when tracking returns `null`, session starts in timer-only mode; no camera re-request or nag (req 8.3)
-  - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
-  - Test file: `tests/timer-only.test.ts`
+---
 
-- [ ] 11. **Placeholder screen and camera preview**
-  - [ ] 11.1 Display mirrored live `<video>` of front camera when permission is granted; show screen without preview when not (req 11.1–11.2)
-  - [ ] 11.2 Draw one monster over the active zone on a canvas above the video (req 11.3)
-  - [ ] 11.3 Display countdown timer showing remaining seconds in the current zone (req 11.4)
-  - 11.4 Display zone name as caption when a zone becomes active (req 11.5)
-  - [ ] 11.5 Stop camera stream immediately when session ends or tab becomes hidden (req 11.6)
-  - [ ] 11.6 Enforce privacy: no frame, image, video, landmark, or derived measurement sent over network, saved, or logged; no screenshot, recording, or share features (req 11.7–11.8)
-  - [ ] 11.7 Portrait orientation, touch targets ≥ 48 px, colour is never the only signal (req 11.9–11.11)
-  - [ ] 11.8 No nag, prompt, or interruption when tracking is uncertain or absent (req 6.2)
-  - [ ] 11.9 Verify 20+ fps on target hardware (req 11.12)
-  - _Requirements: 6.2, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11, 11.12_
-  - No test file (UI verification; visual and manual)
-
-- [ ] 12. **Voice lines and captions**
-  - [ ] 12.1 Define the voice line table in `src/audio/lines.ts`: every line has `{ id, text, caption }`; zone announcements ("A ghoul is hiding upper left!") and all spoken instructions
-  - [ ] 12.2 Ensure every spoken line has a visible caption and every visible instruction has a spoken equivalent (req 4.3)
-  - [ ] 12.3 Implement playback with gentle volume ramping — no sudden loud sounds (req 4.4)
-  - [ ] 12.4 Provide a Web Speech API fallback when pre-recorded clips are not loaded
-  - [ ] 12.5 Wording must be cute-spooky only, with no medical claims, no clinic details, and only dental-rule-approved phrases (req 12.1–12.5)
-  - [ ] 12.6 Unit test: every entry in the lines table has a non-empty caption; no line is text-only
-  - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 12.1, 12.2, 12.3, 12.4, 12.5_
-  - Test file: `tests/lines.test.ts`
+Later specs, not in this file: `hand-tracking`, `mirror-and-screens`, `parent-screen`.
