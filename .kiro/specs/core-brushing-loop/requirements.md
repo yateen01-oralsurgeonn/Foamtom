@@ -19,18 +19,21 @@ every rule below be property-tested with fast-check without a browser or camera.
    and Monster Book unlock rules (rare monsters need a morning AND a night session on
    the same day).
 2. **Guided-timer mode** (no camera) running the full session with identical logic.
-3. **A plain placeholder screen:** mirrored camera preview if allowed, one monster drawn
-   over the active zone, a countdown, the zone name spoken and captioned.
+3. **A plain session screen:** a start button, one monster drawn over the active zone,
+   a countdown, the zone name spoken and captioned, and an end card. No camera preview in
+   this spec.
 4. **Property-based tests** (fast-check) for every property listed in `tech.md`.
+5. **A runnable app:** an entry page, one game loop, and a first
+   deployment to GitHub Pages, so that a timer-only game can be played from a link.
 
 ### Out of scope (handled by other specs or later work)
 
-- Haunted-mirror art and CSS frame design.
-- Real MediaPipe hand/face tracking (the tracking layer that produces the brushing
-  signal).
-- The parent screen (UI, stats display, adult gate, "Clear all data" button).
-- Deployment, build configuration, and model-file loading.
-- Monster Book browsing UI (collection gallery, rarity badges, etc.).
+- Real hand tracking, the camera preview, and model-file loading: the `hand-tracking`
+  spec.
+- Haunted-mirror art, the title screen, and the Monster Book screen: the
+  `mirror-and-screens` spec.
+- The parent screen (adult gate, facts, disclosure, 'Clear all data'): the
+  `parent-screen` spec.
 
 ### Steering references
 
@@ -72,11 +75,18 @@ advancing to the next zone.
 
 2.3 WHEN the fourth zone reaches zero THE SYSTEM SHALL end the session.
 
-2.4 THE SYSTEM SHALL NOT extend or shorten the total session duration, regardless of the
-brushing signal received.
+2.4 THE SYSTEM SHALL NOT extend or shorten the session: it is always exactly 120
+seconds of active (tab visible) session time, regardless of the brushing signal.
 
 2.5 IF the child stops brushing or brushes the wrong zone THE SYSTEM SHALL still advance
 the zone timer to zero and move on; the timer shall never pause or stall.
+
+2.6 WHEN the browser tab becomes hidden THE SYSTEM SHALL pause the session; WHEN the
+tab becomes visible again THE SYSTEM SHALL resume it from the same second. A pause is
+not 'the child not brushing' (requirement 2.5 still holds while visible).
+
+2.7 IF the tab stays hidden for more than 60 seconds THE SYSTEM SHALL drop the session
+without saving it and SHALL return to the start screen.
 
 ---
 
@@ -329,20 +339,20 @@ and the same start time SHALL always give the same four monsters.
 
 ---
 
-### 11. Placeholder screen
+### 11. Session screen (plain)
 
 **As a child, I want to see myself in the mirror with a monster on the part I need to
 brush, so that I know where to brush next.**
 
-> This requirement covers a plain, functional placeholder screen only. Haunted-mirror
+> This requirement covers a plain, functional session screen only. Haunted-mirror
 > art, CSS frame design, fog, candle flicker, and cracked-glass effects are out of scope
 > for this spec.
 
-11.1 IF camera permission is granted THE SYSTEM SHALL display a mirrored live preview of
-the front camera.
+11.1 (Moved to the `hand-tracking` spec: mirrored live preview
+of the front camera.)
 
-11.2 IF camera permission is not granted THE SYSTEM SHALL display the placeholder screen
-without a camera preview (guided-timer mode).
+11.2 THE SYSTEM SHALL display the session screen without a camera
+preview in this spec.
 
 11.3 WHILE a session is active THE SYSTEM SHALL draw one monster over the active zone on
 the screen.
@@ -362,14 +372,16 @@ logged.
 
 11.8 THE SYSTEM SHALL NOT provide screenshot, recording, or "share your mirror" features.
 
-11.9 THE SYSTEM SHALL operate in portrait orientation.
+11.9 THE SYSTEM SHALL be laid out for portrait, SHALL remain
+usable in landscape and in a desktop browser, and SHALL NOT show a 'rotate your
+device' block.
 
 11.10 THE SYSTEM SHALL provide touch targets of at least 48 px.
 
 11.11 THE SYSTEM SHALL NOT use colour as the only signal for any information.
 
-11.12 THE SYSTEM SHALL run at 20+ fps on a mid-range Android phone (2022) in Chrome with
-this placeholder screen.
+11.12 (Moved to the `hand-tracking` spec: 20+ fps with the
+camera on, checked by hand on a real phone.)
 
 ---
 
@@ -399,6 +411,13 @@ session.
 
 12.7 THE SYSTEM SHALL NOT include analytics, trackers, cookies, ads, or third-party
 scripts.
+
+12.8 THE SYSTEM SHALL ship a Content-Security-Policy in the entry page that allows
+only same-origin scripts, styles, images, media and connections.
+
+12.9 THE SYSTEM SHALL use Web Speech voices only when the voice is marked as a local
+(on-device) voice. IF no local voice exists THE SYSTEM SHALL show the caption without
+speech.
 
 ---
 
@@ -462,6 +481,22 @@ SHALL depend only on the verified zones of the 7 most recent camera-mode session
 Adding, removing or changing timer-only sessions, unverified zones, or camera-mode
 sessions older than those 7 SHALL NOT change any miss score.
 
+13.10 **Privacy guard:** A test SHALL read every file under `/src/` and fail if it
+finds any of: `fetch(`, `XMLHttpRequest`, `sendBeacon`, `WebSocket`, `EventSource`,
+`toDataURL`, `toBlob`, `MediaRecorder`, `captureStream`, `document.cookie`,
+`Math.random` inside `/src/logic/`, or any string starting `http://` or `https://` (the one
+exception is the SVG namespace `http://www.w3.org/2000/svg`). The same test SHALL fail if any file under `/src/logic/` imports from `/src/ui/`,
+`/src/tracking/`, `/src/storage/` or `/src/audio/`.
+
+13.11 **Wording guard:** A test SHALL check every line in `src/audio/lines.ts`: each
+has a non-empty caption; none contains a word from a banned list (prevent, cure,
+cavity-free, guarantee, diagnose, clinic, doctor, almost, lost, lose, failed, missed);
+none mentions the camera or the light.
+
+13.12 **Game loop:** With a fake clock, for any pattern of late or bunched timer
+callbacks, 120 seconds of visible time SHALL produce exactly 120 ticks; hidden time
+SHALL produce none; more than 60 seconds hidden SHALL drop the session.
+
 ---
 
 ### 14. Kind proximity
@@ -514,6 +549,37 @@ clears them because it clears the sessions.
 
 ---
 
+### 15. Runnable app
+
+**As a child, I want to tap one big button and have the game start, so that I can play
+without a grown-up.**
+
+15.1 THE SYSTEM SHALL show a start screen with one large start button that has an icon,
+a spoken line and a caption. The tap on this button SHALL be the one that starts sound
+and, in a later spec, asks for the camera.
+
+15.2 THE SYSTEM SHALL have exactly one module that owns a timer (`src/ui/game-loop.ts`).
+It SHALL be driven by elapsed clock time, not by counting timer callbacks, and SHALL
+take its clock as an input so that tests can use a fake clock.
+
+15.3 THE SYSTEM SHALL reach the camera and tracker only through one interface,
+`SignalSource`, with three operations: start (answers 'ready' or 'unavailable'),
+latest (the signal for the last full second, or `null`), and stop. This spec SHALL
+provide only a source that always answers 'unavailable' and `null`.
+
+15.4 WHEN a session starts THE SYSTEM SHALL ask the browser to keep the screen awake,
+SHALL release that request when the session ends or the tab is hidden, and SHALL carry
+on without any message if the browser refuses.
+
+15.5 WHEN a session ends THE SYSTEM SHALL show an end card with the session's four
+monsters, a spoken and captioned closing line, and one button that returns to the start
+screen. The end card SHALL NOT urge the child to play again.
+
+15.6 THE SYSTEM SHALL build to a static folder that works when served from a
+sub-path (GitHub Pages), using relative asset paths.
+
+---
+
 ## Decisions (2026-11-14)
 
 The following items were confirmed with Dr. Yatin Shinde on 14 November 2026 and are
@@ -539,3 +605,21 @@ reflected in the requirements above.
    10.4).
 
 7. **Kind proximity adopted:** see requirement 14.
+
+
+## Decisions (2026-11-15)
+
+Confirmed with Dr. Yatin Shinde on 15 November 2026 after the spec review
+(`docs/review/SPEC-REVIEW-v1.md`).
+
+1. Zone order re-confirmed (requirement 3.2).
+2. Every monster met goes into the Monster Book, beaten or not (requirement 10.2).
+3. After a monster is beaten: 'Keep brushing! Brush the smoke away!' (requirement 7.8).
+4. Tracker cannot see: 2 health per second; a zone with more than 10 untracked seconds
+   is unverified (requirements 6.3, 7.7, 9.3).
+5. Kind proximity keeps the 60% floor and the 15% rescue, and looks at the 7 most
+   recent camera-mode sessions (requirement 14.1).
+6. Scope: four specs (core-brushing-loop, hand-tracking, mirror-and-screens,
+   parent-screen).
+7. If the hand-tracking test shows upper and lower cannot be told apart: side-only
+   checking, and parents are told (requirement 5.7).
