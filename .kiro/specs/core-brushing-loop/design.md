@@ -3,22 +3,29 @@
 ## 1. Overview
 
 This design covers the pure game logic for a 2-minute brushing session (4 zones × 30 s),
-the guided-timer fallback when no camera is available, a plain placeholder screen, and the
-property-based tests that guard the logic.
+the guided-timer fallback when no camera is available, a plain session screen, a runnable
+app (one game loop, one `SignalSource` interface, simple storage), and the property-based
+tests that guard the logic.
 
 All game logic lives in pure modules under `/src/logic/` with no DOM or camera access. The
-only thing that crosses the boundary from the outside world is a per-second brushing signal
-(or its absence in guided-timer mode). This separation lets every rule be property-tested
-with fast-check without a browser or camera.
+only thing that crosses the boundary from the outside world is one brushing signal per
+second, or `null` when the tracker cannot see the child (in guided-timer mode every signal
+is `null`). This separation lets every rule be property-tested with fast-check without a
+browser or camera.
 
 **Key design decisions (all flagged "Design choice" inline for Dr. Yatin's review):**
 
-- Tick granularity is 1 second (not per-frame) to keep the logic and tests simple.
-- `H_MAX = 60`, `DAMAGE_PER_SECOND = 3`: a normal monster is defeated after 20 s of matching brushing.
-- Linear kind-proximity scaling from 100% to 60% of `H_MAX`.
-- Timer-mode drain is computed from elapsed time, not accumulated.
-- Rare eligibility is evaluated at session start, not retroactively.
-- Tab-hidden pauses the zone timer (distinct from "child not brushing").
+- Tick granularity is 1 second.
+- `H_MAX = 60`, `DAMAGE_PER_SECOND = 3`: a normal monster is defeated after 20 s of
+  matching brushing.
+- One tick rule for both modes: a `null` signal drains 2 per second.
+- Linear kind-proximity scaling from 100% to 60% of `H_MAX`, from the last 7 camera
+  sessions.
+- Rare eligibility is decided at session start and counts the session that is starting.
+- Monsters are chosen by a fixed rule, never at random.
+- `src/ui/game-loop.ts` is the only module that owns a timer.
+- The camera and tracker sit behind one interface, `SignalSource`.
+- Tab hidden pauses the session; more than 60 s hidden drops it.
 
 ---
 
@@ -26,11 +33,17 @@ with fast-check without a browser or camera.
 
 ```mermaid
 graph TD
+    subgraph Shell ["Shell — src/main.ts"]
+        MAIN["main.ts<br/>reads the clock and localStorage once,<br/>wires the parts together"]
+    end
     subgraph Tracking ["Tracking — src/tracking"]
-        CAM["Camera + MediaPipe<br/>→ BrushingSignal | null"]
+        CAM["signal-source.ts<br/>SignalSource interface + nullSignalSource<br/>(real camera in the hand-tracking spec)"]
     end
     subgraph Logic ["Pure Game Logic — src/logic"]
         SESSION["session.ts<br/>state machine, tick"]
+        RESULT["session-result.ts<br/>toSessionResult"]
+        VIEW["view.ts<br/>toView"]
+        CONST["constants.ts"]
         MONSTERS["monsters.ts<br/>monster table, health,<br/>defeat / trap / rescue"]
         BOOK["monster-book.ts<br/>unlock rules,<br/>rare eligibility"]
         MISS["miss-score.ts<br/>miss score,<br/>starting health"]
@@ -42,35 +55,41 @@ graph TD
         STORE["storage.ts<br/>localStorage wrapper<br/>schema v1"]
     end
     subgraph UI ["UI — src/ui"]
-        SCREEN["placeholder-screen.ts<br/>preview, monster,<br/>countdown, caption"]
+        LOOP["game-loop.ts<br/>the only timer"]
+        SCREEN["session-screen.ts<br/>start button, monster,<br/>countdown, caption"]
+        ENDCARD["end-card.ts"]
     end
     subgraph Audio ["Audio — src/audio"]
         LINES["lines.ts<br/>voice lines + captions"]
+        SPEAKER["speaker.ts<br/>rampGain"]
     end
 
-    CAM -- "BrushingSignal | null (per second)" --> SESSION
+    CAM -- "latest() once per second" --> LOOP
+    LOOP -- "tick(state, signal)" --> SESSION
     SESSION --> MONSTERS
     SESSION --> TOD
     MISS --> SESSION
     SESSION --> BOOK
     SESSION --> STATS
-    SESSION -- "SessionState" --> SCREEN
-    SCREEN -- "play line" --> LINES
-    SESSION -- "SessionResult" --> STORE
-    STORE -- "past sessions" --> MISS
-    STORE -- "past sessions" --> STATS
-    STORE -- "past sessions" --> BOOK
+    SESSION -- "SessionState" --> VIEW
+    VIEW -- "toView(state)" --> SCREEN
+    SCREEN -- "play line" --> SPEAKER
+    SPEAKER --> LINES
+    LOOP -- "toSessionResult" --> RESULT
+    RESULT -- "SessionResult" --> STORE
+    STORE -- "past sessions" --> MAIN
+    MAIN -- "startSession" --> SESSION
 ```
 
-**Data flow:** The tracking layer produces one `BrushingSignal` (or `null`) per second.
-The UI calls `tick(state, signal)` each second. The logic updates state and the UI renders
-it. When the session ends, the logic produces a `SessionResult` that the storage layer
-persists. Before a new session, `miss-score.ts` reads past sessions to compute starting
-health adjustments.
+**Data flow:** `main.ts` loads past sessions and calls `startSession`. Once per second of
+visible time, `game-loop.ts` asks the `SignalSource` for the latest signal and calls
+`tick`. `toView(state)` turns the state into plain values that the screen paints. When the
+session ends, `toSessionResult` builds the result and storage saves it.
 
 The dashed boundary around "Pure Game Logic" is the property-testable surface: everything
 inside it has no DOM, no camera, no network, and no `Date` dependency. Inputs are plain
-data; outputs are plain data.
+data; outputs are plain data. Nothing under `src/logic/` imports from `src/ui/`,
+`src/tracking/`, `src/storage/` or `src/audio/`.
 
 ---
 
@@ -80,17 +99,32 @@ Modules matching `structure.md`. One concept per file, kebab-case names.
 
 | Module | Responsibility |
 |--------|---------------|
-| `src/logic/types.ts` | Shared TypeScript interfaces: `BrushingSignal`, `Zone`, `MonsterDef`, `MonsterState`, `SessionState`, `SessionResult`, `ZoneResult`, `MonsterBook`, `MissScores`, `TimeOfDay`, `SessionMode`. No logic, no DOM. |
-| `src/logic/session.ts` | Session state machine: `startSession`, `tick`, `toSessionResult`. Zone advancement, timer countdown, damage/drain application, defeat/trap/resolve. Pure functions — same input always produces same output, no side effects. |
-| `src/logic/monsters.ts` | Monster table (12 entries: 8 common, 4 rare), each `{ id, name, rarity, unlockRule }`. `assignMonsters(zones, rareEligible)`: picks one monster per zone from the eligible pool. `resolveMonster(state)`: applies defeat, trap, or rescue at zone end. |
-| `src/logic/monster-book.ts` | `computeMonsterBook(sessions)`: union of all `monstersEarned` across sessions. `isRareEligible(sessions, date)`: returns true only when the day has ≥ 1 morning AND ≥ 1 night session. |
-| `src/logic/miss-score.ts` | `computeMissScores(sessions)`: per-zone normalized miss score from camera-mode sessions only. `startingHealth(zone, missScores)`: applies kind-proximity scaling with the 60% floor. |
+| `src/logic/types.ts` | Shared TypeScript interfaces: `BrushingSignal`, `Zone`, `MonsterDef`, `MonsterState`, `SessionState`, `StartInput`, `SessionResult`, `ZoneResult`, `MonsterBook`, `MissScores` (derived, never stored), `TimeOfDay`, `SessionMode`. No logic, no DOM. |
+| `src/logic/constants.ts` | All constants from section 6 and `ZONE_ORDER`. |
+| `src/logic/session.ts` | Session state machine: `startSession`, `isBrushing`, `tick`, `pause`, `resume`. Zone advancement, timer countdown, damage/drain application, defeat/trap/resolve. Pure functions — same input always produces same output, no side effects. |
+| `src/logic/session-result.ts` | `toSessionResult(state)`. |
+| `src/logic/view.ts` | `toView(state)` → `{ phase, zoneId, countdown, captionLineId, monsterId, healthFraction, smokeFraction }`. Pure; this is what the screen tests check. |
+| `src/logic/monsters.ts` | Monster table (12 entries: 8 common, 4 rare), each `{ id, name, rarity, unlockRule }`. `assignMonsters(pastSessions, rareEligible)`: picks one monster per zone by the fixed rule (section 7). `resolveMonster(state)`: applies defeat, trap, or rescue at zone end. |
+| `src/logic/monster-book.ts` | `computeMonsterBook(sessions)`: union of all `monstersEarned` across sessions. `isRareEligibleForNewSession(todaysSessions, newTimeOfDay)`: true only when the stored sessions of the day plus the new one include ≥ 1 morning AND ≥ 1 night session. |
+| `src/logic/miss-score.ts` | `computeMissScores(sessions)`: per-zone miss score from the last 7 camera sessions, verified zones only. `startingHealth(zone, missScores)`: kind-proximity scaling, rounded, 36 to 60. |
 | `src/logic/time-of-day.ts` | `classifyTimeOfDay(hour)`: returns `'morning'`, `'night'`, or `'neither'` from the session start hour (0–23). Pure — no `Date` object needed. |
 | `src/logic/stats.ts` | `computeVerifiedTime(sessions)`: total verified seconds across all sessions. `zoneMostMissed(sessions)`: zone with the highest miss from camera-mode sessions. Pure. (Parent screen UI is out of scope; only the computation is here.) |
-| `src/storage/storage.ts` | `saveSession(result)`, `loadSessions()`, `saveMissScores(scores)`, `loadMissScores()`, `clearAll()`. Schema versioning. localStorage only. Throws caught by caller. |
-| `src/tracking/tracking.ts` | Camera + MediaPipe → `BrushingSignal`. Placeholder stub for this spec (real tracking in another spec). Returns `null` when camera unavailable or quality is poor. |
-| `src/ui/placeholder-screen.ts` | Mirrored camera preview (if allowed), one monster drawn over the active zone, countdown, zone caption. Portrait orientation, 48 px touch targets, no colour-only signals. |
+| `src/storage/storage.ts` | `createStorage(backend)` returning `saveSession(result)`, `loadSessions()`, `clearAll()`. `backend` is anything with `getItem`, `setItem`, `removeItem`. No global access inside the module. |
+| `src/tracking/signal-source.ts` | The `SignalSource` interface (below) and `nullSignalSource`, which answers `'unavailable'` and `null`. |
+| `src/ui/game-loop.ts` | The only timer. Inputs: a clock (`now()`), a scheduler, a `SignalSource`, a visibility source, a wake-lock helper, and callbacks for "state changed", "ended" and "dropped". Emits one tick per whole second of visible elapsed time, catching up if a callback is late. Pauses when hidden; drops the session after 60 s hidden; asks for the wake lock at start and releases it at end or when hidden. |
+| `src/ui/session-screen.ts` | Start button, monster over the active zone, countdown, caption. Paints `toView(state)`. No camera preview in this spec. |
+| `src/ui/end-card.ts` | The session's four monsters, closing line, one button back to the start screen. |
 | `src/audio/lines.ts` | Voice line table: `{ id, text, caption }`. Every line has a caption. Zone announcements and all spoken instructions live here. |
+| `src/audio/speaker.ts` | Plays a line: a clip if present, else a local Web Speech voice, else caption only. Contains the pure `rampGain(msSinceStart)` used for the gentle volume ramp. |
+| `src/main.ts` | Wiring only. |
+
+```typescript
+interface SignalSource {
+  start(): Promise<'ready' | 'unavailable'>;  // asks for the camera once
+  latest(): BrushingSignal | null;            // signal for the last full second
+  stop(): void;                               // stops the camera stream
+}
+```
 
 ---
 
@@ -520,37 +554,20 @@ Table order (req 10.4):
 // src/storage/storage.ts
 
 interface StorageData {
-  readonly version: 1;                    // schema version
-  readonly sessions: SessionRecord[];     // all past sessions
-  readonly missScores: MissScores;         // per-zone [0, 1], updated after each camera session
-}
-
-// SessionRecord mirrors SessionResult for storage (req 9.1, 9.5).
-interface SessionRecord {
-  readonly date: string;          // YYYY-MM-DD
-  readonly timeOfDay: TimeOfDay;
-  readonly mode: SessionMode;
-  readonly zoneResults: readonly ZoneResult[];
-  readonly monstersEarned: readonly string[];
-  readonly startedAt: number;     // epoch ms
-  readonly durationSeconds: number;  // always 120
+  readonly version: 1;
+  readonly sessions: SessionResult[];
 }
 ```
 
-- **localStorage key:** `foamtom:v1`.
-- **Version:** The `version` field allows future migration. On load, if `version` is
-  missing or lower than current, the loader discards old data with a console warning (for
-  v1 there are no prior versions to migrate from).
-- **Monster Book** is derived from `sessions` (union of all `monstersEarned`), not stored
-  separately. This keeps stored data to exactly what req 9.5 permits: sessions + miss
-  scores.
-- **Miss scores** are stored denormalized alongside sessions (req 14.7). They are
-  recomputed and saved after each camera-mode session. The "Clear all data" button calls
-  `clearAll()`, which removes both sessions and miss scores.
+Stored sessions are `SessionResult` values (section 4). Storage imports its types from
+`src/logic/types.ts`; logic never imports from storage.
 
-> **Design choice:** Miss scores are stored denormalized (they are also derivable from
-> sessions) for O(1) lookup at session start without scanning all past sessions. They are
-> recomputed after each camera-mode session to stay consistent. Dr. Yatin to confirm.
+- localStorage key `foamtom:v1`.
+- If stored data is missing, unreadable, or has a different `version`, the loader returns
+  no sessions. No migration code in v1.
+- Monster Book and miss scores are derived from `sessions` each time. Nothing else is
+  stored (req 9.5, 14.7).
+- `clearAll()` removes the key.
 
 ---
 
@@ -558,45 +575,38 @@ interface SessionRecord {
 
 | Condition | Behaviour | Requirement |
 |-----------|-----------|-------------|
-| **Camera permission refused** | Switch to timer-only mode. No prompt, no nag, no retry. Session runs fully. | 8.1, 8.3, kid-safety |
-| **Camera unavailable** (no device, API missing) | Same as refused: timer-only mode. | 8.1 |
-| **Poor light / tracking quality** | Tracking layer returns `null` signal. Logic treats the tick as timer-only drain. If `null` persists for an entire zone (30 s), the UI silently switches the mode indicator to timer-only. No nag to the child. | 6.1–6.3, 8.1 |
-| **Tab hidden** (`document.hidden`) | Camera stream stops immediately. Zone timer pauses. When the tab returns, camera restarts (if camera mode) and timer resumes. No data lost. | 11.6, kid-safety |
-| **`localStorage` full** (`QuotaExceededError`) | Session result is not saved. Game continues to work; Monster Book only reflects the current session. No crash, no nag. | 9.4, kid-safety |
-| **`localStorage` blocked** (private browsing, disabled) | Same as full: in-memory only. Game works fully for the session; nothing persists. | 9.4, kid-safety |
+| **Camera permission refused / unavailable** (no device, API missing) | Switch to timer-only mode. No prompt, no nag, no retry. Session runs fully. A page not served over HTTPS counts as unavailable. | 8.1, 8.3, kid-safety |
+| **Camera not ready within 8 s of the start tap** (permission box left open, slow model load) | The session starts in timer-only mode. No second request in that session. | 8.1 |
+| **Poor light / no face / child out of frame** | The signal is `null` for those seconds. The tick rule drains 2 per second and counts them as untracked. A zone with more than 10 untracked seconds is saved as unverified. Nothing is said to the child. | 6.3, 9.3 |
+| **Tab hidden** (`document.hidden`) | Camera stream stops. Session pauses (`pause`). On return within 60 s it resumes from the same second. After more than 60 s hidden the session is dropped, not saved, and the app shows the start screen. | 2.6, 2.7, 11.6 |
+| **`localStorage` full or blocked** | Save and load are wrapped in try/catch. On failure the game plays on and nothing is saved. No in-memory copy, no message to the child. | 9.4, kid-safety |
+| **Screen wake lock refused or not supported** | Carry on silently. | 15.4 |
 
 > **Design choice (tab hidden):** The zone timer pauses when the tab is hidden because the
 > child cannot see the screen. This is distinct from req 2.5, which covers the child not
 > brushing (the timer must not pause for that). Tab-hidden is a visibility event: the
 > child left the screen, so the timer pauses and resumes on return. Approved by Dr. Yatin
-> 2026-11-14.
-
-> **Design choice (poor light, sustained):** If tracking returns `null` for an entire zone,
-> the UI silently switches the mode indicator to timer-only so the parent knows the session
-> was unverified. The switch is silent (no nag to the child). Whether to switch mid-session
-> or wait for the next session is a UI detail left to implementation. Approved by Dr. Yatin
-> 2026-11-14.
+> 2026-11-14. A 60 s limit was added on 2026-11-15.
 
 ---
 
-## 10. Placeholder screen (req 11)
+## 10. Session screen (plain) (req 11, 15)
 
 A plain, functional screen. Haunted-mirror art, CSS frame, fog, candle flicker, and
 cracked-glass effects are out of scope for this spec.
 
-- **Camera preview:** If permission granted, show a mirrored live `<video>` of the front
-  camera. If not, show the screen without a preview (timer-only mode). (req 11.1–11.2)
-- **Monster:** Draw one monster over the active zone on a canvas above the video. (req 11.3)
-- **Countdown:** Display remaining seconds in the current zone. (req 11.4)
-- **Zone caption:** Display the zone name as a caption and speak it aloud when the zone
-  becomes active. (req 11.5, 4.1–4.5)
-- **Camera stop:** Stop the camera stream immediately when the session ends or the tab
-  becomes hidden. (req 11.6)
+- **Start screen:** one large button with an icon, a spoken line and a caption. Its tap
+  unlocks sound.
+- **Session:** one monster over the active zone, the countdown, the zone caption, smoke
+  after a defeat. Everything painted comes from `toView(state)`.
+- **End card:** the four monsters, a closing line, one button back to the start screen.
+- **No camera preview** in this spec (hand-tracking spec).
+- **Layout:** for portrait; usable in landscape and on desktop; no rotate block. Touch
+  targets ≥ 48 px. Colour is never the only signal.
+- **Content-Security-Policy:** the entry page carries one allowing same-origin only
+  (req 12.8).
 - **Privacy:** No frame, image, video, landmark, or derived measurement is sent over the
   network, saved, or logged. No screenshot, recording, or share features. (req 11.7–11.8)
-- **Layout:** Portrait orientation. Touch targets ≥ 48 px. Colour is never the only signal.
-  (req 11.9–11.11)
-- **Performance:** 20+ fps on a mid-range Android phone (2022) in Chrome. (req 11.12)
 
 ---
 
