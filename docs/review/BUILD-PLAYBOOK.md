@@ -236,6 +236,24 @@ bonus `kiroween2026` 0 / 4000 used, 46 days left. `kiro-cli` prints no credit li
 |---|---|---|---|---|---|---|---|---|---|
 | 17 Nov | Preflight, run 0 | one-line probe: run `git status --short` | bonus 0 | - | - | - | no file changed | none | Proves the shell tool name. |
 | 17 Nov | A, run 1 | `c01-req-signal-and-untracked.md` | - | bonus 0.39 (runs 0 and 1 together) | 0.39 | 5 | **no file changed** | none | **STOPPED: Kiro reported two conflicts with steering and edited nothing.** (1) New 8.1 (mode fixed, poor light handled second by second) against `kid-safety-privacy.md` "the light is too poor to track, the game switches to guided-timer mode". (2) "per-second signal" and `null` against `tech.md` "per-frame signal". Conflict 2 is what prompt `s01` fixes, so `s01` must run before `c01`. Conflict 1 needs a one-bullet steering edit: draft prompt `s02-steering-poor-light.md`, waiting for Dr. Yatin's yes. |
+| 17 Nov | A, run 2 | `s01-steering-small-edits.md` (moved before c01) | - | - | - | 5 | only `tech.md`, `structure.md` changed | 9d8e7f5 | Clean. |
+| 17 Nov | A, run 3 | `s02-steering-poor-light.md` (new; Dr. Yatin's yes 17 Nov) | - | - | - | 5 | only `kid-safety-privacy.md` changed | fcd0602 | Clean. Fixes conflict 1 above. |
+| 17 Nov | A, run 4 | `c01` (second try) | - | - | - | 5 | only `requirements.md` | dcd19bf | Clean. Kiro noted: 6.1 still says "absent"; 13.4 not yet aligned (c03 fixed 13.4). |
+| 17 Nov | A, run 5 | `c02` | - | - | - | 5 | only `requirements.md` | 5c2b07a | Clean. New smoke wording went in. |
+| 17 Nov | A, run 6 | `c03` | - | - | - | 5 | only `requirements.md` | a932dce | Clean. |
+| 17 Nov | A, run 7 | `c04` | - | - | - | 5 | only `requirements.md` | 6e274d1 | Clean. Kiro tried a shell command and was denied (file tools only); it used the write tool instead. Intro still says "placeholder screen". |
+| 17 Nov | A, run 8 | `d01` | - | - | - | 5 | only `design.md` | dd0b62e | Clean. Kiro added one line to `startSession` (`monsters = ...`) that the prompt left undefined. |
+| 17 Nov | A, run 9 | `d02` | - | - | - | 5 | only `design.md` | 165a452 | Clean. |
+| 17 Nov | A, run 10 | `d03` | - | - | - | 5 | only `design.md` | af80c60 | Clean. Added `speaker.ts` to the diagram unasked (it is in the module list, so fine). |
+| 17 Nov | A, run 11 | `d04` | - | - | - | 5 | only `design.md` | 0e6b093 | Clean. Kiro added "(stopping at 0 ...)" to test 2: correct. |
+| 17 Nov | A, run 12 | `h01` | - | - | - | 5 | 3 new files in `.kiro/hooks/` | 8239df7 | Format: `*.kiro.hook` JSON, `when.type: fileEdited`, `then.type: askAgent`. **Not yet proven to fire** in the Kiro IDE. |
+| 17 Nov | A, run 13 | `t01` (first try) | - | - | - | 5 | **no file changed** | none | **STOPPED, correctly:** speaker built in task 9 but never wired to the screens. Dr. Yatin chose to fix it inside task 9. Prompt edited (commit after 8239df7). |
+| 17 Nov | A, run 14 | `t01` (second try) | - | 16.81 (bonus) | - | 5 | only `tasks.md`; 14 tasks, 86 boxes, TEMPORARY constants in 4.1 and 14.1 | 5994297 | Clean. Kiro moved the `durationSeconds` checks of design tests 3 and 4 to task 5.6 (correct: `toSessionResult` is built in task 5). |
+
+**Stage A total (runs 0-14, 15 Kiro calls, 13 commits to `.kiro/`): 16.81 bonus credits**,
+against a budget of 55. The usage page gives no per-run figure, so per-run "Used" is left
+blank; average about 1.1 credits per run. Model: `auto` (default). Scale the stage B
+budget in section 7 down with care: build runs read and write far more than spec runs.
 
 ## 9. Checks only a person can do
 
