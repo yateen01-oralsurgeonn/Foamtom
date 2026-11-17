@@ -70,7 +70,6 @@ graph TD
     SESSION --> TOD
     MISS --> SESSION
     SESSION --> BOOK
-    SESSION --> STATS
     SESSION -- "SessionState" --> VIEW
     VIEW -- "toView(state)" --> SCREEN
     SCREEN -- "play line" --> SPEAKER
@@ -86,7 +85,7 @@ visible time, `game-loop.ts` asks the `SignalSource` for the latest signal and c
 `tick`. `toView(state)` turns the state into plain values that the screen paints. When the
 session ends, `toSessionResult` builds the result and storage saves it.
 
-The dashed boundary around "Pure Game Logic" is the property-testable surface: everything
+The "Pure Game Logic" box is the property-testable surface: everything
 inside it has no DOM, no camera, no network, and no `Date` dependency. Inputs are plain
 data; outputs are plain data. Nothing under `src/logic/` imports from `src/ui/`,
 `src/tracking/`, `src/storage/` or `src/audio/`.
@@ -612,9 +611,9 @@ cracked-glass effects are out of scope for this spec.
 
 ## 11. Testing strategy
 
-All tests use **fast-check** property-based tests in `/tests/`. Each property holds for any
-arbitrary input. The pure logic functions take plain data and return plain data, so no
-browser or camera is needed.
+Tests live in `/tests/` and use Vitest. Tests on pure logic are fast-check property tests,
+except tests 1 and 14, which check every possible input instead of sampling. Tests 15 to 17
+use fakes or read source files. No browser or camera is needed.
 
 | # | Test name | Req | Input | Assertion |
 |---|---|---|---|---|

@@ -4,12 +4,12 @@
 
 This spec defines the core brushing loop for **Foamtom: The Haunted Mirror**: the pure
 game logic that drives a 2-minute session, the guided-timer fallback when no camera is
-available, a minimal placeholder screen, and the property-based tests that guard the
+available, a plain session screen, a runnable app, and the property-based tests that guard the
 logic.
 
 The game logic lives entirely in `/src/logic/` and is **pure** — no DOM, no camera, no
 network access. The only thing that crosses the boundary from the outside world is a
-per-second brushing signal (or, in guided-timer mode, its absence). This separation lets
+per-second brushing signal, or `null` when the tracker cannot see the child (in guided-timer mode every signal is `null`). This separation lets
 every rule below be property-tested with fast-check without a browser or camera.
 
 ### In scope
@@ -54,11 +54,11 @@ access, so that every rule can be property-tested without a browser.**
 session-result logic in modules under `/src/logic/` that have no DOM or camera access.
 
 1.2 THE SYSTEM SHALL accept only the per-second brushing signal (defined in requirement 5)
-or its absence as input to game logic; nothing else from the camera or DOM shall cross
+or `null` as input to game logic; nothing else from the camera or DOM shall cross
 into game logic.
 
 1.3 THE SYSTEM SHALL make guided-timer mode use the same game-logic modules as camera
-mode, with the tracking signal absent.
+mode, with every signal treated as `null` (requirement 5.2).
 
 ---
 
@@ -176,11 +176,11 @@ cannot be told apart.
 **As a parent, I want the game to give my child credit when tracking is uncertain, so that
 a bad camera angle does not punish them.**
 
-6.1 IF the tracking signal is absent or any field is `unknown` THE SYSTEM SHALL continue
+6.1 IF the signal is `null` or any field is `unknown` THE SYSTEM SHALL continue
 running the active zone timer; the timer SHALL NOT pause or stall.
 
 6.2 THE SYSTEM SHALL NOT nag, prompt, or interrupt the child when tracking is uncertain
-or absent.
+or the signal is `null`.
 
 6.3 IF the signal is present and does not fully match the active zone (per 5.4),
 including when any field is `unknown`, THE SYSTEM SHALL NOT reduce the active monster's
@@ -453,8 +453,8 @@ exactly one rare monster, on the last zone.
 
 13.4 **Stats ceiling:** The total verified brushing time computed from stored sessions
 SHALL never exceed 30 seconds per zone or 120 seconds per session. Timer-only
-sessions and unverified zones SHALL have their seconds-per-zone marked as unverified and SHALL
-NOT be counted as verified brushing in parent stats or in "zone most often missed". (This
+sessions and unverified zones SHALL NOT be counted as verified brushing in parent stats or
+in "zone most often missed". (This
 tests the stats computation logic in `/src/logic/`, not the parent screen UI, which is out
 of scope.)
 
