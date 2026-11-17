@@ -96,6 +96,8 @@ Modules matching `structure.md`. One concept per file, kebab-case names.
 
 ## 4. TypeScript types
 
+Logic never touches `Date`, `Math.random`, the DOM or storage. `main.ts` reads the clock once and passes plain values in.
+
 All types live in `src/logic/types.ts`. Field names match the requirements verbatim.
 
 ```typescript
@@ -126,7 +128,7 @@ interface Zone {
 
 // ── Monster (req 7, 10) ──
 type Rarity = 'common' | 'rare';
-type MonsterOutcome = 'pending' | 'defeated' | 'trapped';
+type MonsterOutcome = 'pending' | 'defeated' | 'fled' | 'trapped';
 
 // Static definition — lives in the src/logic/monsters.ts table (req 7.6, 10.4).
 interface MonsterDef {
@@ -140,10 +142,11 @@ interface MonsterDef {
 interface MonsterState {
   readonly def: MonsterDef;
   readonly zoneId: ZoneId;
-  health: number;               // current, clamped to [0, startingHealth]
+  readonly health: number;               // current, clamped to [0, startingHealth]
   readonly startingHealth: number;  // after kind-proximity adjustment
   readonly maxHealth: number;       // H_MAX (normal health)
-  outcome: MonsterOutcome;
+  readonly outcome: MonsterOutcome;
+  readonly defeatedAtElapsed: number | null;  // seconds into the zone when health reached zero; null if it has not
 }
 
 // ── Session state (req 2, 5) ──
@@ -154,14 +157,27 @@ type TimeOfDay = 'morning' | 'night' | 'neither';
 interface SessionState {
   readonly mode: SessionMode;
   readonly zones: readonly Zone[];          // 4 zones, ordered per req 3.2
-  activeZoneIndex: number;                   // 0–3
-  zoneTimeRemaining: number;                  // seconds left in current zone (30 → 0)
-  readonly monsters: MonsterState[];         // one per zone
-  readonly secondsBrushedPerZone: number[];   // [0,0,0,0], increments when signal matches
+  readonly activeZoneIndex: number;                   // 0–3
+  readonly zoneTimeRemaining: number;                  // seconds left in current zone (30 → 0)
+  readonly monsters: readonly MonsterState[];         // one per zone
+  readonly secondsBrushedPerZone: readonly number[];   // [0,0,0,0], increments when signal matches
+  readonly secondsUntrackedPerZone: readonly number[]; // [0,0,0,0], increments when the signal is null
+  // Brushed or untracked seconds counted after that zone's monster was defeated; used only for drawing.
+  readonly secondsSmokeClearedPerZone: readonly number[];
+  readonly ticksDone: number;                         // 0 to 120
   readonly startedAt: number;                 // epoch ms
   readonly date: string;                      // YYYY-MM-DD
   readonly timeOfDay: TimeOfDay;
-  isRunning: boolean;
+  readonly phase: 'running' | 'paused' | 'ended';
+}
+
+// ── Start input (plain values only) ──
+interface StartInput {
+  readonly mode: SessionMode;
+  readonly startedAt: number;   // epoch ms, read once by main.ts
+  readonly date: string;        // YYYY-MM-DD, local, read once by main.ts
+  readonly hour: number;        // 0–23, local
+  readonly pastSessions: readonly SessionResult[];
 }
 
 // ── Session result (req 9) ──
@@ -169,9 +185,10 @@ interface SessionState {
 interface ZoneResult {
   readonly zoneId: ZoneId;
   readonly monsterId: string;
-  readonly secondsBrushed: number;  // 0–30; verified seconds (camera) or 30 (timer-only)
-  readonly verified: boolean;       // true only in camera mode for matched time
-  readonly monsterOutcome: 'defeated' | 'trapped';
+  readonly secondsBrushed: number;  // matched seconds (camera) or 30 (timer-only)
+  readonly secondsUntracked: number;
+  readonly verified: boolean;       // true only in camera mode when secondsUntracked ≤ 10
+  readonly monsterOutcome: 'defeated' | 'fled' | 'trapped';
 }
 
 // Produced when the session ends.
@@ -182,7 +199,7 @@ interface SessionResult {
   readonly zoneResults: readonly ZoneResult[];
   readonly monstersEarned: readonly string[];
   readonly startedAt: number;     // epoch ms
-  readonly durationSeconds: number;  // always 120
+  readonly durationSeconds: number;  // ticks processed; 120 for every completed session
 }
 
 // ── Monster Book (req 10) ──
@@ -200,76 +217,55 @@ type MissScores = Record<ZoneId, number>;
 
 ## 5. Session state machine
 
-The state machine is **identical** for camera and timer-only modes. The only difference is
-in `tick` behaviour: camera mode applies damage only when the signal fully matches the
-active zone; timer mode drains health every tick regardless of signal.
+The state machine is the same for both modes and there is one tick rule. In timer-only mode every signal is treated as `null`.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Idle
-    Idle --> Zone0: startSession(mode, missScores, now)
-    Zone0 --> Zone1: zoneTimer = 0 → resolve monster
-    Zone1 --> Zone2: zoneTimer = 0 → resolve monster
-    Zone2 --> Zone3: zoneTimer = 0 → resolve monster
-    Zone3 --> Ended: zoneTimer = 0 → resolve monster
-    Ended --> [*]: toSessionResult → save
-
-    note right of Zone0
-        Each tick (1 s):
-        1. zoneTimeRemaining--
-        2. Camera + signal matches: health -= 3
-           Timer: health = startHealth × (elapsed/30)
-        3. If health ≤ 0: defeated
-        4. If zoneTimer = 0:
-           health ≤ 9 → defeated (rescue)
-           health > 9 → trapped
-           advance or end
-    end note
+    [*] --> running: startSession(input)
+    state running {
+        [*] --> Zone0
+        Zone0 --> Zone1: zone timer reaches 0 → resolve monster
+        Zone1 --> Zone2: zone timer reaches 0 → resolve monster
+        Zone2 --> Zone3: zone timer reaches 0 → resolve monster
+    }
+    running --> paused: pause()
+    paused --> running: resume()
+    running --> ended: zone 3 timer reaches 0 → resolve monster
+    ended --> [*]: toSessionResult → save
 ```
 
 ### Tick pseudocode
 
 ```
 tick(state, signal):
-  if not state.isRunning: return state
+  if state.phase != 'running': return state          // paused or ended: no change
+  s = (state.mode == 'timer-only') ? null : signal
+  zone, monster = the active zone and its monster
+  elapsed = ZONE_DURATION - state.zoneTimeRemaining + 1
 
-  zone    = state.zones[state.activeZoneIndex]
-  monster = state.monsters[state.activeZoneIndex]
+  if s == null:                 damage = UNTRACKED_DRAIN (2); untracked[zone] += 1; progress = true
+  else if isBrushing(s, zone):  damage = DAMAGE_PER_SECOND (3); brushed[zone] += 1; progress = true
+  else:                         damage = 0; progress = false
 
-  // 1. Advance zone timer (never pauses — req 2.5)
-  state.zoneTimeRemaining -= 1
-  elapsed = ZONE_DURATION - state.zoneTimeRemaining
+  if monster.outcome == 'defeated':
+    if progress: smokeCleared[zone] += 1             // drawing only
+  else:
+    monster.health = max(0, monster.health - damage)
+    if monster.health == 0:
+      monster.outcome = 'defeated'; monster.defeatedAtElapsed = elapsed
 
-  // 2. Apply damage / drain
-  if state.mode == 'camera':
-    if isBrushing(signal, zone):          // req 5.4
-      monster.health -= DAMAGE_PER_SECOND
-      state.secondsBrushedPerZone[zone.index] += 1
-    // else: no damage (req 7.3)
-  else:  // timer-only (req 7.7)
-    monster.health = monster.startingHealth * (1 - elapsed / ZONE_DURATION)
+  zoneTimeRemaining -= 1; ticksDone += 1
 
-  monster.health = clamp(monster.health, 0, monster.startingHealth)
-
-  // 3. Defeat check (req 7.4)
-  if monster.health <= 0 and monster.outcome == 'pending':
-    monster.outcome = 'defeated'
-
-  // 4. Zone end (req 7.5, 14.3)
-  if state.zoneTimeRemaining == 0:
+  if zoneTimeRemaining == 0:
     if monster.outcome == 'pending':
-      if monster.health <= RESCUE_THRESHOLD:   // 15% rescue
-        monster.outcome = 'defeated'
-      else:
-        monster.outcome = 'trapped'
-    if state.activeZoneIndex == 3:
-      state.isRunning = false
-    else:
-      state.activeZoneIndex += 1
-      state.zoneTimeRemaining = ZONE_DURATION
+      monster.outcome = (monster.health <= RESCUE_THRESHOLD) ? 'fled' : 'trapped'
+    if this was zone 3: phase = 'ended'
+    else: activeZoneIndex += 1; zoneTimeRemaining = ZONE_DURATION
 
-  return state
+  return a NEW state object (the input state is not changed)
 ```
+
+Health only ever goes down, and by whole numbers.
 
 ### `isBrushing(signal, zone)` — req 5.4–5.5, 6.3
 
@@ -279,44 +275,48 @@ isBrushing(signal, zone):
     and signal.handNearMouth == true
     and signal.moving == true
     and signal.side == zone.side          // 'unknown' never matches
-    and signal.level == zone.level        // 'unknown' never matches
+    and (REQUIRE_LEVEL_MATCH == false or signal.level == zone.level)   // 'unknown' never matches when checked (req 5.7)
 ```
 
-When any field is `'unknown'`, the signal does not match (req 6.3). The zone timer still
+When any checked field is `'unknown'`, the signal does not match (req 6.3). The zone timer still
 runs (req 6.1). No nag is shown (req 6.2).
+
+`pause(state)`: running → paused, otherwise unchanged. `resume(state)`: paused →
+running, otherwise unchanged. Both return a new state. (req 2.6)
 
 ### `toSessionResult(state)` — req 9.1–9.3
 
-Called when `state.isRunning == false`. Builds a `SessionResult` from the final state:
+- Only valid when `phase == 'ended'`.
+- Timer-only: each zone has `secondsBrushed = 30`, `secondsUntracked = 0`,
+  `verified = false`.
+- Camera: `secondsBrushed` and `secondsUntracked` are the counted values;
+  `verified = (secondsUntracked <= UNTRACKED_LIMIT)`. (req 9.3)
+- `monstersEarned` = the ids of all four monsters (req 10.1, 10.2).
+- `durationSeconds = ticksDone`.
 
-- Each zone's `secondsBrushed` comes from `secondsBrushedPerZone[i]` (camera mode) or `30`
-  (timer mode).
-- `verified = true` for camera mode, `false` for timer mode.
-- `monstersEarned` = all monster ids whose outcome is `'defeated'` or `'trapped'` (req
-  10.1–10.2).
-- `durationSeconds = 120` always.
-
-### `startSession(mode, missScores, now)` — req 2.1, 3.2, 14.2
+### `startSession(input: StartInput)` — req 2.1, 3.2, 14.2
 
 ```
-startSession(mode, missScores, now):
-  zones = ZONE_ORDER.map((id, i) => makeZone(id, i))
-  date = formatDate(now)            // YYYY-MM-DD
-  timeOfDay = classifyTimeOfDay(now.getHours())
-  monsters = zones.map(zone => makeMonster(zone, missScores, rareEligible))
-  return { mode, zones, activeZoneIndex: 0, zoneTimeRemaining: 30,
-           monsters, secondsBrushedPerZone: [0,0,0,0],
-           startedAt: now.getTime(), date, timeOfDay, isRunning: true }
+startSession(input):
+  zones       = ZONE_ORDER.map(makeZone)
+  timeOfDay   = classifyTimeOfDay(input.hour)
+  today       = input.pastSessions.filter(s => s.date == input.date)
+  rare        = isRareEligibleForNewSession(today, timeOfDay)
+  defs        = assignMonsters(input.pastSessions, rare)        // fixed rule, no randomness
+  missScores  = computeMissScores(input.pastSessions)
+  health(z)   = input.mode == 'timer-only' ? H_MAX : startingHealth(z, missScores)
+  monsters    = zones.map(z => makeMonster(defs[z.index], z, health(z)))
+  return { mode, zones, activeZoneIndex: 0, zoneTimeRemaining: 30, monsters,
+           secondsBrushedPerZone: [0,0,0,0], secondsUntrackedPerZone: [0,0,0,0],
+           secondsSmokeClearedPerZone: [0,0,0,0], ticksDone: 0,
+           startedAt: input.startedAt, date: input.date, timeOfDay, phase: 'running' }
 ```
-
-`makeMonster` sets `startingHealth` via kind-proximity scaling (section 6) and assigns a
-monster from `monsters.ts` based on `rareEligible`.
 
 > **Design choice:** The logic processes 1-second ticks. Per-frame camera signals (20+ fps)
-> are aggregated by the tracking layer into one signal per second before being passed to
+> are aggregated by the tracking layer (the rule is defined in the `hand-tracking` spec) into one signal per second before being passed to
 > `tick`. This keeps the logic simple and testable (120 ticks per session, not 2400). The
 > UI may interpolate the countdown and monster health between ticks for smoothness — that
-> is a rendering concern, not a logic one. Dr. Yatin to confirm.
+> is a rendering concern, not a logic one. Confirmed by Dr. Yatin 2026-11-15.
 
 ---
 
