@@ -207,6 +207,13 @@ see the child) THE SYSTEM SHALL reduce the active monster's health by 2 per seco
 untracked drain), so that a normal-strength monster reaches zero at exactly 30 seconds of
 untracked time. Health SHALL never increase.
 
+7.8 WHEN a monster is defeated before its zone's 30 seconds end THE SYSTEM SHALL keep
+that monster's smoke over the zone until the zone ends, and SHALL speak and caption,
+once, the line 'Keep brushing! Brush the smoke away!'. WHILE the smoke is shown, each
+brushed second and each untracked second SHALL thin the smoke. The smoke SHALL carry no
+win or lose: no outcome, reward, stored value or message SHALL depend on how much smoke
+is left, and the zone SHALL still end at 30 seconds.
+
 ---
 
 ### 8. Guided-timer mode
@@ -280,27 +287,45 @@ when I brush morning and night, so that I have a reason to come back.**
 for the Monster Book.
 
 10.2 WHEN the session ends at 2:00 THE SYSTEM SHALL mark all remaining trapped monsters as
-earned for the Monster Book.
+earned for the Monster Book. Every monster met in a session goes into the Monster Book
+whether or not it was beaten, so that a tracking mistake can never cost a child a monster.
 
 10.3 THE SYSTEM SHALL add all earned monsters from the session to the Monster Book.
 
 10.4 THE SYSTEM SHALL define exactly 12 monster designs — 8 common and 4 rare — each
-with an id, name, rarity, and unlock rule, in one table (`src/logic/monsters.ts`).
+with an id, name, rarity, and unlock rule, in one table (`src/logic/monsters.ts`). Common: Plaque Puff, Sugar Sprite,
+Gummy Gloop, Fuzzlefang, Crumb Goblin, Sticky Wisp, Molar Mumbler, Tartar Tot. Rare:
+Midnight Molar Ghoul, Dawn Drool Dragon, Moonlit Mint Phantom, Twilight Toffee Wraith.
 
 10.5 WHEN a session starts THE SYSTEM SHALL record the time of day as **morning**,
 **night**, or **neither** based on the session start time in local time: morning =
 04:00–11:59, night = 17:00–23:59, neither = any other time (00:00–03:59 or
 12:00–16:59).
 
-10.6 IF a day has at least one morning session AND at least one night session THE SYSTEM
-SHALL make rare monsters eligible to unlock for that day.
+10.6 WHEN a session starts, IF the sessions already stored for that calendar day,
+together with the session now starting, include at least one morning session AND at
+least one night session, THE SYSTEM SHALL treat the session now starting as
+rare-eligible.
 
-10.7 IF a day does not have both a morning and a night session THE SYSTEM SHALL NOT unlock
-rare monsters for that day.
+10.7 IF the session now starting is not rare-eligible THE SYSTEM SHALL NOT place a
+rare monster in it.
 
 10.8 SESSIONS recorded as **neither** (outside morning and night hours) SHALL count as
 normal sessions (saved, monsters earned) but SHALL NOT count toward the morning+night
 requirement for rare-monster eligibility.
+
+10.9 WHEN a session starts THE SYSTEM SHALL choose its four monsters by this fixed
+rule. Common monsters the child does not yet own come first, in table order, followed
+by common monsters already owned, in table order starting from position
+((number of stored sessions × 4) mod 8) and wrapping round, so that a child who owns
+them all still sees all eight in turn. IF the session is rare-eligible, exactly one rare
+monster (the first rare monster in table order that the child does not yet own, or the
+first in table order if all are owned) SHALL take the last zone (lower right) and the
+first three zones SHALL take common monsters. The four monsters in a session SHALL all
+be different.
+
+10.10 THE SYSTEM SHALL NOT use randomness to choose monsters. The same stored sessions
+and the same start time SHALL always give the same four monsters.
 
 ---
 
@@ -396,12 +421,13 @@ monster SHALL change. Health SHALL always be a whole number and SHALL never incr
 partial, or all-correct — the total session duration SHALL always be exactly 120 seconds
 (4 × 30 s).
 
-13.3 **Rare monster unlock:** A rare monster SHALL unlock only when the set of sessions
-for a given calendar day includes at least one morning session (start time 04:00–11:59
-local) AND at least one night session (start time 17:00–23:59 local). Sessions started at
-other times (00:00–03:59 or 12:00–16:59) SHALL count as neither and SHALL NOT contribute to
-rare-monster eligibility. For any set of sessions on a day without both a morning and a
-night session, no rare monster SHALL unlock.
+13.3 **Rare monster unlock:** For any set of stored sessions for a calendar day and
+any time of day for the session now starting, the new session SHALL be rare-eligible
+only when the stored sessions together with the new one include at least one morning
+session (start 04:00–11:59 local) AND at least one night session (start 17:00–23:59
+local). Sessions classified as neither SHALL NOT contribute. A session that is not
+rare-eligible SHALL contain no rare monster. A rare-eligible session SHALL contain
+exactly one rare monster, on the last zone.
 
 13.4 **Stats ceiling:** The total verified brushing time computed from stored sessions
 SHALL never exceed the total elapsed wall-clock time of those sessions. Sessions with
