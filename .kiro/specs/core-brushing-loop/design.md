@@ -616,28 +616,38 @@ All tests use **fast-check** property-based tests in `/tests/`. Each property ho
 arbitrary input. The pure logic functions take plain data and return plain data, so no
 browser or camera is needed.
 
-| # | Test name | Req | Arbitrary input | Property assertion |
-|---|-----------|-----|----------------|-------------------|
-| 1 | `monsterHealthOnlyDecreasesWhenOwnZoneBrushed` | 13.1 | Array of 120 `BrushingSignal \| null` (both modes) | Camera: health decreases only on ticks where `isBrushing(signal, activeZone)` is true. Timer: health decreases every tick and reaches 0 by zone end. Health never decreases while a different zone is active, signal doesn't match, or signal has `unknown` fields. |
-| 2 | `totalSessionDurationAlways120` | 13.2 | Array of 120 `BrushingSignal \| null` (none, wrong, partial, all-correct) | `toSessionResult(finalState).durationSeconds === 120` for all inputs. |
-| 3 | `rareMonsterUnlockRequiresMorningAndNight` | 13.3 | Array of `SessionRecord` on one day with random `timeOfDay` | `isRareEligible(sessions, date)` is true only when ≥ 1 morning AND ≥ 1 night session exist. Rare monsters in `monstersEarned` only when eligible. |
-| 4 | `statsNeverExceedElapsed` | 13.4 | Array of `SessionRecord` (mixed modes, random seconds per zone) | `computeVerifiedTime(sessions) ≤ sessions.length × 120`. Timer-only sessions contribute 0 verified seconds. |
-| 5 | `storageRoundTripPreservesSessions` | 13.5 | Array of `SessionRecord` with random modes and verified/unverified flags | `loadSessions(saveSessions(input))` deep-equals `input`. Uses a mock `localStorage`. |
-| 6 | `kindProximityStartingHealthWithinBounds` | 13.6 | Array of past `SessionRecord` (mixed modes) | For every zone: `36 ≤ startingHealth(zone, missScores) ≤ 60` (60% floor to 100% of `H_MAX`). |
-| 7 | `kindProximityDoesNotChangeDuration` | 13.7 | Array of past sessions + array of 120 signals | `toSessionResult(finalState).durationSeconds === 120` regardless of miss scores. |
-| 8 | `soCloseRescueAtOrBelow15Percent` | 13.8 | Zone with monster health ∈ [0, 60] at zone end | `health ≤ 9 → outcome == 'defeated'`. `health > 9 → outcome == 'trapped'`. |
-| 9 | `missScoreOnlyFromCameraSessions` | 13.9 | Array of `SessionRecord` (arbitrary mix of camera and timer-only) | Miss scores computed only from camera-mode sessions. Adding or removing timer-only sessions does not change any miss score. |
+| # | Test name | Req | Input | Assertion |
+|---|---|---|---|---|
+| 1 | `isBrushingTruthTable` | 5.4–5.7 | Every signal (2 × 3 × 3 × 2 = 36) × every zone (4), plus `null` | True only when hand near, moving, side matches and level matches. With `REQUIRE_LEVEL_MATCH` false, level is ignored. `null` is never brushing. |
+| 2 | `healthChangesOnlyByTheRule` | 13.1 | 120 signals-or-null, either mode, any past sessions | Each tick: active monster changes by −3 (match), −2 (`null`), or 0 (stopping at 0 if less than that is left), never below 0; no other monster changes; health is a whole number; never increases. |
+| 3 | `sessionIsExactly120Ticks` | 13.2, 13.7 | 120 signals-or-null, either mode, any past sessions | Running after each of ticks 1–119 with `activeZoneIndex == floor(ticksDone / 30)`; ended after tick 120; tick 121 returns an equal state; `durationSeconds == 120`. Ticks sent while paused change nothing. |
+| 4 | `timerOnlyDefeatsEveryMonsterAt30` | 7.7, 8.5 | Timer-only session, any past sessions | Every monster starts at 60 and is defeated on exactly the 30th tick of its zone; result has 30 brushed, 0 untracked, unverified for every zone. |
+| 5 | `rescueAtOrBelow9` | 13.8 | Monster with any whole health 1–60 at zone end | ≤ 9 → `fled`; > 9 → `trapped`. |
+| 6 | `resultInvariants` | 9.1–9.3, 10.1, 10.2 | 120 signals-or-null, camera mode | Per zone: brushed + untracked ≤ 30; verified exactly when untracked ≤ 10; `monstersEarned` holds all four ids. |
+| 7 | `smokeChangesNothingThatCounts` | 7.8 | Two signal sequences that differ only after a monster is defeated in its zone | Same outcome and same `monstersEarned`; `smokeFraction` stays within [0, 1]. |
+| 8 | `monsterTableAndAssignment` | 10.4, 10.9, 10.10 | Any past sessions, rareEligible true/false | 12 monsters = 8 common + 4 rare; four different monsters; no rare unless eligible; when eligible exactly one rare, on the last zone; same input gives the same answer. |
+| 9 | `rareNeedsMorningAndNightCountingNewSession` | 13.3 | Any stored sessions for a day + any new time of day | Eligible exactly when stored + new include a morning and a night. |
+| 10 | `missScoreSources` | 13.9 | Any mix of sessions | Only verified zones of the 7 most recent camera sessions matter; adding timer-only sessions, unverified zones or older sessions changes nothing; every score in [0, 1]. |
+| 11 | `startingHealthBounds` | 13.6 | Any past sessions | Whole number, 36 ≤ health ≤ 60. |
+| 12 | `statsCeiling` | 13.4 | Any sessions | Verified time ≤ 30 per zone and ≤ 120 per session; timer-only sessions and unverified zones add 0. |
+| 13 | `storageRoundTrip` | 13.5, 9.5, 9.6 | Any sessions, `Map`-backed fake backend | Load after save deep-equals the input; the stored JSON has only the allowed keys; a throwing backend does not throw out of save or load. |
+| 14 | `timeOfDayAllHours` | 10.5 | Hours 0–23 | Matches the stated ranges. |
+| 15 | `gameLoopExactTicks` | 13.12, 2.6, 2.7, 15.4 | Fake clock; late and bunched callbacks; hidden spans | 120 visible seconds → exactly 120 ticks; hidden time → none; > 60 s hidden → dropped, nothing saved; wake lock asked once and released. |
+| 16 | `privacyGuard` | 13.10 | Files under `/src/` | As written in requirement 13.10. |
+| 17 | `wordingGuard` | 13.11, 4.3, 6.2 | `src/audio/lines.ts` | As written in requirement 13.11. |
+| 18 | `viewMatchesState` | 11.3–11.5 | Any state reached by ticking | `toView` countdown equals `zoneTimeRemaining`; `zoneId` is the active zone; `healthFraction` in [0, 1]. |
+| 19 | `rampGainIsGentle` | 4.4 | Times 0–5000 ms | Starts at 0; never rises faster than the set step; never exceeds the set level. |
 
-> **Consequence of `DAMAGE_PER_SECOND = 3`:** At normal health (`H_MAX = 60`), 20 consecutive
-> matching ticks defeat the monster (20 × 3 = 60). Test 1 asserts the direction of health
-> change; the defeat time follows from `H_MAX / DAMAGE_PER_SECOND = 20`. Timer-mode drain
-> reaches 0 at 30 s (2 per second), not 20 s, because it is computed from elapsed time, not
-> accumulated damage.
+> Test 3 counts ticks; it never reads a constant back. Test 4 pins the timer-only drain:
+> 60 − 2 × 30 = 0.
 
 ### Test helpers
 
-**Mock `localStorage`:** An in-memory `Map` implementing `getItem`, `setItem`,
-`removeItem`, used by tests 5, 6, 9. No real browser storage needed.
+**Mock `localStorage`:** A `Map`-backed object with `getItem`, `setItem` and `removeItem`,
+passed to `createStorage`. Used by test 13. No real browser storage needed.
+
+**Fake clock and scheduler for `game-loop`:** Time moves only when the test moves it.
+Used by test 15.
 
 **Signal arbitrary:**
 
@@ -649,27 +659,15 @@ const signalArb = fc.record({
   moving: fc.boolean(),
 });
 // Nullable for timer mode: fc.option(signalArb, { nil: null })
-// Per session: fc.array(signalArb, { minLength: 120, maxLength: 120 })
+// Per session: fc.array(fc.option(signalArb, { nil: null }), { minLength: 120, maxLength: 120 })
 ```
 
-**Session record arbitrary:**
+**`sessionResultArb`:** builds only valid sessions.
 
-```typescript
-const zoneResultArb = fc.record({
-  zoneId: fc.constantFrom('upper-right', 'upper-left', 'lower-left', 'lower-right'),
-  monsterId: fc.string(),
-  secondsBrushed: fc.integer({ min: 0, max: 30 }),
-  verified: fc.boolean(),
-  monsterOutcome: fc.constantFrom('defeated', 'trapped'),
-});
-
-const sessionRecordArb = fc.record({
-  date: fc.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-  timeOfDay: fc.constantFrom('morning', 'night', 'neither'),
-  mode: fc.constantFrom('camera', 'timer-only'),
-  zoneResults: fc.array(zoneResultArb, { minLength: 4, maxLength: 4 }),
-  monstersEarned: fc.array(fc.string()),
-  startedAt: fc.integer({ min: 0 }),
-  durationSeconds: fc.constant(120),
-});
-```
+- Exactly four zone results, one per zone, in zone order.
+- `secondsBrushed` and `secondsUntracked` are whole numbers with a sum ≤ 30.
+- Timer-only sessions: 30, 0 and `verified: false`.
+- Camera sessions: `verified` equals `secondsUntracked <= 10`.
+- `monsterOutcome` is one of `'defeated' | 'fled' | 'trapped'`.
+- `monsterId` is drawn from the monster table, and `monstersEarned` equals the four
+  `monsterId`s.
