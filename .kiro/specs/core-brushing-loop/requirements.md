@@ -9,7 +9,7 @@ logic.
 
 The game logic lives entirely in `/src/logic/` and is **pure** — no DOM, no camera, no
 network access. The only thing that crosses the boundary from the outside world is a
-per-frame brushing signal (or, in guided-timer mode, its absence). This separation lets
+per-second brushing signal (or, in guided-timer mode, its absence). This separation lets
 every rule below be property-tested with fast-check without a browser or camera.
 
 ### In scope
@@ -50,7 +50,7 @@ access, so that every rule can be property-tested without a browser.**
 1.1 THE SYSTEM SHALL keep zone timing, scoring, monster state, Monster Book unlocks, and
 session-result logic in modules under `/src/logic/` that have no DOM or camera access.
 
-1.2 THE SYSTEM SHALL accept only the per-frame brushing signal (defined in requirement 5)
+1.2 THE SYSTEM SHALL accept only the per-second brushing signal (defined in requirement 5)
 or its absence as input to game logic; nothing else from the camera or DOM shall cross
 into game logic.
 
@@ -129,13 +129,15 @@ text, so that captions are always available for every line.
 **As a developer, I want a single, simple signal from the tracking layer, so that the
 game logic stays pure and testable.**
 
-5.1 THE SYSTEM SHALL accept a per-frame brushing signal with exactly this shape:
+5.1 THE SYSTEM SHALL accept one brushing signal per second with exactly this shape:
 
 ```
 { handNearMouth: boolean, side: 'left' | 'right' | 'unknown', level: 'upper' | 'lower' | 'unknown', moving: boolean }
 ```
 
-5.2 THE SYSTEM SHALL treat the signal as absent (null or undefined) in guided-timer mode.
+5.2 THE SYSTEM SHALL treat a signal of `null` as "the tracker cannot see the child"
+(too dark, no face in view, child out of the frame, or tracker not ready). In
+guided-timer mode THE SYSTEM SHALL treat every signal as `null`.
 
 5.3 THE SYSTEM SHALL NOT pass any other camera or tracking data into game logic; the
 signal above is the only bridge between tracking and logic.
@@ -144,9 +146,18 @@ signal above is the only bridge between tracking and logic.
 side and `level` matches the active zone's level THE SYSTEM SHALL treat the active zone
 as being brushed.
 
-5.5 IF `handNearMouth` is false, or `side` does not match the active zone's side, or
-`level` does not match the active zone's level THE SYSTEM SHALL treat the active zone as
-not being brushed.
+5.5 IF `handNearMouth` is false, or `moving` is false, or `side` does not match the active
+zone's side, or `level` does not match the active zone's level THE SYSTEM SHALL treat the
+active zone as not being brushed.
+
+5.6 A signal that is present with `handNearMouth` false SHALL mean: the face is seen and
+the hand is not at the mouth. A signal with `side` or `level` equal to `unknown` SHALL
+mean: the hand is at the mouth but that side or level is unclear.
+
+5.7 THE SYSTEM SHALL hold one constant, `REQUIRE_LEVEL_MATCH`, default `true`. WHEN it is
+`false` THE SYSTEM SHALL ignore `level` in 5.4 and 5.5 (side-only checking). It is set to
+`false` only by Dr. Yatin's decision if the hand-tracking test shows that upper and lower
+cannot be told apart.
 
 ---
 
@@ -161,11 +172,11 @@ running the active zone timer; the timer SHALL NOT pause or stall.
 6.2 THE SYSTEM SHALL NOT nag, prompt, or interrupt the child when tracking is uncertain
 or absent.
 
-6.3 IF the tracking signal is present but any field is `unknown` (uncertain tracking) THE
-SYSTEM SHALL NOT reduce the active monster's health; only a fully matching signal (per
-5.4) reduces health in camera mode. WHEN the signal is absent (guided-timer mode) THE
-SYSTEM SHALL reduce the active monster's health steadily with the zone timer, as
-specified in requirement 7.7.
+6.3 IF the signal is present and does not fully match the active zone (per 5.4),
+including when any field is `unknown`, THE SYSTEM SHALL NOT reduce the active monster's
+health. IF the signal is `null`, in either mode, THE SYSTEM SHALL reduce the active
+monster's health by the untracked drain (requirement 7.7) and SHALL count that second as
+an untracked second for the zone.
 
 ---
 
@@ -180,7 +191,7 @@ right spot, so that brushing feels like defeating it.**
 reduce the active monster's health.
 
 7.3 WHILE the active zone is not being brushed, or the wrong zone is being brushed THE
-SYSTEM SHALL NOT reduce the active monster's health.
+SYSTEM SHALL NOT reduce the active monster's health (signal present and not matching).
 
 7.4 WHEN a monster's health reaches zero THE SYSTEM SHALL mark that monster as **defeated**
 (it "shrieks and dissolves into smoke").
@@ -191,9 +202,10 @@ monster as **trapped** (not defeated).
 7.6 Every monster SHALL live in one table (`src/logic/monsters.ts`) with the fields: id,
 name, rarity, and unlock rule.
 
-7.7 WHILE in guided-timer mode (signal absent) THE SYSTEM SHALL reduce the active
-monster's health steadily with the zone timer so that the monster is always defeated by
-the end of its 30 seconds.
+7.7 WHILE the signal is `null` (guided-timer mode, or camera mode when the tracker cannot
+see the child) THE SYSTEM SHALL reduce the active monster's health by 2 per second (the
+untracked drain), so that a normal-strength monster reaches zero at exactly 30 seconds of
+untracked time. Health SHALL never increase.
 
 ---
 
@@ -202,8 +214,11 @@ the end of its 30 seconds.
 **As a child whose phone has no working camera, I want the game to still take me through
 all four zones, so that I still get a full brush.**
 
-8.1 IF camera permission is refused, or the camera is unavailable, or tracking quality is
-too poor THE SYSTEM SHALL enter guided-timer mode.
+8.1 IF camera permission is refused, or the camera is unavailable, or the camera is not
+ready within 8 seconds of the start tap, THE SYSTEM SHALL run the session in guided-timer
+mode. The mode SHALL be fixed for the whole session. Poor tracking during a camera-mode
+session SHALL be handled second by second (requirements 6.3 and 9.3), not by changing
+mode.
 
 8.2 WHILE in guided-timer mode THE SYSTEM SHALL run the full 120-second session using the
 same game-logic modules as camera mode.
@@ -214,9 +229,9 @@ any prompt or nag for camera permission.
 8.4 THE SYSTEM SHALL make guided-timer mode fully functional — every zone, every
 announcement, every Monster Book unlock rule works identically to camera mode.
 
-8.5 WHILE in guided-timer mode THE SYSTEM SHALL reduce the active monster's health
-steadily with the zone timer so that the monster is always defeated by the end of its 30
-seconds (per requirement 7.7).
+8.5 WHILE in guided-timer mode every monster SHALL start at normal health (kind proximity
+is not applied) and SHALL lose 2 health per second (per 7.7), so that it is defeated
+exactly at the end of its 30 seconds.
 
 ---
 
@@ -226,22 +241,27 @@ seconds (per requirement 7.7).
 can see the facts later.**
 
 9.1 WHEN a session ends THE SYSTEM SHALL produce a session result containing: **date**,
-**time of day** (morning, night, or neither), **mode** (camera or timer-only), **seconds
-per zone** (each marked as verified or unverified), and **monsters earned**.
+**time of day** (morning, night, or neither), **mode** (camera or timer-only), for each
+zone: **brushed seconds**, **untracked seconds**, and a **verified** flag, and
+**monsters earned**.
 
-9.2 "Seconds per zone" SHALL mean the number of seconds the child spent brushing (signal
-matching per 5.4) in that zone; this value SHALL NOT exceed 30.
+9.2 "Brushed seconds" SHALL mean the number of seconds the signal matched that zone (per
+5.4). "Untracked seconds" SHALL mean the number of seconds the signal was `null` in that
+zone during a camera-mode session. Brushed seconds plus untracked seconds SHALL NOT
+exceed 30.
 
-9.3 SESSIONS with mode flag "timer-only" SHALL record 30 seconds per zone, but each
-zone's seconds SHALL be marked as **unverified**. SESSIONS with mode flag "camera" SHALL
-mark each zone's seconds as **verified** only for the time the signal matched that zone
-(per 5.4).
+9.3 SESSIONS with mode flag "timer-only" SHALL record 30 brushed seconds and 0 untracked
+seconds per zone, with every zone marked **unverified**. SESSIONS with mode flag "camera"
+SHALL mark a zone **verified** only when its untracked seconds are 10 or fewer; otherwise
+the zone SHALL be marked **unverified**. Unverified zones SHALL NOT be counted in parent
+stats or in miss scores.
 
 9.4 THE SYSTEM SHALL store the session result in `localStorage` on the device and SHALL
 NOT transmit it over the network.
 
 9.5 THE SYSTEM SHALL store no data other than brushing sessions (date, time of day, mode,
-seconds per zone with verified/unverified flags, monsters earned).
+and for each zone: brushed seconds, untracked seconds, verified flag, monster, outcome;
+monsters earned).
 
 9.6 THE SYSTEM SHALL NOT store names, ages, email, photos, camera frames, landmarks, or
 any derived measurement.
@@ -366,12 +386,11 @@ The following properties are mandated by `tech.md` and by requirement 14, and SH
 implemented as fast-check property-based tests in `/tests/`. Each property SHALL hold for
 any arbitrary input sequence.
 
-13.1 **Monster health:** For any sequence of brushing signals, a monster's health SHALL
-decrease only while its own zone is active and the signal matches that zone (camera mode).
-In guided-timer mode (signal absent), the active monster's health SHALL decrease steadily
-with the zone timer and SHALL reach zero by the end of its 30 s. Health SHALL NOT decrease
-while a different zone is active, while the signal does not match (camera mode), or while
-an uncertain signal is present.
+13.1 **Monster health:** For any sequence of 120 signals, in either mode, and for any
+history of past sessions: on every second the active monster's health SHALL change by
+exactly −3 when the signal matches the active zone (per 5.4), by exactly −2 when the
+signal is `null`, and by 0 otherwise, never going below zero. Only the active zone's
+monster SHALL change. Health SHALL always be a whole number and SHALL never increase.
 
 13.2 **Session duration:** For any sequence of brushing signals — including none, wrong,
 partial, or all-correct — the total session duration SHALL always be exactly 120 seconds
