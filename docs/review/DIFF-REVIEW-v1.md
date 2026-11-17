@@ -106,4 +106,8 @@ for your yes; not in any prompt yet.
 
 ## 7. Follow-up result
 
-(filled in after f01 runs)
+f01 ran on 17 Nov, commit **8325fc7**, 1.12 credits. Only `requirements.md` and
+`design.md` changed; all 10 edits made as written; Kiro reported no conflict.
+`grep -i "absent\|placeholder"` over the spec now finds nothing. B4 and the other
+leftovers are now **fixed**. Open: B1 (by plan, stages C/F/G), S15 (hooks must be seen
+firing), and the question in section 6.

@@ -34,6 +34,11 @@ git add .kiro && git commit -m "spec(core-brushing-loop): <what> (Kiro CLI, prom
 
 Run the prompts **in the order below**. Each one assumes the ones before it are done.
 
+**What actually happened (17 Nov 2026):** Kiro refused `c01` until the steering agreed
+with it, so `s01` ran first and a new prompt `s02-steering-poor-light.md` (one bullet in
+`kid-safety-privacy.md`) ran second; then c01 to t01 as listed, then the follow-up
+`f01-leftover-wording.md`. All done; see `DIFF-REVIEW-v1.md`.
+
 ## Part 1 — fix `core-brushing-loop` (11 runs)
 
 | Order | Prompt file | Edits | What it does | Findings closed |
