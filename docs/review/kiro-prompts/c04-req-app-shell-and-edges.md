@@ -102,7 +102,7 @@ CHANGES
    (`docs/review/SPEC-REVIEW-v1.md`).
    1. Zone order re-confirmed (requirement 3.2).
    2. Every monster met goes into the Monster Book, beaten or not (requirement 10.2).
-   3. After a monster is beaten: 'Keep brushing to blow the smoke away!' (requirement 7.8).
+   3. After a monster is beaten: 'Keep brushing! Brush the smoke away!' (requirement 7.8).
    4. Tracker cannot see: 2 health per second; a zone with more than 10 untracked seconds
       is unverified (requirements 6.3, 7.7, 9.3).
    5. Kind proximity keeps the 60% floor and the 15% rescue, and looks at the 7 most

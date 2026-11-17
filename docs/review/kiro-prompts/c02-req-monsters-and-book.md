@@ -15,7 +15,7 @@ CHANGES
 1. Add after requirement 7.7:
    "7.8 WHEN a monster is defeated before its zone's 30 seconds end THE SYSTEM SHALL keep
    that monster's smoke over the zone until the zone ends, and SHALL speak and caption,
-   once, the line 'Keep brushing to blow the smoke away!'. WHILE the smoke is shown, each
+   once, the line 'Keep brushing! Brush the smoke away!'. WHILE the smoke is shown, each
    brushed second and each untracked second SHALL thin the smoke. The smoke SHALL carry no
    win or lose: no outcome, reward, stored value or message SHALL depend on how much smoke
    is left, and the zone SHALL still end at 30 seconds."

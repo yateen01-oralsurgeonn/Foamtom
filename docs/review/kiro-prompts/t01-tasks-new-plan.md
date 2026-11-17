@@ -78,8 +78,8 @@ THE 14 TASKS
 
 7. **Voice lines and wording guard**
    Files: `src/audio/lines.ts`, `tests/lines.test.ts`.
-   Sub-tasks: lines for the start button, the four zones, the smoke line ("Keep brushing
-   to blow the smoke away!"), and the end card; each `{ id, text, caption }`.
+   Sub-tasks: lines for the start button, the four zones, the smoke line ("Keep brushing!
+   Brush the smoke away!"), and the end card; each `{ id, text, caption }`.
    Tests: design test 17.
    Requirements: 4.1–4.3, 4.5, 6.2, 12.1–12.6, 13.11.
 

@@ -61,7 +61,7 @@ SECTION 6 — HEALTH MATHS
      screen shows smoke over the zone.
    - `smokeFraction = 1 − secondsSmokeCleared / max(1, ZONE_DURATION − defeatedAtElapsed)`,
      clamped to [0, 1]. It is worked out for drawing only.
-   - The line "Keep brushing to blow the smoke away!" is spoken and captioned once.
+   - The line "Keep brushing! Brush the smoke away!" is spoken and captioned once.
    - Nothing is won or lost: no outcome, stored value or message depends on the smoke.
 
 SECTION 7 — MORNING / NIGHT
