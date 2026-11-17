@@ -224,11 +224,18 @@ Rules:
 Keep this table up to date in this file (the driver may edit this file). One row per
 Kiro run, including failed ones.
 
-Credits at start: ______  (date: ______)
+Credits at start (17 Nov 2026, Kiro usage page, before any run): plan 27 / 50 used;
+bonus `kiroween2026` 0 / 4000 used, 46 days left. `kiro-cli` prints no credit line, so
+"Used" is read from the usage page (it can lag by a minute).
+
+**Shell tool name, proven 17 Nov (run 0):** `--trust-tools=execute_pwsh` works. Kiro ran
+`git status --short` without asking and reported the tool as `shell`. Keep
+`execute_pwsh` in the commands; the fallbacks were not needed.
 
 | Date | Stage / task | Prompt | Credits before | Credits after | Used | Budget | Checks | Commit | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| | | | | | | | | | |
+| 17 Nov | Preflight, run 0 | one-line probe: run `git status --short` | bonus 0 | - | - | - | no file changed | none | Proves the shell tool name. |
+| 17 Nov | A, run 1 | `c01-req-signal-and-untracked.md` | - | bonus 0.39 (runs 0 and 1 together) | 0.39 | 5 | **no file changed** | none | **STOPPED: Kiro reported two conflicts with steering and edited nothing.** (1) New 8.1 (mode fixed, poor light handled second by second) against `kid-safety-privacy.md` "the light is too poor to track, the game switches to guided-timer mode". (2) "per-second signal" and `null` against `tech.md` "per-frame signal". Conflict 2 is what prompt `s01` fixes, so `s01` must run before `c01`. Conflict 1 needs a one-bullet steering edit: draft prompt `s02-steering-poor-light.md`, waiting for Dr. Yatin's yes. |
 
 ## 9. Checks only a person can do
 
