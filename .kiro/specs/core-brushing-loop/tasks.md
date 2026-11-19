@@ -39,12 +39,12 @@ and are wired into the game in task 14.
   - _Requirements: 1.2, 3.1, 3.2, 5.1, 5.7, 10.5_
   - Test file: `tests/constants.test.ts`, `tests/time-of-day.test.ts`
 
-- [ ] 3. **Monster table, assignment, rescue**
-  - [ ] 3.1 Define the 12 named monsters (8 common, 4 rare) in `src/logic/monsters.ts`, each `{ id, name, rarity, unlockRule }`, in the order of design section 7
-  - [ ] 3.2 Implement `assignMonsters(pastSessions, rareEligible)` by the fixed rule in design section 7, with no randomness
-  - [ ] 3.3 Implement `resolveMonster`: at zone end a pending monster is `fled` at health ≤ 9, else `trapped`
-  - [ ] 3.4 Test `monsterTableAndAssignment` (design test 8)
-  - [ ] 3.5 Test `rescueAtOrBelow9` (design test 5)
+- [x] 3. **Monster table, assignment, rescue**
+  - [x] 3.1 Define the 12 named monsters (8 common, 4 rare) in `src/logic/monsters.ts`, each `{ id, name, rarity, unlockRule }`, in the order of design section 7
+  - [x] 3.2 Implement `assignMonsters(pastSessions, rareEligible)` by the fixed rule in design section 7, with no randomness
+  - [x] 3.3 Implement `resolveMonster`: at zone end a pending monster is `fled` at health ≤ 9, else `trapped`
+  - [x] 3.4 Test `monsterTableAndAssignment` (design test 8)
+  - [x] 3.5 Test `rescueAtOrBelow9` (design test 5)
   - _Requirements: 7.5, 7.6, 10.4, 10.9, 10.10, 14.3_
   - Test file: `tests/monsters.test.ts`
 
