@@ -115,11 +115,11 @@ and are wired into the game in task 14.
   - _Requirements: 9.4–9.7, 14.7_
   - Test file: `tests/storage.test.ts`
 
-- [ ] 11. **Monster Book logic**
-  - [ ] 11.1 Implement `isRareEligibleForNewSession(todaysSessions, newTimeOfDay)` in `src/logic/monster-book.ts`
-  - [ ] 11.2 Implement `computeMonsterBook(sessions)`: the union of `monstersEarned`
-  - [ ] 11.3 Test `rareNeedsMorningAndNightCountingNewSession` (design test 9)
-  - [ ] 11.4 Test: `computeMonsterBook` is the union of `monstersEarned`
+- [x] 11. **Monster Book logic**
+  - [x] 11.1 Implement `isRareEligibleForNewSession(todaysSessions, newTimeOfDay)` in `src/logic/monster-book.ts`
+  - [x] 11.2 Implement `computeMonsterBook(sessions)`: the union of `monstersEarned`
+  - [x] 11.3 Test `rareNeedsMorningAndNightCountingNewSession` (design test 9)
+  - [x] 11.4 Test: `computeMonsterBook` is the union of `monstersEarned`
   - _Requirements: 10.1–10.3, 10.6–10.8_
   - Test file: `tests/monster-book.test.ts`
 
