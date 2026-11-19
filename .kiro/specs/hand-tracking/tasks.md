@@ -63,7 +63,7 @@ starts in camera mode. Guided-timer mode is never changed.
     - Files this task may change: `src/tracking/side.ts`, `src/tracking/types.ts`, `src/tracking/thresholds.ts`, `tests/side.test.ts`, `tests/thresholds.test.ts`
 
   - [ ] 1C. **Per-frame classification** (requirements 3, 5, 11.1 to 11.4)
-    - [ ] 1C.1 `src/tracking/classify-frame.ts`: `pickLargestFace`, `selectHandPoint(hand, kind)` (palm, wrist, fingertips as design 5.2) and `classifyFrame(input, handPoint = HAND_POINT)` exactly as design 5.3. Every distance in face widths along the face's own axes; the only left and right swap is a call to `rawToChildSide`; no bare number other than 0, 1 and 2
+    - [ ] 1C.1 `src/tracking/classify-frame.ts`: `pickLargestFace`, `selectHandPoint(hand, kind)` (palm, wrist, fingertips as design 5.2; it uses `PALM_LANDMARKS`, `WRIST_LANDMARK` and `FINGERTIP_LANDMARKS` from `thresholds.ts`) and `classifyFrame(input, handPoint = HAND_POINT)` exactly as design 5.3. Every distance in face widths along the face's own axes; the only left and right swap is a call to `rawToChildSide`; no bare number other than 0, 1 and 2
     - [ ] 1C.2 `tests/fixtures/tracking/frames.ts`: first line `// hand-written`; hand-written plain numbers only: a face, a hand at each cheek, above, below, far away, no hand, no face, two hands near, a second face
     - [ ] 1C.3 Test `rawToChildSideFixture`, second half: `classifyFrame` on a hand on the raw right reads `left`, and on the raw left reads `right`. Put it in `tests/side.test.ts` so it stays with the first fixture test
     - [ ] 1C.4 Test `classifyFrameFixtures` (design test 2): `side` and `level` are `unknown` whenever `handNearMouth` is false; `faceSeen` is false with no face
@@ -72,7 +72,8 @@ starts in camera mode. Guided-timer mode is never changed.
     - [ ] 1C.7 `tests/tracking-source-rules.test.ts`: `onlyOneLeftRightSwap` (design test 19: `'raw-left'` and `'raw-right'` appear only in `side.ts` and as arguments in `classify-frame.ts` and `monster-anchor.ts`; no `? 'left' : 'right'` or the reverse outside `side.ts`, scanning `src/` and `debug/`); `thresholdsInOneFile` (design test 15, for the files that exist so far: `classify-frame.ts`); `fixturesAreHandWritten` (design test 29)
     - _Requirements: 2.1, 2.2, 2.4, 3.1 to 3.8, 5.1 to 5.5, 11.1 to 11.4 (a, b, c, d, h, i), 11.3_
     - Test file: `tests/classify-frame.test.ts`, `tests/side.test.ts`, `tests/tracking-source-rules.test.ts`
-    - Files this task may change: `src/tracking/classify-frame.ts`, `tests/classify-frame.test.ts`, `tests/side.test.ts`, `tests/tracking-source-rules.test.ts`, `tests/fixtures/tracking/frames.ts`
+    - Files this task may change: `src/tracking/classify-frame.ts`, `src/tracking/thresholds.ts`, `tests/classify-frame.test.ts`, `tests/side.test.ts`, `tests/thresholds.test.ts`, `tests/tracking-source-rules.test.ts`, `tests/fixtures/tracking/frames.ts`
+    - This part also adds three exports to `src/tracking/thresholds.ts`: `PALM_LANDMARKS = [0, 5, 9, 13, 17]`, `WRIST_LANDMARK = 0` and `FINGERTIP_LANDMARKS = [4, 8, 12, 16, 20]`, with a comment that they follow the MediaPipe hand landmark order. It also extends the 1B.5 test in `tests/thresholds.test.ts` so it checks that these three are exported. The rule "no numeric literal other than 0, 1, 2" in `classify-frame.ts` is unchanged
 
   - [ ] 1D. **One-second aggregation** (requirement 4)
     - [ ] 1D.1 `src/tracking/aggregate-second.ts`: `aggregateSecond(frames)` exactly as design 5.4 (strict majorities; `side` and `level` counted among the near-mouth frames only; `moving` from path length of `handRel`, steps under `MOVE_JITTER_STEP` ignored). No clock, no randomness

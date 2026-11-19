@@ -119,7 +119,7 @@ One concept per file, kebab-case names (`structure.md`).
 | Module | Responsibility | Req |
 |--------|----------------|-----|
 | `src/tracking/side.ts` | `rawToChildSide(raw: 'raw-left' \| 'raw-right'): Side`. The only place in the code base where left and right are swapped. | 2.1, 2.2, 2.4 |
-| `src/tracking/thresholds.ts` | Every number used by `classifyFrame`, `aggregateSecond`, the frame window and the frame rate limit, each with a comment (what, unit). Also `HAND_POINT` and `FACE_MODEL`. | 3.7, 1.4, 4.2, 10.5 |
+| `src/tracking/thresholds.ts` | Every number used by `classifyFrame`, `aggregateSecond`, the frame window and the frame rate limit, each with a comment (what, unit). Also `HAND_POINT` and `FACE_MODEL`, and the three MediaPipe hand landmark index constants `PALM_LANDMARKS`, `WRIST_LANDMARK` and `FINGERTIP_LANDMARKS` (section 5.5). | 3.7, 1.4, 4.2, 10.5 |
 | `src/tracking/types.ts` | `Point`, `FaceInput`, `HandInput`, `FrameInput`, `FrameResult`, `HandPointKind`. Plain data, no logic. Imports `Side`, `Level` and `BrushingSignal` from `src/logic/types.ts`. | 3.1, 4.1 |
 | `src/tracking/classify-frame.ts` | `classifyFrame(input, handPoint?)`, `selectHandPoint(hand, kind)`, `pickLargestFace(faces)`. Pure. | 3, 5 |
 | `src/tracking/aggregate-second.ts` | `aggregateSecond(frames)`. Pure. | 4 |
@@ -235,7 +235,9 @@ by CSS only; pixels, landmarks and the canvas the classifier reads are never fli
 
 > **Design choice (hand point, Decision 2):** `selectHandPoint(hand, kind)` returns one of
 > three points: `palm` = mean of landmarks 0, 5, 9, 13, 17; `wrist` = landmark 0;
-> `fingertips` = mean of landmarks 4, 8, 12, 16, 20. The constant `HAND_POINT` is `'palm'`
+> `fingertips` = mean of landmarks 4, 8, 12, 16, 20. `selectHandPoint` reads these indices
+> from the exported constants `PALM_LANDMARKS`, `WRIST_LANDMARK` and `FINGERTIP_LANDMARKS` in
+> `thresholds.ts` (section 5.5), so `classify-frame.ts` holds no landmark number. The constant `HAND_POINT` is `'palm'`
 > to start with. A child holds the brush handle in a fist, so the palm sits between wrist and
 > fingertips and is the steadiest point when fingers curl. The debug page shows all three
 > readings at once so one brushing session compares them (section 7). Moving `HAND_POINT` to
@@ -331,6 +333,9 @@ a parent sees.
 | `TRACK_MIN_INTERVAL_MS` | 100 | ms | Least time between two frames sent to MediaPipe (about 10 per second; at least 5 are needed) |
 | `HAND_POINT` | `'palm'` | kind | Which hand point is used (section 5.2) |
 | `FACE_MODEL` | `'detector'` | kind | Which face model feeds `FaceInput` (section 8) |
+| `PALM_LANDMARKS` | `[0, 5, 9, 13, 17]` | hand landmark indices | Landmarks averaged for the `palm` hand point. Follows the MediaPipe hand landmark order. Fixed by the library, not tuned |
+| `WRIST_LANDMARK` | `0` | hand landmark index | Landmark used for the `wrist` hand point. Follows the MediaPipe hand landmark order. Fixed by the library, not tuned |
+| `FINGERTIP_LANDMARKS` | `[4, 8, 12, 16, 20]` | hand landmark indices | Landmarks averaged for the `fingertips` hand point. Follows the MediaPipe hand landmark order. Fixed by the library, not tuned |
 
 `MIN_FRAMES_PER_SECOND` is the value 5 that req 4.2 names. `MIN_FACE_FRACTION` is 0.5 as in
 req 4.3. A test fails if any of these constants is not exported from `thresholds.ts`, or if
@@ -753,7 +758,7 @@ or a real person's data. Fixtures are plain numbers written by hand in
 | 12 | `secondFaceIgnored` | 5.1, 11.4h | A frame plus a second, smaller face anywhere | Same `FrameResult` |
 | 13 | `twoHandsRule` | 5.2, 5.3, 5.5, 11.4i | One hand near, other hand anywhere farther; then both near | Near hand decides whatever the other does; both near gives `handNearMouth` true and `side`, `level` `unknown` |
 | 14 | `signalShape` | 3.8, 4.1, 11.4j | Any frames | Output is `null` or has exactly the four keys of `BrushingSignal`, with only allowed values; `FrameResult` has no field naming a tooth |
-| 15 | `thresholdsInOneFile` | 3.7, 1.4 | Source of `classify-frame.ts`, `aggregate-second.ts`, `frame-window.ts`, `debug/` | Every constant in section 5.5 is exported from `thresholds.ts`; no numeric literal other than 0, 1, 2 in those files; `debug/` has no threshold of its own |
+| 15 | `thresholdsInOneFile` | 3.7, 1.4 | Source of `classify-frame.ts`, `aggregate-second.ts`, `frame-window.ts`, `debug/` | Every constant in section 5.5 is exported from `thresholds.ts`, including `HAND_POINT`, `FACE_MODEL`, `PALM_LANDMARKS`, `WRIST_LANDMARK` and `FINGERTIP_LANDMARKS`; no numeric literal other than 0, 1, 2 in those files; `debug/` has no threshold of its own |
 | 16 | `framesInLastSecond` | 4.7, 6.4 | Timed frames and a time | Keeps exactly the frames in `(now - 1000, now]`; empty when the tracker stalled; `aggregateSecond` of that is `null` |
 | 17 | `landmarkAdapters` | 5.1, 5.2, 6.2 | Hand-written MediaPipe-shaped result objects | Face detector, mesh and hand results become the expected `FaceInput` and `HandInput`; empty results give empty lists |
 | 18 | `handPointKinds` | 5.2 (Decision 2) | Hand-written 21-point hands | `palm`, `wrist`, `fingertips` return the means stated in section 5.2 |
