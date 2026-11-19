@@ -454,7 +454,8 @@ exactly one rare monster, on the last zone.
 13.4 **Stats ceiling:** The total verified brushing time computed from stored sessions
 SHALL never exceed 30 seconds per zone or 120 seconds per session. Timer-only
 sessions and unverified zones SHALL NOT be counted as verified brushing in parent stats or
-in "zone most often missed". (This
+in "zone most often missed". Verified time counts `secondsBrushed` only, and 'zone most
+often missed' is taken over all stored camera-mode sessions. (This
 tests the stats computation logic in `/src/logic/`, not the parent screen UI, which is out
 of scope.)
 

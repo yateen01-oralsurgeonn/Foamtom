@@ -132,7 +132,7 @@ and are wired into the game in task 14.
   - Test file: `tests/miss-score.test.ts`
 
 - [ ] 13. **Parent stats (logic only)**
-  - [ ] 13.1 Implement `computeVerifiedTime(sessions)` and `zoneMostMissed(sessions)` in `src/logic/stats.ts`
+  - [ ] 13.1 Implement `computeVerifiedTime(sessions)` and `zoneMostMissed(sessions)` in `src/logic/stats.ts`. `computeVerifiedTime` sums `secondsBrushed` over verified zones of camera sessions; `zoneMostMissed` returns `ZoneId | null`, uses all stored camera sessions, averages the per-zone miss, ties go to the first zone in `ZONE_ORDER`, and does not reuse `computeMissScores`.
   - [ ] 13.2 Test `statsCeiling` (design test 12)
   - [ ] 13.3 Test: `zoneMostMissed` uses verified zones only
   - _Requirements: 13.4_
