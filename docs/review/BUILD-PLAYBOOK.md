@@ -253,6 +253,9 @@ bonus `kiroween2026` 0 / 4000 used, 46 days left. `kiro-cli` prints no credit li
 | 14-19 Nov | B, tasks 1-10 | `b00-build-task.md` | bonus 17.93 (end of stage A) | - | not logged per run | 5-15 each | all checks passed (see commits) | up to c1582a3 | Per-run rows were not kept. |
 | 19 Nov | B, task 11 | `b00-build-task.md` | - | - | not read separately | 5 | all PASS, 78 tests | 5a39c32 | Clean. Kiro ticked only task 11. |
 | 19 Nov | B, task 12 | `b00-build-task.md` | - | bonus 46.27 (read after task 12) | not read separately | 5 | all PASS, 85 tests | adf34c9 | Clean. Kiro chose `Zone` (not `ZoneId`) as the first argument of `startingHealth`, because `startSession` passes `z` from `zones.map`; the design was silent. |
+| 19 Nov | B, task 13 (first try) | `b00-build-task.md` | - | - | not read | 5 | **no file changed** | none | **STOPPED, correctly:** spec did not define a verified second, the session window, the return type or ties for `computeVerifiedTime` / `zoneMostMissed`. Kiro asked 4 questions; Dr. Yatin accepted all 4 recommendations. |
+| 19 Nov | B, spec fix | `f02-parent-stats-definitions.md` | - | - | not read | 5 | only `design.md`, `requirements.md`, `tasks.md` (13.1 text) | abce375 | Clean. Sum of `secondsBrushed` over verified camera zones; `zoneMostMissed` returns `ZoneId \| null` over ALL camera sessions, ties to `ZONE_ORDER`. |
+| 19 Nov | B, task 13 (second try) | `b00-build-task.md` | - | - | not read | 5 | all PASS, 93 tests | 2ccaa2c | Clean. (Driver slip: the f02 commit had failed, so the first check showed a false "spec untouched" FAIL; fixed by committing f02 first.) |
 
 **Credits, 19 Nov after task 12:** bonus `kiroween2026` 46.27 / 4000 used (43 days left); plan 27 / 50 (unchanged, resets 1 Dec). Since the end of stage A (17.93) the bonus has risen by 28.34 across tasks 1-12, about 2.4 per task. Read from `app.kiro.dev/account/usage`.
 
