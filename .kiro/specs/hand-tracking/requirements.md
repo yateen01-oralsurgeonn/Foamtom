@@ -132,13 +132,17 @@ means the signal becomes `null`, not a guess.
 
 **Decision rule**
 
-1.12 IF the level check fails THEN Dr. Yatin SHALL set `REQUIRE_LEVEL_MATCH` to `false`
+1.12 A surface (outer, chewing or inner) of a zone PASSES the level check when at least 2
+of its 3 `level` readings are right; all three readings SHALL be recorded anyway. IF the
+level check fails THEN Dr. Yatin SHALL set `REQUIRE_LEVEL_MATCH` to `false`
 (core requirement 5.7), and the game checks side only. THE system SHALL NOT change that
 constant on its own.
 
-1.13 IF the side check fails THEN work on this spec SHALL stop, and Dr. Yatin SHALL
-decide what happens next. THE developer SHALL NOT tune thresholds around a failed side
-check without his decision.
+1.13 A surface (outer, chewing or inner) of a zone PASSES the side check when at least 2
+of its 3 `side` readings are right; all three readings SHALL be recorded anyway. IF the
+side check fails THEN work on this spec SHALL stop, and Dr. Yatin SHALL decide what
+happens next. THE developer SHALL NOT tune thresholds around a failed side check without
+his decision.
 
 1.14 The feasibility test SHALL be the **first task** in `tasks.md`. No task for
 requirements 5 to 8 SHALL start before the results file exists and the decision rule in
@@ -251,7 +255,8 @@ whose hand point is nearest the mouth centre, and SHALL ignore the other hand, w
 hand holds the brush.
 
 5.3 IF both hands are within `NEAR_MOUTH_FACE_WIDTHS` of the mouth at once, THE SYSTEM
-SHALL give `side` as `unknown` for that frame. It SHALL NOT guess.
+SHALL give `side` as `unknown` and `level` as `unknown` for that frame. It SHALL NOT
+guess.
 
 5.4 IF no hand is seen, THE SYSTEM SHALL give `handNearMouth` false for that frame.
 
@@ -300,7 +305,8 @@ the one drawing value of requirement 8.3.
 **As a parent, I want the camera to be on only while my child is brushing and never to
 nag, so that I can trust it.**
 
-7.1 THE SYSTEM SHALL ask for camera permission **once per session**. IF permission is
+7.1 THE SYSTEM SHALL ask for camera permission **once per brushing session**. A later
+session SHALL ask again only if the browser has forgotten the earlier answer. IF permission is
 refused, THE SYSTEM SHALL answer `'unavailable'` and SHALL NOT ask again, show a prompt,
 or nag (core requirement 8.3).
 
@@ -339,7 +345,8 @@ console, and SHALL NOT be kept after the frame it describes has been drawn.
 
 8.4 IF the mouth position is not known (the signal is `null`, or the face is lost), THE
 SYSTEM SHALL keep the monster in the position the plain session screen of
-core-brushing-loop uses, and SHALL NOT show any message.
+core-brushing-loop uses, and SHALL NOT show any message. THE monster SHALL NOT stay at
+its last cheek position when the face is lost.
 
 8.5 THE preview SHALL work one-handed on a phone propped by a mirror, in portrait, and
 SHALL remain usable in landscape and on a desktop browser (core requirement 11.9). Touch
@@ -449,7 +456,7 @@ than `MOVING_MIN_TRAVEL` face widths gives `moving` true.
 (h) **Second face:** adding a smaller second face to the frame never changes the result.
 
 (i) **Two hands:** the hand nearer the mouth decides; both hands near the mouth gives
-`side` `unknown`.
+`side` `unknown` and `level` `unknown`.
 
 (j) **Signal shape:** whatever the input, the output is `null` or has exactly the four
 fields of core requirement 5.1 with only the allowed values.
@@ -461,28 +468,23 @@ the guard test of requirement 9.5 SHALL pass.
 
 ---
 
-## Open questions for Dr. Yatin (not decided in this spec)
+## Decisions, 19 Nov 2026
 
-These were not settled by the brief. Each needs an answer before the design is written.
+Dr. Yatin answered the eight open questions on 19 Nov 2026.
 
-1. **What counts as a "fail" in each check?** For example, in the side check, does one
-   wrong reading out of three fail that surface, or must a majority be wrong? Until this is
-   answered, requirements 1.12 and 1.13 apply to "a failed check" as Dr. Yatin judges it.
-2. **Which point on the hand is "the hand point"?** The brush is held in the hand, and
-   different points (wrist, palm centre, fingertips) may behave differently. The design
-   will propose one; the feasibility test is where it is checked.
-3. **Starting values of the thresholds** (`NEAR_MOUTH_FACE_WIDTHS`, `SIDE_DEAD_ZONE`,
-   `LEVEL_DEAD_ZONE`, `MOVING_MIN_TRAVEL`, and what "clear majority" means). They are
-   named constants; their first values come from the design and are tuned on the debug
-   page.
-4. **"Once per session" for the camera permission:** does a session mean one brushing
-   session, or one visit to the page? Requirement 7.1 uses the wording of the brief.
-5. **Both hands near the mouth (5.3):** `side` is `unknown`. The brief does not say what
-   `level` should be in that case. Until answered, the design may choose, and flags it.
-6. **Where the debug page lives** and how it is kept out of the production build (for
-   example, a separate dev-only entry). The requirement states the outcome only (1.2).
-7. **Monster position when the face is lost (8.4):** the brief does not say. The
-   requirement keeps the plain-screen position; change it if you want the monster to stay
-   at its last cheek position instead.
-8. **Wording of the feasibility test for Dr. Yatin's file:** the row layout of
-   `docs/review/TRACKING-TEST-RESULTS.md` is left to the design.
+1. **Pass rule.** A surface (cheek side, chewing, tongue side) passes the side check, and
+   separately the level check, when at least 2 of its 3 readings are right. All three
+   readings are recorded anyway. Requirements 1.12 and 1.13 use this rule.
+2. **Hand point.** The hand point is chosen in `design.md`. The feasibility test checks it
+   (wrist, palm centre and fingertips are compared there).
+3. **Threshold values.** The starting values come from `design.md` and are tuned on the
+   debug page.
+4. **Once per session.** "Session" means one brushing session. The camera permission is
+   asked again only if the browser has forgotten it (requirement 7.1).
+5. **Both hands near the mouth.** `side` is `unknown` and `level` is also `unknown`
+   (requirement 5.3).
+6. **Debug page.** It is a separate dev-only entry that the production build leaves out.
+   `design.md` decides the details.
+7. **Face lost.** The monster keeps the plain-screen position (requirement 8.4).
+8. **Results file.** The row layout of `docs/review/TRACKING-TEST-RESULTS.md` is decided
+   in `design.md`.
