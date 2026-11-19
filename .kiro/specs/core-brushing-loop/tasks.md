@@ -123,11 +123,11 @@ and are wired into the game in task 14.
   - _Requirements: 10.1–10.3, 10.6–10.8_
   - Test file: `tests/monster-book.test.ts`
 
-- [ ] 12. **Miss scores and starting health**
-  - [ ] 12.1 Implement `computeMissScores(sessions)` in `src/logic/miss-score.ts`: verified zones of the 7 most recent camera-mode sessions only
-  - [ ] 12.2 Implement `startingHealth(zone, missScores)`: linear, rounded, clamped to 36–60
-  - [ ] 12.3 Test `missScoreSources` (design test 10)
-  - [ ] 12.4 Test `startingHealthBounds` (design test 11)
+- [x] 12. **Miss scores and starting health**
+  - [x] 12.1 Implement `computeMissScores(sessions)` in `src/logic/miss-score.ts`: verified zones of the 7 most recent camera-mode sessions only
+  - [x] 12.2 Implement `startingHealth(zone, missScores)`: linear, rounded, clamped to 36–60
+  - [x] 12.3 Test `missScoreSources` (design test 10)
+  - [x] 12.4 Test `startingHealthBounds` (design test 11)
   - _Requirements: 14.1, 14.2, 14.4, 14.5_
   - Test file: `tests/miss-score.test.ts`
 
