@@ -1,8 +1,12 @@
 // Wiring only: the clock, the signal source, the browser's visibility and wake-lock
-// adapters, the game loop and the screens. No storage yet: past sessions are an empty list.
+// adapters, the game loop and the screens. Past sessions are loaded when a session starts
+// and the result is saved when it ends.
 import { createBrowserSpeaker } from './audio/speaker';
 import { startSession } from './logic/session';
+import { toSessionResult } from './logic/session-result';
 import { toView } from './logic/view';
+import { createStorage } from './storage/storage';
+import type { StorageBackend } from './storage/storage';
 import { nullSignalSource } from './tracking/signal-source';
 import { createEndCard } from './ui/end-card';
 import { createGameLoop } from './ui/game-loop';
@@ -65,8 +69,23 @@ function localDate(now: Date): string {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
+// Reading `localStorage` can throw when storage is blocked; then nothing is saved or loaded.
+function browserBackend(): StorageBackend {
+  const blocked: StorageBackend = {
+    getItem: () => null,
+    setItem: () => {},
+    removeItem: () => {},
+  };
+  try {
+    return window.localStorage;
+  } catch {
+    return blocked;
+  }
+}
+
 if (app) {
   const speaker = createBrowserSpeaker();
+  const storage = createStorage(browserBackend());
   const screen = createSessionScreen(app, { onStart: () => void loop.begin() }, speaker);
   const endCard = createEndCard(
     app,
@@ -92,11 +111,12 @@ if (app) {
         startedAt: now.getTime(),
         date: localDate(now),
         hour: now.getHours(),
-        pastSessions: [],
+        pastSessions: storage.loadSessions(),
       });
     },
     onState: (state) => screen.paint(toView(state)),
     onEnded: (state) => {
+      storage.saveSession(toSessionResult(state));
       screen.hide();
       speaker.stop();
       endCard.show(state.monsters.map((m) => m.def));

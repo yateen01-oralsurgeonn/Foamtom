@@ -8,6 +8,8 @@ import {
   ZONE_DURATION,
   ZONE_ORDER,
 } from './constants';
+import { computeMissScores, startingHealth } from './miss-score';
+import { isRareEligibleForNewSession } from './monster-book';
 import { assignMonsters, resolveMonster } from './monsters';
 import { classifyTimeOfDay } from './time-of-day';
 import type {
@@ -19,11 +21,6 @@ import type {
   Zone,
   ZoneId,
 } from './types';
-
-// TEMPORARY: replaced in task 14
-const TEMP_RARE_ELIGIBLE = false;
-// TEMPORARY: replaced in task 14
-const TEMP_STARTING_HEALTH = H_MAX;
 
 function makeZone(id: ZoneId, index: number): Zone {
   const [level, side] = id.split('-') as ['upper' | 'lower', 'left' | 'right'];
@@ -46,8 +43,13 @@ function makeMonster(def: MonsterDef, zone: Zone, health: number): MonsterState 
 export function startSession(input: StartInput): SessionState {
   const zones = ZONE_ORDER.map(makeZone);
   const timeOfDay = classifyTimeOfDay(input.hour);
-  const defs = assignMonsters(input.pastSessions, TEMP_RARE_ELIGIBLE);
-  const monsters = zones.map((z) => makeMonster(defs[z.index], z, TEMP_STARTING_HEALTH));
+  const today = input.pastSessions.filter((s) => s.date === input.date);
+  const rareEligible = isRareEligibleForNewSession(today, timeOfDay);
+  const defs = assignMonsters(input.pastSessions, rareEligible);
+  const missScores = computeMissScores(input.pastSessions);
+  const health = (z: Zone): number =>
+    input.mode === 'timer-only' ? H_MAX : startingHealth(z, missScores);
+  const monsters = zones.map((z) => makeMonster(defs[z.index], z, health(z)));
   return {
     mode: input.mode,
     zones,
