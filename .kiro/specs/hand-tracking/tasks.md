@@ -87,12 +87,12 @@ starts in camera mode. Guided-timer mode is never changed.
     - Test file: `tests/aggregate-second.test.ts`, `tests/tracking-source-rules.test.ts`
     - Files this task may change: `src/tracking/aggregate-second.ts`, `tests/aggregate-second.test.ts`, `tests/tracking-source-rules.test.ts`
 
-  - [ ] 1E. **Frame window and landmark adapters** (requirements 4.7, 5, 6.2)
-    - [ ] 1E.1 `src/tracking/frame-window.ts`: `framesInLastSecond(timed, nowMs)` keeps frames with `t` in `(nowMs - WINDOW_MS, nowMs]`, in order. Time is an argument
-    - [ ] 1E.2 `src/tracking/landmark-adapters.ts`: pure functions that turn plain MediaPipe-shaped result objects into `FaceInput[]` and `HandInput[]`, for the face detector and for the face mesh (using the point orders recorded in `docs/review/MEDIAPIPE-DOC-CHECK.md`, not the ones in `design.md` if they differ). Empty results give empty lists
-    - [ ] 1E.3 Test `framesInLastSecond` (design test 16): exactly the frames in the window; an empty window when the tracker stalled; `aggregateSecond` of that is `null`
-    - [ ] 1E.4 Test `landmarkAdapters` (design test 17), with hand-written result objects
-    - [ ] 1E.5 Extend `thresholdsInOneFile` in `tests/tracking-source-rules.test.ts` to cover `frame-window.ts`
+  - [x] 1E. **Frame window and landmark adapters** (requirements 4.7, 5, 6.2)
+    - [x] 1E.1 `src/tracking/frame-window.ts`: `framesInLastSecond(timed, nowMs)` keeps frames with `t` in `(nowMs - WINDOW_MS, nowMs]`, in order. Time is an argument
+    - [x] 1E.2 `src/tracking/landmark-adapters.ts`: pure functions that turn plain MediaPipe-shaped result objects into `FaceInput[]` and `HandInput[]`, for the face detector and for the face mesh (using the point orders recorded in `docs/review/MEDIAPIPE-DOC-CHECK.md`, not the ones in `design.md` if they differ). Empty results give empty lists
+    - [x] 1E.3 Test `framesInLastSecond` (design test 16): exactly the frames in the window; an empty window when the tracker stalled; `aggregateSecond` of that is `null`
+    - [x] 1E.4 Test `landmarkAdapters` (design test 17), with hand-written result objects
+    - [x] 1E.5 Extend `thresholdsInOneFile` in `tests/tracking-source-rules.test.ts` to cover `frame-window.ts`
     - _Requirements: 4.7, 5.1, 5.2, 6.2, 6.4_
     - Test file: `tests/frame-window.test.ts`, `tests/landmark-adapters.test.ts`, `tests/tracking-source-rules.test.ts`
     - Files this task may change: `src/tracking/frame-window.ts`, `src/tracking/landmark-adapters.ts`, `tests/frame-window.test.ts`, `tests/landmark-adapters.test.ts`, `tests/tracking-source-rules.test.ts`
