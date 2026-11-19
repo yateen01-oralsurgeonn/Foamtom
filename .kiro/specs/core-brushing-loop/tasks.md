@@ -108,10 +108,10 @@ and are wired into the game in task 14.
   - Test file: `tests/speaker.test.ts`
   - `LICENSE` already exists in the repo root; do not create or change it.
 
-- [ ] 10. **Storage**
-  - [ ] 10.1 Implement `createStorage(backend)` in `src/storage/storage.ts` with `saveSession`, `loadSessions`, `clearAll`; key `foamtom:v1`; schema per design section 8
-  - [ ] 10.2 Missing, unreadable or other-version data loads as no sessions; a throwing backend never throws out of save or load
-  - [ ] 10.3 Test `storageRoundTrip` (design test 13)
+- [x] 10. **Storage**
+  - [x] 10.1 Implement `createStorage(backend)` in `src/storage/storage.ts` with `saveSession`, `loadSessions`, `clearAll`; key `foamtom:v1`; schema per design section 8
+  - [x] 10.2 Missing, unreadable or other-version data loads as no sessions; a throwing backend never throws out of save or load
+  - [x] 10.3 Test `storageRoundTrip` (design test 13)
   - _Requirements: 9.4–9.7, 14.7_
   - Test file: `tests/storage.test.ts`
 
