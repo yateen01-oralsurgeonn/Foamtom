@@ -18,15 +18,15 @@ and are wired into the game in task 14.
 
 ---
 
-- [ ] 1. **Project setup and guards**
-  - [ ] 1.1 Create `package.json`, `tsconfig.json`, `vite.config.ts`, `index.html` and a shell `src/main.ts` that renders only the game title
-  - [ ] 1.2 Vite + TypeScript with `strict: true`; Vite `base: './'`; set `build.assetsInlineLimit` to `0` so no asset becomes a `data:` URI under the Content-Security-Policy
-  - [ ] 1.3 Install Vitest and fast-check as dev dependencies
-  - [ ] 1.4 Add npm scripts: `dev`, `build` (`tsc --noEmit && vite build`), `test`, `test:run`
-  - [ ] 1.5 Create the folders from `structure.md`: `src/logic/`, `src/tracking/`, `src/ui/`, `src/audio/`, `src/storage/`, `public/models/`, `public/assets/`, `tests/` (keep empty folders in git with a `.gitkeep`)
-  - [ ] 1.6 Add the Content-Security-Policy `<meta>` tag to `index.html`: same-origin scripts, styles, images, media and connections only (req 12.8)
-  - [ ] 1.7 Write the privacy guard test (design test 16, `privacyGuard`) exactly as requirement 13.10 states
-  - [ ] 1.8 Write one smoke test so the test run is never empty
+- [x] 1. **Project setup and guards**
+  - [x] 1.1 Create `package.json`, `tsconfig.json`, `vite.config.ts`, `index.html` and a shell `src/main.ts` that renders only the game title
+  - [x] 1.2 Vite + TypeScript with `strict: true`; Vite `base: './'`; set `build.assetsInlineLimit` to `0` so no asset becomes a `data:` URI under the Content-Security-Policy
+  - [x] 1.3 Install Vitest and fast-check as dev dependencies
+  - [x] 1.4 Add npm scripts: `dev`, `build` (`tsc --noEmit && vite build`), `test`, `test:run`
+  - [x] 1.5 Create the folders from `structure.md`: `src/logic/`, `src/tracking/`, `src/ui/`, `src/audio/`, `src/storage/`, `public/models/`, `public/assets/`, `tests/` (keep empty folders in git with a `.gitkeep`)
+  - [x] 1.6 Add the Content-Security-Policy `<meta>` tag to `index.html`: same-origin scripts, styles, images, media and connections only (req 12.8)
+  - [x] 1.7 Write the privacy guard test (design test 16, `privacyGuard`) exactly as requirement 13.10 states
+  - [x] 1.8 Write one smoke test so the test run is never empty
   - _Requirements: 1.1, 12.7, 12.8, 13.10, 15.6_
   - Test file: `tests/privacy-guard.test.ts`, `tests/smoke.test.ts`
 
