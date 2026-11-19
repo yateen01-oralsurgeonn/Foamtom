@@ -86,13 +86,13 @@ and are wired into the game in task 14.
   - _Requirements: 4.1–4.3, 4.5, 6.2, 12.1–12.6, 13.11_
   - Test file: `tests/lines.test.ts`
 
-- [ ] 8. **Session screen, wired up (PLAYABLE timer-only game)**
-  - [ ] 8.1 `src/ui/session-screen.ts`: start button (large, with an icon, ≥ 48 px); a simple drawn monster over the active zone; countdown; caption; smoke after a defeat; everything painted from `toView(state)`
-  - [ ] 8.2 `src/ui/end-card.ts`: the session's four monsters, the closing line caption, one button back to the start screen, no urge to play again
-  - [ ] 8.3 `src/main.ts`: wire the clock, `nullSignalSource`, the browser's visibility and wake-lock adapters, the game loop and the screens. A session dropped after 60 s hidden returns to the start screen. No storage yet: `pastSessions` is an empty list
-  - [ ] 8.4 `index.html` and `src/ui/styles.css`: portrait layout, usable in landscape and on desktop, no "rotate" block; colour is never the only signal. Link the stylesheet from `index.html` and set styles through classes or `element.style`, so the Content-Security-Policy from task 1 stays same-origin only
-  - [ ] 8.5 Captions only in this task. Speech comes in task 9, and the game is not published before then (req 4.3)
-  - [ ] 8.6 Check by hand: `npm run dev`, tap start, watch a full 2-minute timer-only session through to the end card
+- [x] 8. **Session screen, wired up (PLAYABLE timer-only game)**
+  - [x] 8.1 `src/ui/session-screen.ts`: start button (large, with an icon, ≥ 48 px); a simple drawn monster over the active zone; countdown; caption; smoke after a defeat; everything painted from `toView(state)`
+  - [x] 8.2 `src/ui/end-card.ts`: the session's four monsters, the closing line caption, one button back to the start screen, no urge to play again
+  - [x] 8.3 `src/main.ts`: wire the clock, `nullSignalSource`, the browser's visibility and wake-lock adapters, the game loop and the screens. A session dropped after 60 s hidden returns to the start screen. No storage yet: `pastSessions` is an empty list
+  - [x] 8.4 `index.html` and `src/ui/styles.css`: portrait layout, usable in landscape and on desktop, no "rotate" block; colour is never the only signal. Link the stylesheet from `index.html` and set styles through classes or `element.style`, so the Content-Security-Policy from task 1 stays same-origin only
+  - [x] 8.5 Captions only in this task. Speech comes in task 9, and the game is not published before then (req 4.3)
+  - [x] 8.6 Check by hand: `npm run dev`, tap start, watch a full 2-minute timer-only session through to the end card
   - _Requirements: 8.4, 11.2–11.5, 11.7–11.11, 15.1, 15.5_
   - Test file: none new (the logic it paints is already tested); the privacy guard must still pass
 
