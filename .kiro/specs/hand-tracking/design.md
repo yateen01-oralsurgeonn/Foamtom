@@ -286,9 +286,12 @@ if n < MIN_FRAMES_PER_SECOND: return null                       # 4.2
 seen = count(frames where faceSeen)
 if seen * 2 < n: return null                                    # 4.3 (exactly half is enough)
 majority(pred) = count(frames where pred) * 2 > n               # strictly more than half (4.4)
-handNearMouth = majority(f.handNearMouth)
-side  = majority(f.side == 'left') ? 'left'  : majority(f.side == 'right') ? 'right' : 'unknown'
-level = majority(f.level == 'upper') ? 'upper' : majority(f.level == 'lower') ? 'lower' : 'unknown'
+handNearMouth = majority(f.handNearMouth)                       # strict majority of ALL frames
+near  = frames where handNearMouth                              # side and level count only these
+m     = near.length
+majorityNear(pred) = count(near where pred) * 2 > m             # strictly more than half of the near frames
+side  = m == 0 ? 'unknown' : majorityNear(f.side == 'left') ? 'left'  : majorityNear(f.side == 'right') ? 'right' : 'unknown'
+level = m == 0 ? 'unknown' : majorityNear(f.level == 'upper') ? 'upper' : majorityNear(f.level == 'lower') ? 'lower' : 'unknown'
 moving = travel(frames) > MOVING_MIN_TRAVEL                     # 4.5
 return { handNearMouth, side, level, moving }
 ```
@@ -299,9 +302,11 @@ return { handNearMouth, side, level, moving }
   distance between first and last position, because a brushing stroke goes back and forth.
   Because `handRel` is measured on the face's own axes, moving the head moves the hand and
   mouth together and adds no travel.
-- `side` and `level` can only be non-`unknown` in frames with the hand near the mouth, so
-  if `handNearMouth` has no majority neither side nor level can have one; they come out
-  `unknown`. A test checks this (req 11.4f).
+- `side` and `level` are decided by strict majority among the frames where `handNearMouth`
+  is true (only those frames are counted). They are `unknown` when no side or level holds
+  more than half of those frames, and `unknown` when no frame has the hand near the mouth.
+  Reason: core 6.3 drains an unclear signal 0 but a `null` signal 2, so dead-zone frames
+  must not cancel clear readings. A test checks this (req 11.4f).
 - No clock, no randomness (req 4.6). The array order is the order of the frames.
 - The result for one second is built from frames of that second only. After `latest()` has
   used them they are removed (req 4.7, section 6).
@@ -496,7 +501,9 @@ outside `src/` so the production build never reaches them.
 
 `docs/review/TRACKING-TEST-RESULTS.md`. Words and the letters below only: no images, no
 screenshots, no landmark values (req 1.5). Reading codes: **R** the signal read the right
-value, **W** it read the wrong value, **U** it read `unknown` (counts as not right). Every
+value, **W** it read the wrong value, **U** it read `unknown`, **N** the signal was `null`.
+U and N both count as not right. Many N while brushing means try `FACE_MODEL = 'mesh'`.
+Every
 table has a Date column and a Note column.
 
 1. **Set-up.** Device, browser, face model used (`detector` or `mesh`), `HAND_POINT`, date.
@@ -516,8 +523,11 @@ table has a Date column and a Note column.
 6. **Counts and decision.** Surfaces passing the side check, out of 24 and out of the 12 of
    each brush hand; the same for level; then two lines, "Side check: pass or fail" and "Level
    check: pass or fail", each with Dr. Yatin's initials and date.
-7. **Speed (req 10.4).** Device model, Android and Chrome versions, frames per second seen
-   with the camera on, date, pass or fail (20 or more passes), note.
+7. **Speed (req 10.4, 10.5).** Device model, Android and Chrome versions, then two separate
+   lines. (a) Picture and drawing: frames per second seen with the camera on (20 frames per
+   second in req 10.4 means the picture and the drawing), date, pass or fail (20 or more
+   passes). (b) Tracking rate: frames per second the tracker handles, on its own line; it
+   must give at least 5 frames in a normal second (req 10.5), pass or fail. Note.
 8. **Asset sizes (req 10.1).** Copy of the table in section 8, as measured by
    `scripts/measure-assets.mjs`.
 
@@ -534,11 +544,9 @@ of 3 codes are `R`) and `countPasses(rows)`. They are used by the layout test an
   (core req 5.7). No code changes it.
 - Side fails: work on this spec stops, and Dr. Yatin decides. No thresholds are tuned around
   a failed side check.
-- **How many of the surfaces must pass for "the side check passes" overall is not stated in
-  the requirements.** Dr. Yatin to confirm: how many of the 12 surfaces (for each brush hand)
-  must pass for the side check, and for the level check, to count as passed. This design
-  does not decide it. The results file records the counts only, and Dr. Yatin writes the
-  verdict.
+- **How many of the surfaces must pass** is decided in section 14 (Decisions, 19 Nov 2026,
+  item 1): there is no automatic overall pass count. The results file records the counts,
+  and Dr. Yatin writes the overall side and level verdicts himself.
 - `tasks.md` starts with the feasibility test. It may build only the parts of requirements
   2 to 4 and 6 that the debug page needs: `side.ts`, `types.ts`, `thresholds.ts`,
   `classify-frame.ts`, `aggregate-second.ts`, `frame-window.ts`, `landmark-adapters.ts`,
@@ -613,7 +621,10 @@ filled by the first task. `node scripts/measure-assets.mjs` prints the bytes of 
 ### 8.4 Speed (req 10.4, 10.5)
 
 Manual, on a real mid-range 2022 Android phone in Chrome, recorded in the results file
-(section 7.2, item 7). Pass is 20 frames per second or more with the camera on. If it falls
+(section 7.2, item 7). Pass is 20 frames per second or more with the camera on. In req 10.4 the 20 frames per
+second mean the picture and the drawing. The tracking rate is recorded on its own line in
+the results file and must give at least 5 frames in a normal second (req 10.5).
+If it falls
 short, in order: raise `TRACK_MIN_INTERVAL_MS`; try the other delegate (the loader asks for
 the GPU delegate first and falls back to the CPU one if creation fails); try the face
 detector instead of the mesh. The session clock never waits for the tracker (core req 2.4)
@@ -714,7 +725,7 @@ function monsterAnchor(draw: DrawValue | null, zone: Zone): Anchor | null   // n
 | Tab visible again within 60 s | Loop calls `start()`; `latest()` is `null` until it is `'ready'`; no new prompt where the browser allows; a refusal or failure leaves `null` for the rest of the session and the mode stays | 7.3, 7.4 |
 | `stop()` while `start()` waits | Generation counter: camera and trackers are released as soon as they arrive | 6.5 |
 | Face lost during a camera session | Monster goes to the plain-screen position, no message | 8.4 |
-| Results file holds an image or landmark-like numbers | `resultsFileIsWordsOnly` fails (it is skipped until the file exists; the task order of req 1.14 is what forces the file to exist) | 1.5, 1.14 |
+| Results file holds an image or landmark-like numbers | `resultsFileIsWordsOnly` fails (it never skips: the first task creates the file as an empty template, so the test always runs) | 1.5, 1.14 |
 | MediaPipe needs a CSP or guard exception | Work stops; Dr. Yatin decides | 9.4 |
 
 
@@ -736,7 +747,7 @@ or a real person's data. Fixtures are plain numbers written by hand in
 | 6 | `deadZones` | 3.4, 3.5, 11.4c | Hand at generated offsets, including exactly on each dead-zone edge | Inside (strict `<`) gives `unknown`; on the edge and beyond gives the side or level |
 | 7 | `nearMouthExact` | 3.3, 11.4d | Hand at generated distances, including exactly `NEAR_MOUTH_FACE_WIDTHS` | `handNearMouth` is true exactly when distance is at most the constant |
 | 8 | `aggregateNullRules` | 4.2, 4.3, 11.4e | Any list of frames | Fewer than 5 frames gives `null`; face seen in fewer than half gives `null`; otherwise never `null` |
-| 9 | `aggregateMajority` | 4.4, 11.4f | Any list of frames | Each field equals the value held by strictly more than half of the frames, else `unknown` or `false` |
+| 9 | `aggregateMajority` | 4.4, 11.4f | Any list of frames | `handNearMouth` equals the value held by strictly more than half of all frames, else `false`. `side` and `level` equal the value held by strictly more than half of the frames where `handNearMouth` is true, else `unknown`; `unknown` when no frame has the hand near the mouth. Dead-zone frames among the near frames count in the near-frame total, so they can stop a majority, but frames with the hand away never do |
 | 10 | `aggregateMoving` | 4.5, 11.4g | Hand paths: still, jitter below `MOVE_JITTER_STEP`, strokes of known length | Still or jitter-only gives `moving` false; path above `MOVING_MIN_TRAVEL` gives true; head moves with the hand add nothing |
 | 11 | `aggregateIsDeterministic` | 4.6 | Any frames, called twice and with the array copied | Equal results; the input array is not changed |
 | 12 | `secondFaceIgnored` | 5.1, 11.4h | A frame plus a second, smaller face anywhere | Same `FrameResult` |
@@ -757,8 +768,8 @@ or a real person's data. Fixtures are plain numbers written by hand in
 | 27 | `cameraCodeIsLazy` | 6.3 | The same build, with a manifest | The entry chunk's static imports do not reach `camera-source` or `tasks-vision` |
 | 28 | `firstLoadUnder5MB` | 10.3 | The same build | Bytes of `dist/` excluding `models/` and the lazy camera chunk are under 5,000,000 |
 | 29 | `fixturesAreHandWritten` | 11.3 | Files in `tests/fixtures/tracking/` | Only `.ts` files; each starts with a `// hand-written` line; each exports only names listed in the tests; no file holds more than 200 numeric literals; no JSON-like capture |
-| 30 | `surfacePasses` | 1.12, 1.13 | Any three codes `R`, `W`, `U` | True exactly when at least two are `R` |
-| 31 | `resultsFileIsWordsOnly` | 1.5 | `docs/review/TRACKING-TEST-RESULTS.md`, once it exists (skipped before) | No image syntax, no `data:`, no number with three or more decimals; every table row has a date; reading cells use only `R`, `W`, `U` |
+| 30 | `surfacePasses` | 1.12, 1.13 | Any three codes from `R`, `W`, `U`, `N` | True exactly when at least two are `R` (`N` counts as not right) |
+| 31 | `resultsFileIsWordsOnly` | 1.5 | `docs/review/TRACKING-TEST-RESULTS.md` (never skipped: the first task creates it as an empty template, headings and empty tables, no readings, so the test always runs) | No image syntax, no `data:`, no number with three or more decimals; every table row has a date; reading cells use only `R`, `W`, `U`, `N` |
 | 32 | `debugUsesSharedFunctions` | 1.4 | Imports of `debug/tracking-debug.ts` | Imports `classifyFrame`, `aggregateSecond` and `thresholds.ts` from `src/tracking/` and defines none of its own |
 
 Test helpers: a `frameArb` that builds a valid `FrameInput` from a face centre, face width, tilt
@@ -850,19 +861,19 @@ page and on a real phone.
 
 ---
 
-## 14. Dr. Yatin to confirm
+## 14. Decisions, 19 Nov 2026
 
-1. **Pass count for the checks (req 1.12, 1.13, 1.14).** The requirements say a surface
-   passes with 2 of 3 right readings, but not how many of the 12 surfaces (for each brush
-   hand) must pass for the side check, or for the level check, to count as passed. Dr. Yatin
-   to confirm the number. Until he does, the results file records counts and he writes the
-   verdict.
-2. **Changing the hand point after the test (req 1.13).** The design starts with the palm
-   centre. If another hand point passes where the palm fails, Dr. Yatin to confirm before
-   `HAND_POINT` is changed.
-3. **Any exception to the security policy or privacy guard (req 9.4).** If MediaPipe cannot
-   run with only `'wasm-unsafe-eval'` added to `script-src`, work stops and Dr. Yatin to
-   confirm what happens next.
+Dr. Yatin approved these after the design review (`docs/review/DESIGN-REVIEW-hand-tracking.md`).
+
+1. **No automatic overall pass count (req 1.12, 1.13, 1.14).** The results file records
+   counts. Dr. Yatin writes the overall side and level verdicts himself. A surface passes at
+   2 of 3 right readings.
+2. **Changing the hand point after the test (req 1.13).** `HAND_POINT` may change from
+   `palm` to `wrist` or `fingertips` if that point passes where the palm fails, with Dr.
+   Yatin's yes.
+3. **CSP and privacy guard (req 9.3, 9.4).** Adding only `'wasm-unsafe-eval'` to
+   `script-src` is allowed. Any other CSP relaxation (`blob:`, `'unsafe-eval'`, a host) or
+   any exception to the privacy guard stops work, and Dr. Yatin decides.
 
 No dental wording and no number a parent will see is set in this spec. The thresholds in
 section 5.5 are starting values for tuning on the debug page, and are not dental rules.

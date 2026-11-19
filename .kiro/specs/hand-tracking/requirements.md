@@ -229,7 +229,7 @@ return `null`.
 4.4 OTHERWISE THE SYSTEM SHALL return a signal in which `handNearMouth`, `side` and
 `level` are each decided **by majority** of the frames. WHEN there is no clear majority
 for a field, that field SHALL be `unknown` (`side` and `level`) or `false`
-(`handNearMouth`).
+(`handNearMouth`). `side` and `level` are decided by majority among the frames in which `handNearMouth` is true.
 
 4.5 `moving` SHALL be decided from how far the hand travelled during the second, measured
 relative to face width (requirement 3.2) and compared with `MOVING_MIN_TRAVEL`.
