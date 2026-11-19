@@ -30,12 +30,12 @@ and are wired into the game in task 14.
   - _Requirements: 1.1, 12.7, 12.8, 13.10, 15.6_
   - Test file: `tests/privacy-guard.test.ts`, `tests/smoke.test.ts`
 
-- [ ] 2. **Types, constants, time of day**
-  - [ ] 2.1 Define all interfaces in `src/logic/types.ts` per design section 4
-  - [ ] 2.2 Define every constant from design section 6 and `ZONE_ORDER` in `src/logic/constants.ts`
-  - [ ] 2.3 Implement `classifyTimeOfDay(hour)` in `src/logic/time-of-day.ts`
-  - [ ] 2.4 Test `timeOfDayAllHours` (design test 14): all 24 hours match the stated ranges
-  - [ ] 2.5 Constants tests: `ZONE_COUNT × ZONE_DURATION == SESSION_DURATION`; `KIND_FLOOR == 36`; `RESCUE_THRESHOLD == 9`; `UNTRACKED_DRAIN × ZONE_DURATION == H_MAX`; `ZONE_ORDER` is upper-right, upper-left, lower-left, lower-right
+- [x] 2. **Types, constants, time of day**
+  - [x] 2.1 Define all interfaces in `src/logic/types.ts` per design section 4
+  - [x] 2.2 Define every constant from design section 6 and `ZONE_ORDER` in `src/logic/constants.ts`
+  - [x] 2.3 Implement `classifyTimeOfDay(hour)` in `src/logic/time-of-day.ts`
+  - [x] 2.4 Test `timeOfDayAllHours` (design test 14): all 24 hours match the stated ranges
+  - [x] 2.5 Constants tests: `ZONE_COUNT × ZONE_DURATION == SESSION_DURATION`; `KIND_FLOOR == 36`; `RESCUE_THRESHOLD == 9`; `UNTRACKED_DRAIN × ZONE_DURATION == H_MAX`; `ZONE_ORDER` is upper-right, upper-left, lower-left, lower-right
   - _Requirements: 1.2, 3.1, 3.2, 5.1, 5.7, 10.5_
   - Test file: `tests/constants.test.ts`, `tests/time-of-day.test.ts`
 
