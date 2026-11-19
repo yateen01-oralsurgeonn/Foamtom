@@ -138,12 +138,12 @@ and are wired into the game in task 14.
   - _Requirements: 13.4_
   - Test file: `tests/stats.test.ts`
 
-- [ ] 14. **Wire memory in**
+- [x] 14. **Wire memory in**
   - [x] 14.1 In `src/logic/session.ts`, remove the two TEMPORARY constants from task 4. `startSession` now uses `isRareEligibleForNewSession`, `computeMissScores` and `startingHealth` (timer-only still starts every monster at `H_MAX`)
   - [x] 14.2 In `src/main.ts`, load past sessions at start and save the result at the end. The end card already shows the session's four monsters from task 8; `end-card.ts` does not change
   - [x] 14.3 Update `tests/session.test.ts` only if a test needs the new behaviour
   - [x] 14.4 Integration test with a fake backend and fake clock, composing the same calls `main.ts` makes (load, `startSession`, ticks, `toSessionResult`, save), without importing `main.ts`: play a morning timer-only session, then a night one on the same date. Both are saved; the second is rare-eligible and has exactly one rare monster, on the last zone; a third session's commons follow the assignment rule
-  - [ ] 14.5 Check by hand: `npm run dev`, play two sessions, reload the page, confirm the saved sessions change which monsters appear
+  - [x] 14.5 Check by hand: `npm run dev`, play two sessions, reload the page, confirm the saved sessions change which monsters appear
   - _Requirements: 8.4, 9.4, 10.6, 10.9, 15.5_
   - Test file: `tests/integration.test.ts`, `tests/session.test.ts` (only if needed)
 

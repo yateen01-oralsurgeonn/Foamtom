@@ -257,6 +257,7 @@ bonus `kiroween2026` 0 / 4000 used, 46 days left. `kiro-cli` prints no credit li
 | 19 Nov | B, spec fix | `f02-parent-stats-definitions.md` | - | - | not read | 5 | only `design.md`, `requirements.md`, `tasks.md` (13.1 text) | abce375 | Clean. Sum of `secondsBrushed` over verified camera zones; `zoneMostMissed` returns `ZoneId \| null` over ALL camera sessions, ties to `ZONE_ORDER`. |
 | 19 Nov | B, task 13 (second try) | `b00-build-task.md` | - | - | not read | 5 | all PASS, 93 tests | 2ccaa2c | Clean. (Driver slip: the f02 commit had failed, so the first check showed a false "spec untouched" FAIL; fixed by committing f02 first.) |
 | 19 Nov | B, task 14 | `b00-build-task.md` | bonus 46.27 | bonus 51.91 (tasks 13 try 1, f02, 13 try 2 and 14 together: 5.64) | see left | 15 | all PASS, 95 tests; 14.5 hand check NOT done | fd61d1f | Clean. Kiro ticked 14.1-14.4 only; task 14 and 14.5 stay unticked until Dr. Yatin plays two sessions and reloads. One of Kiro's own test bugs fixed inside the run. |
+| 19 Nov | B, task 14.5 | by hand | - | - | - | - | ticked on Dr. Yatin's instruction | next commit | 14.5 and task 14 ticked at Dr. Yatin's word; the hand check result was not written into the log. |
 
 **Credits, 19 Nov after task 12:** bonus `kiroween2026` 46.27 / 4000 used (43 days left); plan 27 / 50 (unchanged, resets 1 Dec). Since the end of stage A (17.93) the bonus has risen by 28.34 across tasks 1-12, about 2.4 per task. Read from `app.kiro.dev/account/usage`.
 
