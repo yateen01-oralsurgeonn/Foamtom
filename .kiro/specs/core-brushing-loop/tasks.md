@@ -79,10 +79,10 @@ and are wired into the game in task 14.
   - _Requirements: 2.6, 2.7, 8.1, 8.3, 11.6, 13.12, 15.2, 15.3, 15.4_
   - Test file: `tests/game-loop.test.ts`
 
-- [ ] 7. **Voice lines and wording guard**
-  - [ ] 7.1 Write `src/audio/lines.ts` with lines `{ id, text, caption }` for: the start button, the four zones, the smoke line ("Keep brushing! Brush the smoke away!"), and the end card
-  - [ ] 7.2 Make the line ids match the `captionLineId` values that `toView` produces (task 5), and check this in the test
-  - [ ] 7.3 Test `wordingGuard` (design test 17)
+- [x] 7. **Voice lines and wording guard**
+  - [x] 7.1 Write `src/audio/lines.ts` with lines `{ id, text, caption }` for: the start button, the four zones, the smoke line ("Keep brushing! Brush the smoke away!"), and the end card
+  - [x] 7.2 Make the line ids match the `captionLineId` values that `toView` produces (task 5), and check this in the test
+  - [x] 7.3 Test `wordingGuard` (design test 17)
   - _Requirements: 4.1–4.3, 4.5, 6.2, 12.1–12.6, 13.11_
   - Test file: `tests/lines.test.ts`
 
