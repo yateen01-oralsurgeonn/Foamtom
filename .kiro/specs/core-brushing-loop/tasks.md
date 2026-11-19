@@ -59,13 +59,13 @@ and are wired into the game in task 14.
   - _Requirements: 1.3, 2.1–2.6, 3.3–3.5, 5.2–5.6, 6.1, 6.3, 7.1–7.4, 7.7, 8.2, 8.5_
   - Test file: `tests/session.test.ts`
 
-- [ ] 5. **Session result and view**
-  - [ ] 5.1 Implement `toSessionResult(state)` in `src/logic/session-result.ts` per design section 5
-  - [ ] 5.2 Implement `toView(state)` in `src/logic/view.ts`: `{ phase, zoneId, countdown, captionLineId, monsterId, healthFraction, smokeFraction }`. Document the `captionLineId` values it can produce, so task 7 can match them
-  - [ ] 5.3 Test `resultInvariants` (design test 6)
-  - [ ] 5.4 Test `smokeChangesNothingThatCounts` (design test 7)
-  - [ ] 5.5 Test `viewMatchesState` (design test 18)
-  - [ ] 5.6 Carry-over from task 4: a completed session has `durationSeconds == 120`; a timer-only result has 30 brushed, 0 untracked and every zone unverified
+- [x] 5. **Session result and view**
+  - [x] 5.1 Implement `toSessionResult(state)` in `src/logic/session-result.ts` per design section 5
+  - [x] 5.2 Implement `toView(state)` in `src/logic/view.ts`: `{ phase, zoneId, countdown, captionLineId, monsterId, healthFraction, smokeFraction }`. Document the `captionLineId` values it can produce, so task 7 can match them
+  - [x] 5.3 Test `resultInvariants` (design test 6)
+  - [x] 5.4 Test `smokeChangesNothingThatCounts` (design test 7)
+  - [x] 5.5 Test `viewMatchesState` (design test 18)
+  - [x] 5.6 Carry-over from task 4: a completed session has `durationSeconds == 120`; a timer-only result has 30 brushed, 0 untracked and every zone unverified
   - _Requirements: 7.8, 9.1–9.3, 10.1–10.3, 11.3, 11.4_
   - Test file: `tests/session-result.test.ts`, `tests/view.test.ts`
 
