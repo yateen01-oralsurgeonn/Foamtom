@@ -52,12 +52,12 @@ starts in camera mode. Guided-timer mode is never changed.
     - Test file: none (documentation task). The existing privacy guard must still pass.
     - Files this task may change: `package.json`, `package-lock.json`, `docs/review/MEDIAPIPE-DOC-CHECK.md`
 
-  - [ ] 1B. **Left and right, types, thresholds** (requirements 2, 3.7)
-    - [ ] 1B.1 `src/tracking/side.ts`: `rawToChildSide(raw: 'raw-left' | 'raw-right'): Side`, the only place where left and right are swapped (design 5.1)
-    - [ ] 1B.2 `src/tracking/types.ts`: `Point`, `FaceInput`, `HandInput`, `FrameInput`, `HandPointKind`, `FrameResult`, `TimedFrame` as in design section 4. Import `Side`, `Level` and `BrushingSignal` from `src/logic/types.ts`; do not redefine them. `DrawValue` is NOT defined here (task 3)
-    - [ ] 1B.3 `src/tracking/thresholds.ts`: every constant of design section 5.5 (`NEAR_MOUTH_FACE_WIDTHS` 0.7, `SIDE_DEAD_ZONE` 0.10, `LEVEL_DEAD_ZONE` 0.10, `MIN_FRAMES_PER_SECOND` 5, `MIN_FACE_FRACTION` 0.5, `MOVING_MIN_TRAVEL` 0.30, `MOVE_JITTER_STEP` 0.01, `WINDOW_MS` 1000, `TRACK_MIN_INTERVAL_MS` 100, `HAND_POINT` `'palm'`, `FACE_MODEL` `'detector'`), each with a comment saying what it measures and its unit
-    - [ ] 1B.4 Test `rawToChildSideFixture` (design test 1): `'raw-right'` gives `left`, `'raw-left'` gives `right`. This is the first test written for the spec (requirement 2.4, 11.1). The `classifyFrame` half of this test is added in 1C
-    - [ ] 1B.5 Test that every constant of design 5.5 is exported from `thresholds.ts` with the stated start value and that `MIN_FRAMES_PER_SECOND` is 5 and `MIN_FACE_FRACTION` is 0.5 (the values that requirements 4.2 and 4.3 name). Do NOT pin the other start values, because they are tuned later
+  - [x] 1B. **Left and right, types, thresholds** (requirements 2, 3.7)
+    - [x] 1B.1 `src/tracking/side.ts`: `rawToChildSide(raw: 'raw-left' | 'raw-right'): Side`, the only place where left and right are swapped (design 5.1)
+    - [x] 1B.2 `src/tracking/types.ts`: `Point`, `FaceInput`, `HandInput`, `FrameInput`, `HandPointKind`, `FrameResult`, `TimedFrame` as in design section 4. Import `Side`, `Level` and `BrushingSignal` from `src/logic/types.ts`; do not redefine them. `DrawValue` is NOT defined here (task 3)
+    - [x] 1B.3 `src/tracking/thresholds.ts`: every constant of design section 5.5 (`NEAR_MOUTH_FACE_WIDTHS` 0.7, `SIDE_DEAD_ZONE` 0.10, `LEVEL_DEAD_ZONE` 0.10, `MIN_FRAMES_PER_SECOND` 5, `MIN_FACE_FRACTION` 0.5, `MOVING_MIN_TRAVEL` 0.30, `MOVE_JITTER_STEP` 0.01, `WINDOW_MS` 1000, `TRACK_MIN_INTERVAL_MS` 100, `HAND_POINT` `'palm'`, `FACE_MODEL` `'detector'`), each with a comment saying what it measures and its unit
+    - [x] 1B.4 Test `rawToChildSideFixture` (design test 1): `'raw-right'` gives `left`, `'raw-left'` gives `right`. This is the first test written for the spec (requirement 2.4, 11.1). The `classifyFrame` half of this test is added in 1C
+    - [x] 1B.5 Test that every constant of design 5.5 is exported from `thresholds.ts` with the stated start value and that `MIN_FRAMES_PER_SECOND` is 5 and `MIN_FACE_FRACTION` is 0.5 (the values that requirements 4.2 and 4.3 name). Do NOT pin the other start values, because they are tuned later
     - _Requirements: 2.1, 2.2, 2.4, 3.7, 4.2, 4.3, 11.1_
     - Test file: `tests/side.test.ts`, `tests/thresholds.test.ts`
     - Files this task may change: `src/tracking/side.ts`, `src/tracking/types.ts`, `src/tracking/thresholds.ts`, `tests/side.test.ts`, `tests/thresholds.test.ts`
