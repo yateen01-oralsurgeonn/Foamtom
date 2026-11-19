@@ -43,11 +43,11 @@ starts in camera mode. Guided-timer mode is never changed.
   the landmark adapters, the MediaPipe loader, the page itself, and the results file.
   `camera-source.ts` (lifecycle), the preview and the monster placement are NOT built here.
 
-  - [ ] 1A. **Check MediaPipe against its documentation; install the package** (requirement 10.2)
-    - [ ] 1A.1 Run `npm install @mediapipe/tasks-vision` and note the installed version
-    - [ ] 1A.2 Read the documentation and the type definitions of that installed version, and write `docs/review/MEDIAPIPE-DOC-CHECK.md` (words only) with, for each item below, what the documentation says and whether `design.md` section 8.1 matches: the names and file formats of the hand landmarker, face detector and face landmarker models; the order of the 21 hand landmarks (0 wrist, 4 thumb tip, 8, 12, 16, 20 fingertips, 5, 9, 13, 17 knuckles); which keypoint of the face detector is the mouth and which two are the ears (and whether they are normalised 0 to 1); which landmark indices of the face mesh give the mouth centre and the two face edges; the name and signature of `detectForVideo`; the location of the WASM files inside the package; how to ask for the GPU delegate and the CPU delegate
-    - [ ] 1A.3 For every difference from `design.md`, write the corrected fact in the same file under the heading "Corrections to design.md". Do not edit `design.md`
-    - [ ] 1A.4 STOP if the face detector gives no usable mouth point and no two face-edge points, and the mesh is also unsuitable: tell Dr. Yatin
+  - [x] 1A. **Check MediaPipe against its documentation; install the package** (requirement 10.2)
+    - [x] 1A.1 Run `npm install @mediapipe/tasks-vision` and note the installed version
+    - [x] 1A.2 Read the documentation and the type definitions of that installed version, and write `docs/review/MEDIAPIPE-DOC-CHECK.md` (words only) with, for each item below, what the documentation says and whether `design.md` section 8.1 matches: the names and file formats of the hand landmarker, face detector and face landmarker models; the order of the 21 hand landmarks (0 wrist, 4 thumb tip, 8, 12, 16, 20 fingertips, 5, 9, 13, 17 knuckles); which keypoint of the face detector is the mouth and which two are the ears (and whether they are normalised 0 to 1); which landmark indices of the face mesh give the mouth centre and the two face edges; the name and signature of `detectForVideo`; the location of the WASM files inside the package; how to ask for the GPU delegate and the CPU delegate
+    - [x] 1A.3 For every difference from `design.md`, write the corrected fact in the same file under the heading "Corrections to design.md". Do not edit `design.md`
+    - [x] 1A.4 STOP if the face detector gives no usable mouth point and no two face-edge points, and the mesh is also unsuitable: tell Dr. Yatin
     - _Requirements: 6.2, 10.2_
     - Test file: none (documentation task). The existing privacy guard must still pass.
     - Files this task may change: `package.json`, `package-lock.json`, `docs/review/MEDIAPIPE-DOC-CHECK.md`
