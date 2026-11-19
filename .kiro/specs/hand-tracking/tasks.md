@@ -75,14 +75,14 @@ starts in camera mode. Guided-timer mode is never changed.
     - Files this task may change: `src/tracking/classify-frame.ts`, `src/tracking/thresholds.ts`, `tests/classify-frame.test.ts`, `tests/side.test.ts`, `tests/thresholds.test.ts`, `tests/tracking-source-rules.test.ts`, `tests/fixtures/tracking/frames.ts`
     - This part also adds three exports to `src/tracking/thresholds.ts`: `PALM_LANDMARKS = [0, 5, 9, 13, 17]`, `WRIST_LANDMARK = 0` and `FINGERTIP_LANDMARKS = [4, 8, 12, 16, 20]`, with a comment that they follow the MediaPipe hand landmark order. It also extends the 1B.5 test in `tests/thresholds.test.ts` so it checks that these three are exported. The rule "no numeric literal other than 0, 1, 2" in `classify-frame.ts` is unchanged
 
-  - [ ] 1D. **One-second aggregation** (requirement 4)
-    - [ ] 1D.1 `src/tracking/aggregate-second.ts`: `aggregateSecond(frames)` exactly as design 5.4 (strict majorities; `side` and `level` counted among the near-mouth frames only; `moving` from path length of `handRel`, steps under `MOVE_JITTER_STEP` ignored). No clock, no randomness
-    - [ ] 1D.2 Test `aggregateNullRules` (design test 8): fewer than 5 frames gives `null`; a face seen in fewer than half gives `null` (exactly half is enough); otherwise never `null`
-    - [ ] 1D.3 Test `aggregateMajority` (design test 9), including: dead-zone frames among the near frames can stop a majority; frames with the hand away never do; no near frame gives `unknown`
-    - [ ] 1D.4 Test `aggregateMoving` (design test 10): still, jitter-only, a stroke of known length above and below `MOVING_MIN_TRAVEL`, and a head that moves with the hand adds nothing
-    - [ ] 1D.5 Test `aggregateIsDeterministic` (design test 11): two calls and a copied array give equal results; the input is not changed
-    - [ ] 1D.6 Test `signalShape` (design test 14): the output is `null` or has exactly the four keys of core requirement 5.1 with allowed values; `FrameResult` has no field naming a tooth
-    - [ ] 1D.7 Extend `thresholdsInOneFile` in `tests/tracking-source-rules.test.ts` to cover `aggregate-second.ts`
+  - [x] 1D. **One-second aggregation** (requirement 4)
+    - [x] 1D.1 `src/tracking/aggregate-second.ts`: `aggregateSecond(frames)` exactly as design 5.4 (strict majorities; `side` and `level` counted among the near-mouth frames only; `moving` from path length of `handRel`, steps under `MOVE_JITTER_STEP` ignored). No clock, no randomness
+    - [x] 1D.2 Test `aggregateNullRules` (design test 8): fewer than 5 frames gives `null`; a face seen in fewer than half gives `null` (exactly half is enough); otherwise never `null`
+    - [x] 1D.3 Test `aggregateMajority` (design test 9), including: dead-zone frames among the near frames can stop a majority; frames with the hand away never do; no near frame gives `unknown`
+    - [x] 1D.4 Test `aggregateMoving` (design test 10): still, jitter-only, a stroke of known length above and below `MOVING_MIN_TRAVEL`, and a head that moves with the hand adds nothing
+    - [x] 1D.5 Test `aggregateIsDeterministic` (design test 11): two calls and a copied array give equal results; the input is not changed
+    - [x] 1D.6 Test `signalShape` (design test 14): the output is `null` or has exactly the four keys of core requirement 5.1 with allowed values; `FrameResult` has no field naming a tooth
+    - [x] 1D.7 Extend `thresholdsInOneFile` in `tests/tracking-source-rules.test.ts` to cover `aggregate-second.ts`
     - _Requirements: 3.8, 4.1 to 4.6, 11.2, 11.4 (e, f, g, j)_
     - Test file: `tests/aggregate-second.test.ts`, `tests/tracking-source-rules.test.ts`
     - Files this task may change: `src/tracking/aggregate-second.ts`, `tests/aggregate-second.test.ts`, `tests/tracking-source-rules.test.ts`

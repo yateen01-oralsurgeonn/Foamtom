@@ -75,7 +75,7 @@ describe('onlyOneLeftRightSwap', () => {
 // ---------- thresholdsInOneFile (design test 15) ----------
 
 // The files that exist so far. Later parts add their own files to this list.
-const FILES_WITHOUT_NUMBERS = ['src/tracking/classify-frame.ts'];
+const FILES_WITHOUT_NUMBERS = ['src/tracking/classify-frame.ts', 'src/tracking/aggregate-second.ts'];
 
 const THRESHOLD_EXPORTS = [
   'NEAR_MOUTH_FACE_WIDTHS',
