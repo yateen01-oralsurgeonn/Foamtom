@@ -455,8 +455,8 @@ than `MOVING_MIN_TRAVEL` face widths gives `moving` true.
 
 (h) **Second face:** adding a smaller second face to the frame never changes the result.
 
-(i) **Two hands:** the hand nearer the mouth decides; both hands near the mouth gives
-`side` `unknown` and `level` `unknown`.
+(i) **Two hands:** when only one hand is near the mouth, that hand decides; when both
+hands are near the mouth at once, `side` is `unknown` and `level` is `unknown`.
 
 (j) **Signal shape:** whatever the input, the output is `null` or has exactly the four
 fields of core requirement 5.1 with only the allowed values.
