@@ -69,13 +69,13 @@ and are wired into the game in task 14.
   - _Requirements: 7.8, 9.1–9.3, 10.1–10.3, 11.3, 11.4_
   - Test file: `tests/session-result.test.ts`, `tests/view.test.ts`
 
-- [ ] 6. **Signal source and game loop**
-  - [ ] 6.1 Define the `SignalSource` interface and `nullSignalSource` (`'unavailable'`, `null`) in `src/tracking/signal-source.ts`
-  - [ ] 6.2 Implement `src/ui/game-loop.ts` as in design section 3: clock, scheduler, visibility source and wake-lock helper are all passed in; the loop is given a function that builds the session from the mode, because the mode is known only after `start()` answers or 8 s pass
-  - [ ] 6.3 Test `gameLoopExactTicks` (design test 15)
-  - [ ] 6.4 Test: `start()` is called exactly once per session
-  - [ ] 6.5 Test: `stop()` is called at the end of the session and when the tab is hidden
-  - [ ] 6.6 Test: a source that is not ready within 8 s gives a timer-only session
+- [x] 6. **Signal source and game loop**
+  - [x] 6.1 Define the `SignalSource` interface and `nullSignalSource` (`'unavailable'`, `null`) in `src/tracking/signal-source.ts`
+  - [x] 6.2 Implement `src/ui/game-loop.ts` as in design section 3: clock, scheduler, visibility source and wake-lock helper are all passed in; the loop is given a function that builds the session from the mode, because the mode is known only after `start()` answers or 8 s pass
+  - [x] 6.3 Test `gameLoopExactTicks` (design test 15)
+  - [x] 6.4 Test: `start()` is called exactly once per session
+  - [x] 6.5 Test: `stop()` is called at the end of the session and when the tab is hidden
+  - [x] 6.6 Test: a source that is not ready within 8 s gives a timer-only session
   - _Requirements: 2.6, 2.7, 8.1, 8.3, 11.6, 13.12, 15.2, 15.3, 15.4_
   - Test file: `tests/game-loop.test.ts`
 
