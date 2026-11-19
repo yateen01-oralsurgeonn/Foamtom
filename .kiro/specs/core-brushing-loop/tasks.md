@@ -48,14 +48,14 @@ and are wired into the game in task 14.
   - _Requirements: 7.5, 7.6, 10.4, 10.9, 10.10, 14.3_
   - Test file: `tests/monsters.test.ts`
 
-- [ ] 4. **Session core**
-  - [ ] 4.1 At the top of `src/logic/session.ts` add two named constants, each with the comment `// TEMPORARY: replaced in task 14`: the rare-eligible value (`false`) and the starting health for every zone (`H_MAX`)
-  - [ ] 4.2 Implement `startSession(input)` exactly as design section 5, except that it uses the two TEMPORARY constants. `monster-book.ts` and `miss-score.ts` do not exist yet and are NOT created in this task
-  - [ ] 4.3 Implement `isBrushing`, `tick`, `pause`, `resume` exactly as design section 5
-  - [ ] 4.4 Test `isBrushingTruthTable` (design test 1)
-  - [ ] 4.5 Test `healthChangesOnlyByTheRule` (design test 2)
-  - [ ] 4.6 Test `sessionIsExactly120Ticks` (design test 3). `toSessionResult` does not exist yet, so assert tick count and phase here; the `durationSeconds == 120` check moves to task 5
-  - [ ] 4.7 Test `timerOnlyDefeatsEveryMonsterAt30` (design test 4). The "result has 30 brushed, 0 untracked, unverified" check moves to task 5; here assert health, outcome and the defeat tick
+- [x] 4. **Session core**
+  - [x] 4.1 At the top of `src/logic/session.ts` add two named constants, each with the comment `// TEMPORARY: replaced in task 14`: the rare-eligible value (`false`) and the starting health for every zone (`H_MAX`)
+  - [x] 4.2 Implement `startSession(input)` exactly as design section 5, except that it uses the two TEMPORARY constants. `monster-book.ts` and `miss-score.ts` do not exist yet and are NOT created in this task
+  - [x] 4.3 Implement `isBrushing`, `tick`, `pause`, `resume` exactly as design section 5
+  - [x] 4.4 Test `isBrushingTruthTable` (design test 1)
+  - [x] 4.5 Test `healthChangesOnlyByTheRule` (design test 2)
+  - [x] 4.6 Test `sessionIsExactly120Ticks` (design test 3). `toSessionResult` does not exist yet, so assert tick count and phase here; the `durationSeconds == 120` check moves to task 5
+  - [x] 4.7 Test `timerOnlyDefeatsEveryMonsterAt30` (design test 4). The "result has 30 brushed, 0 untracked, unverified" check moves to task 5; here assert health, outcome and the defeat tick
   - _Requirements: 1.3, 2.1–2.6, 3.3–3.5, 5.2–5.6, 6.1, 6.3, 7.1–7.4, 7.7, 8.2, 8.5_
   - Test file: `tests/session.test.ts`
 
