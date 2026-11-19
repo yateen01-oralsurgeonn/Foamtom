@@ -22,6 +22,16 @@ describe('thresholdsExported', () => {
     expect(['detector', 'mesh']).toContain(thresholds.FACE_MODEL);
   });
 
+  it('exports the three MediaPipe hand landmark index constants', () => {
+    const record = thresholds as Record<string, unknown>;
+    expect(typeof record.WRIST_LANDMARK).toBe('number');
+    for (const name of ['PALM_LANDMARKS', 'FINGERTIP_LANDMARKS']) {
+      const value = record[name];
+      expect(Array.isArray(value), name).toBe(true);
+      expect((value as unknown[]).every((n) => typeof n === 'number'), name).toBe(true);
+    }
+  });
+
   it('pins only the two values that requirements 4.2 and 4.3 name', () => {
     expect(thresholds.MIN_FRAMES_PER_SECOND).toBe(5);
     expect(thresholds.MIN_FACE_FRACTION).toBe(0.5);

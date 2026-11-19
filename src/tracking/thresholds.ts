@@ -34,3 +34,21 @@ export const HAND_POINT: HandPointKind = 'palm';
 
 /** Which face model feeds the classifier. Unit: kind of face model. */
 export const FACE_MODEL: 'detector' | 'mesh' = 'detector';
+
+/**
+ * Hand landmarks averaged for the 'palm' hand point. Unit: hand landmark indices.
+ * Follows the MediaPipe hand landmark order. Fixed by the library, not tuned.
+ */
+export const PALM_LANDMARKS: readonly number[] = [0, 5, 9, 13, 17];
+
+/**
+ * Hand landmark used for the 'wrist' hand point. Unit: hand landmark index.
+ * Follows the MediaPipe hand landmark order. Fixed by the library, not tuned.
+ */
+export const WRIST_LANDMARK = 0;
+
+/**
+ * Hand landmarks averaged for the 'fingertips' hand point. Unit: hand landmark indices.
+ * Follows the MediaPipe hand landmark order. Fixed by the library, not tuned.
+ */
+export const FINGERTIP_LANDMARKS: readonly number[] = [4, 8, 12, 16, 20];
