@@ -250,6 +250,11 @@ bonus `kiroween2026` 0 / 4000 used, 46 days left. `kiro-cli` prints no credit li
 | 17 Nov | A, run 13 | `t01` (first try) | - | - | - | 5 | **no file changed** | none | **STOPPED, correctly:** speaker built in task 9 but never wired to the screens. Dr. Yatin chose to fix it inside task 9. Prompt edited (commit after 8239df7). |
 | 17 Nov | A, run 14 | `t01` (second try) | - | 16.81 (bonus) | - | 5 | only `tasks.md`; 14 tasks, 86 boxes, TEMPORARY constants in 4.1 and 14.1 | 5994297 | Clean. Kiro moved the `durationSeconds` checks of design tests 3 and 4 to task 5.6 (correct: `toSessionResult` is built in task 5). |
 | 17 Nov | A, follow-up | `f01-leftover-wording.md` (from DIFF-REVIEW-v1) | 16.81 | 17.93 | 1.12 | 5 | only `requirements.md`, `design.md` | 8325fc7 | Clean. No "absent" or "placeholder" left in the spec. |
+| 14-19 Nov | B, tasks 1-10 | `b00-build-task.md` | bonus 17.93 (end of stage A) | - | not logged per run | 5-15 each | all checks passed (see commits) | up to c1582a3 | Per-run rows were not kept. |
+| 19 Nov | B, task 11 | `b00-build-task.md` | - | - | not read separately | 5 | all PASS, 78 tests | 5a39c32 | Clean. Kiro ticked only task 11. |
+| 19 Nov | B, task 12 | `b00-build-task.md` | - | bonus 46.27 (read after task 12) | not read separately | 5 | all PASS, 85 tests | adf34c9 | Clean. Kiro chose `Zone` (not `ZoneId`) as the first argument of `startingHealth`, because `startSession` passes `z` from `zones.map`; the design was silent. |
+
+**Credits, 19 Nov after task 12:** bonus `kiroween2026` 46.27 / 4000 used (43 days left); plan 27 / 50 (unchanged, resets 1 Dec). Since the end of stage A (17.93) the bonus has risen by 28.34 across tasks 1-12, about 2.4 per task. Read from `app.kiro.dev/account/usage`.
 
 **Stage A total (runs 0-14, 15 Kiro calls, 13 commits to `.kiro/`): 16.81 bonus credits**,
 against a budget of 55. The usage page gives no per-run figure, so per-run "Used" is left
