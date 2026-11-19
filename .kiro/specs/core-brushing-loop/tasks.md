@@ -97,12 +97,12 @@ and are wired into the game in task 14.
   - Test file: none new (the logic it paints is already tested); the privacy guard must still pass
 
 - [ ] 9. **Speaker and first deployment (LIVE LINK)**
-  - [ ] 9.1 `src/audio/speaker.ts`: pure `rampGain(msSinceStart)`; a pure voice chooser that picks only a voice marked local; play a clip if present, else a local Web Speech voice, else caption only
-  - [ ] 9.2 Wire the speaker into `src/ui/session-screen.ts`, `src/ui/end-card.ts` and `src/main.ts` so that every captioned line is also spoken: start button, zone lines, smoke line, end card. The start tap unlocks sound
-  - [ ] 9.3 `.github/workflows/pages.yml`: on push, run `npm run test:run`, run `npm run build`, publish `dist/` to GitHub Pages
-  - [ ] 9.4 `README.md`: what the game is, the privacy line ("The camera stays on this phone. Nothing is saved or sent."), how to run it, MIT licence. No clinic name, phone number, address or registration number; no health claims
-  - [ ] 9.5 Test `rampGainIsGentle` (design test 19)
-  - [ ] 9.6 Test: a non-local voice is never chosen
+  - [x] 9.1 `src/audio/speaker.ts`: pure `rampGain(msSinceStart)`; a pure voice chooser that picks only a voice marked local; play a clip if present, else a local Web Speech voice, else caption only
+  - [x] 9.2 Wire the speaker into `src/ui/session-screen.ts`, `src/ui/end-card.ts` and `src/main.ts` so that every captioned line is also spoken: start button, zone lines, smoke line, end card. The start tap unlocks sound
+  - [x] 9.3 `.github/workflows/pages.yml`: on push, run `npm run test:run`, run `npm run build`, publish `dist/` to GitHub Pages
+  - [x] 9.4 `README.md`: what the game is, the privacy line ("The camera stays on this phone. Nothing is saved or sent."), how to run it, MIT licence. No clinic name, phone number, address or registration number; no health claims
+  - [x] 9.5 Test `rampGainIsGentle` (design test 19)
+  - [x] 9.6 Test: a non-local voice is never chosen
   - [ ] 9.7 Check by hand after the first push: the Pages link opens and a timer-only session plays with sound (the repo's Pages source must be set to GitHub Actions in its settings)
   - _Requirements: 4.1, 4.3, 4.4, 7.8, 11.5, 12.9, 15.1, 15.6_
   - Test file: `tests/speaker.test.ts`

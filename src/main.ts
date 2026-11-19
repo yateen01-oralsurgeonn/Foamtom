@@ -1,5 +1,6 @@
 // Wiring only: the clock, the signal source, the browser's visibility and wake-lock
 // adapters, the game loop and the screens. No storage yet: past sessions are an empty list.
+import { createBrowserSpeaker } from './audio/speaker';
 import { startSession } from './logic/session';
 import { toView } from './logic/view';
 import { nullSignalSource } from './tracking/signal-source';
@@ -65,13 +66,18 @@ function localDate(now: Date): string {
 }
 
 if (app) {
-  const screen = createSessionScreen(app, { onStart: () => void loop.begin() });
-  const endCard = createEndCard(app, {
-    onDone: () => {
-      endCard.hide();
-      screen.showStart();
+  const speaker = createBrowserSpeaker();
+  const screen = createSessionScreen(app, { onStart: () => void loop.begin() }, speaker);
+  const endCard = createEndCard(
+    app,
+    {
+      onDone: () => {
+        endCard.hide();
+        screen.showStart();
+      },
     },
-  });
+    speaker,
+  );
 
   const loop = createGameLoop({
     clock: { now: () => Date.now() },
@@ -92,6 +98,7 @@ if (app) {
     onState: (state) => screen.paint(toView(state)),
     onEnded: (state) => {
       screen.hide();
+      speaker.stop();
       endCard.show(state.monsters.map((m) => m.def));
     },
     onDropped: () => {

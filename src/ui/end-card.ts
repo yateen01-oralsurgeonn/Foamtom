@@ -1,7 +1,8 @@
 // The end card (design section 10, req 15.5): the session's four monsters, the closing
 // line as a caption, and one button back to the start screen. It does not urge the child
-// to play again. Captions only in this task; speech arrives in task 9.
+// to play again. The closing line is captioned and spoken.
 import { getLine } from '../audio/lines';
+import type { Speaker } from '../audio/speaker';
 import type { MonsterDef } from '../logic/types';
 import { drawMonster } from './session-screen';
 
@@ -15,7 +16,7 @@ export interface EndCard {
   hide(): void;
 }
 
-export function createEndCard(root: HTMLElement, handlers: EndCardHandlers): EndCard {
+export function createEndCard(root: HTMLElement, handlers: EndCardHandlers, speaker: Speaker): EndCard {
   const card = document.createElement('section');
   card.className = 'screen end-card';
   card.hidden = true;
@@ -58,6 +59,7 @@ export function createEndCard(root: HTMLElement, handlers: EndCardHandlers): End
         }),
       );
       card.hidden = false;
+      speaker.say('end');
     },
 
     hide(): void {

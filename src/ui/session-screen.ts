@@ -1,9 +1,10 @@
 // The plain session screen (design section 10, req 11.2-11.5, 11.10, 11.11, 15.1).
 // Start button, one monster over the active zone, countdown, caption, smoke after a
-// defeat. Everything painted during a session comes from `toView(state)`. Captions only:
-// speech arrives in task 9. No camera preview in this spec.
+// defeat. Everything painted during a session comes from `toView(state)`. Every captioned
+// line is also spoken through the speaker. No camera preview in this spec.
 // Styles are set through classes or element.style only (Content-Security-Policy).
 import { getLine } from '../audio/lines';
+import type { Speaker } from '../audio/speaker';
 import { MONSTERS } from '../logic/monsters';
 import type { MonsterDef, ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
@@ -57,7 +58,11 @@ export interface SessionScreen {
   hide(): void;
 }
 
-export function createSessionScreen(root: HTMLElement, handlers: SessionScreenHandlers): SessionScreen {
+export function createSessionScreen(
+  root: HTMLElement,
+  handlers: SessionScreenHandlers,
+  speaker: Speaker,
+): SessionScreen {
   const screen = el('section', 'screen');
 
   // Start panel
@@ -96,9 +101,12 @@ export function createSessionScreen(root: HTMLElement, handlers: SessionScreenHa
 
   let drawnMonsterId: string | null = null;
   let monsterEl: HTMLElement | null = null;
+  let spokenLineId: string | null = null;
 
   startButton.addEventListener('click', () => {
     startButton.disabled = true; // one tap starts one session
+    speaker.unlock(); // this tap unlocks sound
+    speaker.say('start');
     handlers.onStart();
   });
 
@@ -117,6 +125,8 @@ export function createSessionScreen(root: HTMLElement, handlers: SessionScreenHa
   return {
     showStart(): void {
       startButton.disabled = false;
+      spokenLineId = null;
+      speaker.stop();
       sessionPanel.hidden = true;
       startPanel.hidden = false;
       screen.hidden = false;
@@ -130,6 +140,12 @@ export function createSessionScreen(root: HTMLElement, handlers: SessionScreenHa
 
       countdown.textContent = String(view.countdown);
       sessionCaption.textContent = getLine(view.captionLineId)?.caption ?? '';
+      if (view.phase === 'paused') {
+        speaker.stop(); // the child has left the screen
+      } else if (view.captionLineId !== spokenLineId) {
+        spokenLineId = view.captionLineId;
+        speaker.say(view.captionLineId); // every captioned line is also spoken, once
+      }
 
       for (const [id, cell] of cells) cell.classList.toggle('zone--active', id === view.zoneId);
       const activeCell = cells.get(view.zoneId);
