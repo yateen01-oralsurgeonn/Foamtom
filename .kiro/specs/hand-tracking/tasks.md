@@ -108,12 +108,12 @@ starts in camera mode. Guided-timer mode is never changed.
     - Test file: none new (build scripts); the existing privacy guard must still pass
     - Files this task may change: `scripts/copy-mediapipe-wasm.mjs`, `scripts/measure-assets.mjs`, `package.json`, `.gitignore`, `tsconfig.json`
 
-  - [ ] 1G. **Model files and the MediaPipe loader** (requirements 6.2, 10.1, 10.2)
+  - [x] 1G. **Model files and the MediaPipe loader** (requirements 6.2, 10.1, 10.2)
     - [x] 1G.1 The developer downloads the model files named in `docs/review/MEDIAPIPE-DOC-CHECK.md` (hand landmarker, face detector, face landmarker) from the MediaPipe model page, once, by hand, and puts them in `public/models/`. No build step fetches them
     - [x] 1G.2 `public/models/NOTICE.txt`: the source address and Apache-2.0 licence of each model file, in words
     - [x] 1G.3 `src/tracking/mediapipe-loader.ts`: browser only. Creates the hand tracker and the face tracker named by `FACE_MODEL` from `/models/` on the same origin, with paths built from `import.meta.env.BASE_URL`; asks for the GPU delegate first and falls back to the CPU delegate; exports a `Trackers` type with `detectForVideo` for each and a `close()` that releases both. It contains no URL, no `fetch(`, no `console.`
     - [x] 1G.4 Run `npm run measure-assets` and copy the output into the table in `docs/review/MEDIAPIPE-DOC-CHECK.md` under "Measured sizes" (bytes, date). Do not record any size from memory
-    - [ ] 1G.5 Check by hand: `npm run dev` still starts, and the title screen of the game makes no request for a `.task`, `.tflite` or `.wasm` file (nothing imports the loader yet)
+    - [x] 1G.5 Check by hand: `npm run dev` still starts, and the title screen of the game makes no request for a `.task`, `.tflite` or `.wasm` file (nothing imports the loader yet)
     - _Requirements: 6.2, 6.3, 10.1, 10.2_
     - Test file: none new (browser only); the existing privacy guard and `tracking-source-rules` tests must still pass
     - Files this task may change: `public/models/*` (the model files and `NOTICE.txt`), `src/tracking/mediapipe-loader.ts`, `docs/review/MEDIAPIPE-DOC-CHECK.md`
