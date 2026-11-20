@@ -65,3 +65,23 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
 - Kiroween deadline: 4 Dec 2 pm PT = 3:30 am IST 5 Dec. Credit code redeem by 4 Dec. After
   hand-tracking come `mirror-and-screens` (Monster Book screen + child wording: stop for
   his review) and `parent-screen`. Cut order if days run short is in the playbook, section 2.
+
+## Update 20 Nov, evening (read this first tomorrow)
+
+- Parts 1F, 1G, 1H, 1I, 1J are all DONE and ticked (last pushed commit e99bf66; the tick of
+  1H.6 and the "1H." line is in the working tree, UNCOMMITTED: the privacy hook refused the
+  commit command because it read the email from config; commit it with the next change).
+- Dev server stopped. Start it again: `npm run dev`, page `/debug/tracking-debug.html`.
+- **Only 1K is left in task 1** (his brushing test). Do NOT start tasks 2-11.
+- **First finding, reported by Dr. Yatin:** with the brush on his LEFT side the screen
+  still says the RIGHT side. That is the mirror-flip check (requirement 1.8, row 1 of
+  "Other checks"). Tomorrow do ONLY this first: raise the left hand, write down what `side`
+  says and where the hand appears in the preview. If `side` is always the opposite, the
+  conversion is flipped: report it as a spec finding, do not fix it silently, and do not
+  record the 24 rows until it is understood. If it is only sometimes wrong, the 24-row test
+  carries on as planned.
+- He found the test wording confusing: keep each step to one short instruction, one position
+  at a time. He cannot run commands himself; Claude starts and stops the server and writes
+  the results file from his spoken readings.
+- Console on the debug page is clean apart from MediaPipe notes (verified with Playwright and
+  Chrome); the WASM file loads twice per page load (14.7 MB each): small loader fix later.
