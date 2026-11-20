@@ -159,6 +159,8 @@ async function openCamera(): Promise<MediaStream> {
 }
 
 async function start(): Promise<void> {
+  // Release anything a running session still holds, so a second start() can never leave two cameras open.
+  stop();
   const mine = (generation += 1);
   showStatus('starting...');
   const [cameraResult, trackersResult] = await Promise.allSettled([openCamera(), loadTrackers(faceModel)]);
@@ -174,13 +176,14 @@ async function start(): Promise<void> {
     await video.play();
   } catch {
     release(camera, loaded);
-    video.srcObject = null;
+    // A newer start may own the video by now; only clear it if it still holds this camera.
+    if (video.srcObject === camera) video.srcObject = null;
     if (mine === generation) showStatus('camera not available');
     return;
   }
   if (mine !== generation) {
     release(camera, loaded);
-    video.srcObject = null;
+    if (video.srcObject === camera) video.srcObject = null;
     return;
   }
   stream = camera;
@@ -192,7 +195,9 @@ async function start(): Promise<void> {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     stop();
-    showStatus('camera stopped (tab hidden). Reload the page to start again.');
+    showStatus('camera stopped (tab hidden)');
+  } else {
+    void start();
   }
 });
 
