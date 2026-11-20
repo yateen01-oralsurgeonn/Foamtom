@@ -1,0 +1,22 @@
+Model files in this folder
+=========================
+
+These files are MediaPipe models published by Google. They are used here under the
+Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0). They are
+copied into this site and served from the same address as the game. The game does not
+fetch them from anywhere else when it runs.
+
+1. hand_landmarker.task
+   Source: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
+   Licence: Apache License 2.0.
+
+2. blaze_face_short_range.tflite
+   Source: https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/latest/blaze_face_short_range.tflite
+   Licence: Apache License 2.0.
+
+3. face_landmarker.task
+   Source: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task
+   Licence: Apache License 2.0.
+
+The folder wasm/ holds the MediaPipe runtime copied from the npm package
+@mediapipe/tasks-vision, which is also under the Apache License 2.0.

@@ -93,8 +93,14 @@ Words only. No camera data was used.
 
 ## Measured sizes
 
-Not yet measured. Task 1G.4 fills this table from `npm run measure-assets`.
+Output of `npm run measure-assets`, copied as printed (task 1G.4).
 
 | File | Size in bytes | Date |
 |------|---------------|------|
-| (to be filled in task 1G.4) | | |
+| .gitkeep | 0 | 2026-11-20 |
+| blaze_face_short_range.tflite | 229746 | 2026-11-20 |
+| face_landmarker.task | 3758596 | 2026-11-20 |
+| hand_landmarker.task | 7819105 | 2026-11-20 |
+| wasm/vision_wasm_internal.js | 336624 | 2026-11-20 |
+| wasm/vision_wasm_internal.wasm | 14665716 | 2026-11-20 |
+| total | 26809787 | 2026-11-20 |
