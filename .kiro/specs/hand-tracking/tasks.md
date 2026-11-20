@@ -129,10 +129,10 @@ starts in camera mode. Guided-timer mode is never changed.
     - Test file: `tests/tracking-guards.test.ts`, `tests/tracking-source-rules.test.ts`
     - Files this task may change: `debug/tracking-debug.html`, `debug/tracking-debug.ts`, `debug/debug-draw.ts`, `tests/tracking-guards.test.ts`, `tests/tracking-source-rules.test.ts`
 
-  - [ ] 1I. **Keep the debug page out of the production build** (requirements 1.2, 11.6)
+  - [x] 1I. **Keep the debug page out of the production build** (requirements 1.2, 11.6)
     - [x] 1I.1 `vite.config.ts`: set `build.rollupOptions.input` to `index.html` only, so `debug/` is never built. Change nothing else in the file
     - [x] 1I.2 `tests/build-output.test.ts`: test `distHasNoDebugPage` (design test 26). Build the site into a temporary folder with `vite build --outDir <temp> --emptyOutDir`, and fail if any built file contains `FOAMTOM-TRACKING-DEBUG` or has a name containing `tracking-debug` or `debug-draw`; also fail if `index.html` or any file under `src/` mentions `tracking-debug`. Give the test a long timeout; delete the temporary folder afterwards
-    - [ ] 1I.3 Check by hand: `npm run build`, then open the `dist/` folder: no debug page, and the `debug/` route is absent
+    - [x] 1I.3 Check by hand: `npm run build`, then open the `dist/` folder: no debug page, and the `debug/` route is absent
     - _Requirements: 1.2, 11.6_
     - Test file: `tests/build-output.test.ts`
     - Files this task may change: `vite.config.ts`, `tests/build-output.test.ts`
