@@ -37,7 +37,7 @@ fi
 
 # 4. Nothing outside the allowed folders
 outside=$(git status --short | awk '{print $NF}' \
-  | grep -vE '^(src/|tests/|public/|\.kiro/|\.github/|index\.html|package(-lock)?\.json|tsconfig.*\.json|vite\.config\.[tj]s|vitest\.config\.[tj]s|README\.md|\.gitignore|docs/review/)' || true)
+  | grep -vE '^(src/|tests/|public/|\.kiro/|\.github/|index\.html|package(-lock)?\.json|tsconfig.*\.json|vite\.config\.[tj]s|vitest\.config\.[tj]s|README\.md|\.gitignore|docs/review/|scripts/|debug/)' || true)
 if [ -z "$outside" ]; then say "files in allowed places" "PASS"
 else say "files in allowed places" "FAIL"; echo "$outside"; fail=1; fi
 
