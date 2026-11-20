@@ -5,7 +5,10 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "predev": "node scripts/copy-mediapipe-wasm.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-mediapipe-wasm.mjs",
+    "measure-assets": "node scripts/measure-assets.mjs",
     "build": "tsc --noEmit && vite build",
     "test": "vitest",
     "test:run": "vitest run"

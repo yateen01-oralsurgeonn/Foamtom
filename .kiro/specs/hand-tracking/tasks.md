@@ -97,13 +97,13 @@ starts in camera mode. Guided-timer mode is never changed.
     - Test file: `tests/frame-window.test.ts`, `tests/landmark-adapters.test.ts`, `tests/tracking-source-rules.test.ts`
     - Files this task may change: `src/tracking/frame-window.ts`, `src/tracking/landmark-adapters.ts`, `tests/frame-window.test.ts`, `tests/landmark-adapters.test.ts`, `tests/tracking-source-rules.test.ts`
 
-  - [ ] 1F. **Same-origin WASM copy and build scripts** (requirements 6.2, 10.1)
-    - [ ] 1F.1 `scripts/copy-mediapipe-wasm.mjs`: copies the WASM files named in `docs/review/MEDIAPIPE-DOC-CHECK.md` from `node_modules/@mediapipe/tasks-vision/wasm/` into `public/models/wasm/`. No network call
-    - [ ] 1F.2 `scripts/measure-assets.mjs`: prints the byte size of every file under `public/models/`, recursively, one per line, and the total
-    - [ ] 1F.3 `package.json`: add `predev` and `prebuild` scripts that run the copy script; add a `measure-assets` script. Keep the existing `build` script's `tsc --noEmit && vite build`
-    - [ ] 1F.4 `.gitignore`: ignore `public/models/wasm/`
-    - [ ] 1F.5 `tsconfig.json`: add `debug` to `include` so the debug page is type-checked with `strict`
-    - [ ] 1F.6 Run `npm run build` and check that `dist/models/wasm/` holds the copied files and that no file of `src/` contains a URL
+  - [x] 1F. **Same-origin WASM copy and build scripts** (requirements 6.2, 10.1)
+    - [x] 1F.1 `scripts/copy-mediapipe-wasm.mjs`: copies the WASM files named in `docs/review/MEDIAPIPE-DOC-CHECK.md` from `node_modules/@mediapipe/tasks-vision/wasm/` into `public/models/wasm/`. No network call
+    - [x] 1F.2 `scripts/measure-assets.mjs`: prints the byte size of every file under `public/models/`, recursively, one per line, and the total
+    - [x] 1F.3 `package.json`: add `predev` and `prebuild` scripts that run the copy script; add a `measure-assets` script. Keep the existing `build` script's `tsc --noEmit && vite build`
+    - [x] 1F.4 `.gitignore`: ignore `public/models/wasm/`
+    - [x] 1F.5 `tsconfig.json`: add `debug` to `include` so the debug page is type-checked with `strict`
+    - [x] 1F.6 Run `npm run build` and check that `dist/models/wasm/` holds the copied files and that no file of `src/` contains a URL
     - _Requirements: 6.2, 10.1_
     - Test file: none new (build scripts); the existing privacy guard must still pass
     - Files this task may change: `scripts/copy-mediapipe-wasm.mjs`, `scripts/measure-assets.mjs`, `package.json`, `.gitignore`, `tsconfig.json`
