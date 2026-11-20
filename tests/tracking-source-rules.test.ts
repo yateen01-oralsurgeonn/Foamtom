@@ -120,6 +120,14 @@ describe('thresholdsInOneFile', () => {
     }
   });
 
+  it('no numeric literal other than 0, 1 and 2 appears in any .ts file under debug/', () => {
+    const files = listFiles(join(ROOT, 'debug')).filter((f) => f.endsWith('.ts'));
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) {
+      expect(bareNumbers(readFileSync(file, 'utf8')), rel(file)).toEqual([]);
+    }
+  });
+
   it('the number scanner finds bare numbers and ignores comments, strings and 0, 1, 2', () => {
     expect(bareNumbers('const a = 0.5;')).toEqual(['0.5']);
     expect(bareNumbers('const a = b / 3;')).toEqual(['3']);
