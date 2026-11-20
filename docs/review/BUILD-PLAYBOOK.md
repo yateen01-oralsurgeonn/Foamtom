@@ -258,6 +258,7 @@ bonus `kiroween2026` 0 / 4000 used, 46 days left. `kiro-cli` prints no credit li
 | 19 Nov | B, task 13 (second try) | `b00-build-task.md` | - | - | not read | 5 | all PASS, 93 tests | 2ccaa2c | Clean. (Driver slip: the f02 commit had failed, so the first check showed a false "spec untouched" FAIL; fixed by committing f02 first.) |
 | 19 Nov | B, task 14 | `b00-build-task.md` | bonus 46.27 | bonus 51.91 (tasks 13 try 1, f02, 13 try 2 and 14 together: 5.64) | see left | 15 | all PASS, 95 tests; 14.5 hand check NOT done | fd61d1f | Clean. Kiro ticked 14.1-14.4 only; task 14 and 14.5 stay unticked until Dr. Yatin plays two sessions and reloads. One of Kiro's own test bugs fixed inside the run. |
 | 19 Nov | B, task 14.5 | by hand | - | - | - | - | ticked on Dr. Yatin's instruction | next commit | 14.5 and task 14 ticked at Dr. Yatin's word; the hand check result was not written into the log. |
+| 19-20 Nov | hand-tracking task 1, parts 1A-1E (19 Nov) and 1F, 1G, 1H, 1H fix, 1I, 1J (20 Nov) | `b00-build-task.md` per part, one `f`-style fix prompt | bonus 51.91 (after task 14) | bonus 115.8 (read 20 Nov, 17:55 IST) | 63.89 for 11 runs together; per-run not read | - | all PASS, 190 tests | 89af607, ef124d0, 581521c, bc2dbed, 8a3fcba, b447b0f, 592e1fd | About 5.8 credits per run on average, higher than stage A (1.1) because these runs write code and tests. Model `auto`. 1K (his brushing test) uses no credits. |
 
 **Credits, 19 Nov after task 12:** bonus `kiroween2026` 46.27 / 4000 used (43 days left); plan 27 / 50 (unchanged, resets 1 Dec). Since the end of stage A (17.93) the bonus has risen by 28.34 across tasks 1-12, about 2.4 per task. Read from `app.kiro.dev/account/usage`.
 
@@ -283,3 +284,5 @@ budget in section 7 down with care: build runs read and write far more than spec
 Write `docs/review/RESUME-<date>.md` with: the last task finished and its commit; the task
 in progress and its state (clean, or uncommitted changes and why); credits left; anything
 waiting for Dr. Yatin; the exact next command. Commit and push it.
+
+**Credits, 20 Nov (read at the end of part 1J):** bonus `kiroween2026` 115.8 / 4000 used (42 days left); plan 27 / 50 (unchanged, resets 1 Dec). Bonus used since 19 Nov after task 14: 63.89 across the 11 hand-tracking runs (parts 1A-1J and one fix). Tasks 2-11 still to come; at the same rate (about 6 per run) that is well inside the 4000 bonus.
