@@ -165,12 +165,12 @@ through to the end card.
   - Test file: `tests/effects-host.test.ts`
   - Files this task may change: `src/ui/effects-host.ts`, `src/main.ts`, `tests/effects-host.test.ts`
 
-- [ ] 11. **Mirror frame painter (not yet shown)**
+- [x] 11. **Mirror frame painter (not yet shown)**
   - Mark: needed for the video (req 3, 4, 11.8).
-  - [ ] 11.1 Create `src/ui/frame-art.ts`: builds the crack drawing with `createElementNS` (a short, regular, star-shaped pattern in the ring corners, thin strokes) and the candle stick and flame pieces. No `innerHTML`
-  - [ ] 11.2 Create `src/ui/mirror-frame.ts` with the structure of design section 5.1: `div.mirror-frame` holding `div.mirror-frame__deco` (with `aria-hidden="true"`; inside it `div.frame-fog`, four `div.frame-region.frame-region--<region>` each with a glow layer, a candle stick and a flame, and `svg.frame-cracks`) and `div.mirror-frame__glass` (the play area slot). `MirrorFrame.paint(guidance)` sets the classes `frame-region--active`, `--dim`, `--off` and `--flicker` and the three look values as CSS variables with `setProperty`, and makes no decision of its own. The flame is shown only for a region whose `look.flame` is true
-  - [ ] 11.3 Test `decorativeFrame`, source part (design test 24): the deco element has `aria-hidden="true"`; no `scaleX` in `mirror-frame.ts` or `frame-art.ts`; neither file mentions `preview--mirrored`; no `innerHTML`, `style=` or `<style`; no left/right ternary and no `raw-` string
-  - [ ] 11.4 Run `npm run test:run` and `npm run build`: both pass. Nothing shows the frame yet, so the game is unchanged
+  - [x] 11.1 Create `src/ui/frame-art.ts`: builds the crack drawing with `createElementNS` (a short, regular, star-shaped pattern in the ring corners, thin strokes) and the candle stick and flame pieces. No `innerHTML`
+  - [x] 11.2 Create `src/ui/mirror-frame.ts` with the structure of design section 5.1: `div.mirror-frame` holding `div.mirror-frame__deco` (with `aria-hidden="true"`; inside it `div.frame-fog`, four `div.frame-region.frame-region--<region>` each with a glow layer, a candle stick and a flame, and `svg.frame-cracks`) and `div.mirror-frame__glass` (the play area slot). `MirrorFrame.paint(guidance)` sets the classes `frame-region--active`, `--dim`, `--off` and `--flicker` and the three look values as CSS variables with `setProperty`, and makes no decision of its own. The flame is shown only for a region whose `look.flame` is true
+  - [x] 11.3 Test `decorativeFrame`, source part (design test 24): the deco element has `aria-hidden="true"`; no `scaleX` in `mirror-frame.ts` or `frame-art.ts`; neither file mentions `preview--mirrored`; no `innerHTML`, `style=` or `<style`; no left/right ternary and no `raw-` string
+  - [x] 11.4 Run `npm run test:run` and `npm run build`: both pass. Nothing shows the frame yet, so the game is unchanged
   - _Requirements: 3.1, 3.3, 3.5, 3.10, 4.1, 4.2, 11.8, 13.2_
   - Test file: `tests/mirror-frame.test.ts`
   - Files this task may change: `src/ui/frame-art.ts`, `src/ui/mirror-frame.ts`, `tests/mirror-frame.test.ts`
