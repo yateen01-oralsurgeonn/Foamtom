@@ -7,8 +7,9 @@ instruction aloud and shows it as a caption.
 
 Brush for two minutes. Don't forget the back teeth. Brush morning and night.
 
-This version plays in guided-timer mode: a two-minute timer walks through four parts of the
-mouth, 30 seconds each. Camera tracking is planned for a later version.
+The game uses the front camera, when the player allows it, to see where the toothbrush hand
+is. When the camera is not allowed or not available, the game works in guided-timer mode: a
+two-minute timer walks through four parts of the mouth, 30 seconds each.
 
 ## Privacy
 
@@ -27,6 +28,9 @@ npm run dev        # play locally
 npm run test:run   # run the tests
 npm run build      # build the static site into dist/
 ```
+
+With `npm run dev` there is also a tracking debug page at `/debug/tracking-debug.html`. It is
+for development only. It is not linked from the game and is not part of the built site.
 
 The `dist/` folder is a static site and works from any sub-path, including GitHub Pages.
 Pushing to `main` runs the tests, builds the site and publishes it with the workflow in

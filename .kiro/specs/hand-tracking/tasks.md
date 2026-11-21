@@ -256,9 +256,9 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/test-results.test.ts` (existing)
   - Files this task may change: `docs/review/TRACKING-TEST-RESULTS.md`, `src/tracking/thresholds.ts` (only `TRACK_MIN_INTERVAL_MS`, and only with Dr. Yatin's say)
 
-- [ ] 11. **README: camera tracking is now in the game**
-  - [ ] 11.1 In `README.md` replace the paragraph that says the version plays only in guided-timer mode and that camera tracking is planned, with a short plain description: the game uses the front camera when allowed and works in guided-timer mode when it is not. Keep the privacy line "The camera stays on this phone. Nothing is saved or sent." No health claim, no clinic name, phone number, address or registration number
-  - [ ] 11.2 Mention that the debug page is for development only and is not part of the built site
+- [x] 11. **README: camera tracking is now in the game**
+  - [x] 11.1 In `README.md` replace the paragraph that says the version plays only in guided-timer mode and that camera tracking is planned, with a short plain description: the game uses the front camera when allowed and works in guided-timer mode when it is not. Keep the privacy line "The camera stays on this phone. Nothing is saved or sent." No health claim, no clinic name, phone number, address or registration number
+  - [x] 11.2 Mention that the debug page is for development only and is not part of the built site
   - _Requirements: 9.1, 1.2_
   - Test file: none new; the existing wording and privacy tests must still pass
   - Files this task may change: `README.md`
