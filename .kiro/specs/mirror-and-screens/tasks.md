@@ -284,11 +284,11 @@ through to the end card.
   - Test file: `tests/session-presenter.test.ts` (extended)
   - Files this task may change: `src/ui/session-presenter.ts`, `src/main.ts`, `tests/session-presenter.test.ts`
 
-- [ ] 22. **End lines: `end`, then the closing line**
+- [x] 22. **End lines: `end`, then the closing line**
   - Mark: needed for the video (req 9.2).
-  - [ ] 22.1 Create `src/ui/end-lines.ts` with `END_LINE_IDS = ['end', 'end-close']` and `speakEnd(speaker)`, which calls `speaker.say('end')` and then `speaker.say('end-close')`. `say` queues after what is already being said, so the lines do not overlap and no timer is needed
-  - [ ] 22.2 Test `endLines` (design test 19), with a fake speaker: `speakEnd` calls `say('end')` then `say('end-close')`, once each, in that order; `CLIP_LINE_IDS` holds neither id (a clip would not queue and would be cut by the next `say`); both ids exist in `lines.ts`
-  - [ ] 22.3 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
+  - [x] 22.1 Create `src/ui/end-lines.ts` with `END_LINE_IDS = ['end', 'end-close']` and `speakEnd(speaker)`, which calls `speaker.say('end')` and then `speaker.say('end-close')`. `say` queues after what is already being said, so the lines do not overlap and no timer is needed
+  - [x] 22.2 Test `endLines` (design test 19), with a fake speaker: `speakEnd` calls `say('end')` then `say('end-close')`, once each, in that order; `CLIP_LINE_IDS` holds neither id (a clip would not queue and would be cut by the next `say`); both ids exist in `lines.ts`
+  - [x] 22.3 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
   - _Requirements: 9.2, 14.3, 15.9_
   - Test file: `tests/end-lines.test.ts`
   - Files this task may change: `src/ui/end-lines.ts`, `tests/end-lines.test.ts`
