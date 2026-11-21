@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DAMAGE_PER_SECOND,
   H_MAX,
+  REQUIRE_LEVEL_MATCH,
+  REQUIRE_SIDE_MATCH,
   SESSION_DURATION,
   UNTRACKED_DRAIN,
   ZONE_DURATION,
@@ -94,14 +96,26 @@ describe('isBrushingTruthTable', () => {
     expect(everySignal()).toHaveLength(36);
   });
 
-  it('is true only when hand near, moving, side matches and level matches; null is never brushing', () => {
+  it('is true only when hand near, moving, and side and level match as the constants require; null is never brushing', () => {
     for (const zone of zones) {
       expect(isBrushing(null, zone)).toBe(false);
       for (const sig of everySignal()) {
         const expected =
-          sig.handNearMouth && sig.moving && sig.side === zone.side && sig.level === zone.level;
+          sig.handNearMouth &&
+          sig.moving &&
+          (!REQUIRE_SIDE_MATCH || sig.side === zone.side) &&
+          (!REQUIRE_LEVEL_MATCH || sig.level === zone.level);
         expect(isBrushing(sig, zone)).toBe(expected);
       }
+    }
+  });
+
+  it('counts a wrong-side, right-level signal near the mouth and moving as brushing (req 5.7, 21 Nov 2026)', () => {
+    expect(REQUIRE_SIDE_MATCH).toBe(false);
+    for (const zone of zones) {
+      const wrongSide = zone.side === 'left' ? 'right' : 'left';
+      const sig: BrushingSignal = { handNearMouth: true, side: wrongSide, level: zone.level, moving: true };
+      expect(isBrushing(sig, zone)).toBe(true);
     }
   });
 
@@ -116,7 +130,8 @@ describe('isBrushingTruthTable', () => {
     for (const zone of zs) {
       expect(mod.isBrushing(null, zone)).toBe(false);
       for (const sig of everySignal()) {
-        const expected = sig.handNearMouth && sig.moving && sig.side === zone.side;
+        const expected =
+          sig.handNearMouth && sig.moving && (!REQUIRE_SIDE_MATCH || sig.side === zone.side);
         expect(mod.isBrushing(sig, zone)).toBe(expected);
       }
     }
@@ -151,10 +166,25 @@ describe('healthChangesOnlyByTheRule', () => {
     );
   });
 
-  it('a wrong-zone or non-matching signal never damages the monster', () => {
-    const wrong: BrushingSignal = { handNearMouth: true, side: 'left', level: 'upper', moving: true };
+  it('a wrong-side signal damages the monster only when REQUIRE_SIDE_MATCH is true', () => {
+    // Zone 0 is upper right; this signal is the wrong side, right level.
+    const wrongSide: BrushingSignal = { handNearMouth: true, side: 'left', level: 'upper', moving: true };
     let state = startSession(input('camera'));
-    for (let i = 0; i < 10; i++) state = tick(state, wrong);
+    for (let i = 0; i < 10; i++) state = tick(state, wrongSide);
+    if (REQUIRE_SIDE_MATCH) {
+      expect(state.monsters[0].health).toBe(H_MAX);
+      expect(state.secondsBrushedPerZone[0]).toBe(0);
+    } else {
+      expect(state.monsters[0].health).toBe(H_MAX - 10 * DAMAGE_PER_SECOND);
+      expect(state.secondsBrushedPerZone[0]).toBe(10);
+    }
+    expect(state.secondsUntrackedPerZone[0]).toBe(0);
+  });
+
+  it('a wrong-level signal never damages the monster while level is checked', () => {
+    const wrongLevel: BrushingSignal = { handNearMouth: true, side: 'right', level: 'lower', moving: true };
+    let state = startSession(input('camera'));
+    for (let i = 0; i < 10; i++) state = tick(state, wrongLevel);
     expect(state.monsters[0].health).toBe(H_MAX);
     expect(state.secondsBrushedPerZone[0]).toBe(0);
     expect(state.secondsUntrackedPerZone[0]).toBe(0);

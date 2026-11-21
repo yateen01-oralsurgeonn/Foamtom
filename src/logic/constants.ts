@@ -25,6 +25,8 @@ export const UNTRACKED_LIMIT = 10;
 export const MISS_WINDOW = 7;
 /** When false, level is ignored and only side is checked (req 5.7). */
 export const REQUIRE_LEVEL_MATCH = true;
+/** When false, side is ignored (req 5.7; Dr. Yatin's decision of 21 Nov 2026: side check failed across the face). */
+export const REQUIRE_SIDE_MATCH = false;
 
 /** Zones in session order: upper right, upper left, lower left, lower right (req 3.2). */
 export const ZONE_ORDER: readonly ZoneId[] = [

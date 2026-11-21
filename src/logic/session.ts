@@ -4,6 +4,7 @@ import {
   DAMAGE_PER_SECOND,
   H_MAX,
   REQUIRE_LEVEL_MATCH,
+  REQUIRE_SIDE_MATCH,
   UNTRACKED_DRAIN,
   ZONE_DURATION,
   ZONE_ORDER,
@@ -67,13 +68,17 @@ export function startSession(input: StartInput): SessionState {
   };
 }
 
-/** True when the signal shows the given zone being brushed (req 5.4, 5.5, 5.7, 6.3). */
+/**
+ * True when the signal shows the given zone being brushed (req 5.4, 5.5, 5.7, 6.3).
+ * The hand must be near the mouth and moving. Side is compared only when
+ * REQUIRE_SIDE_MATCH is true, and level only when REQUIRE_LEVEL_MATCH is true.
+ */
 export function isBrushing(signal: BrushingSignal | null, zone: Zone): boolean {
   return (
     signal !== null &&
     signal.handNearMouth &&
     signal.moving &&
-    signal.side === zone.side &&
+    (!REQUIRE_SIDE_MATCH || signal.side === zone.side) &&
     (!REQUIRE_LEVEL_MATCH || signal.level === zone.level)
   );
 }

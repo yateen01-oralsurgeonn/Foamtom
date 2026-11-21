@@ -41,7 +41,7 @@ Read the `side` field. Result is for the HAND_POINT in use: pass if at least 2 o
 | | Right | Upper left | Outer | | | | | |
 | | Right | Upper left | Chewing | | | | | |
 | | Right | Upper left | Inner | | | | | |
-| 2026-11-21 | Right | Lower left | Outer | WW | | | Fail | Reached across the face; palm stayed right of the mouth, so `right`. 2 tries only |
+| 2026-11-21 | Right | Lower left | Outer | | | | Fail | Reached across the face; palm stayed right of the mouth, read `right` on both of 2 tries. Side rows no longer required (decision 21 Nov) |
 | | Right | Lower left | Chewing | | | | | |
 | | Right | Lower left | Inner | | | | | |
 | | Right | Lower right | Outer | | | | | |
@@ -53,7 +53,7 @@ Read the `side` field. Result is for the HAND_POINT in use: pass if at least 2 o
 | | Left | Upper left | Outer | | | | | |
 | | Left | Upper left | Chewing | | | | | |
 | | Left | Upper left | Inner | | | | | |
-| 2026-11-21 | Left | Lower left | Outer | R | | | | 1 try only |
+| 2026-11-21 | Left | Lower left | Outer | | | | | Read `left` on 1 try |
 | | Left | Lower left | Chewing | | | | | |
 | | Left | Lower left | Inner | | | | | |
 | | Left | Lower right | Outer | | | | | |
@@ -72,7 +72,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | | Right | Upper left | Outer | | | | | |
 | | Right | Upper left | Chewing | | | | | |
 | | Right | Upper left | Inner | | | | | |
-| 2026-11-21 | Right | Lower left | Outer | RR | | | | 2 tries only |
+| 2026-11-21 | Right | Lower left | Outer | | | | | Read `lower` on 2 tries; 3 needed |
 | | Right | Lower left | Chewing | | | | | |
 | | Right | Lower left | Inner | | | | | |
 | | Right | Lower right | Outer | | | | | |
@@ -84,7 +84,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | | Left | Upper left | Outer | | | | | |
 | | Left | Upper left | Chewing | | | | | |
 | | Left | Upper left | Inner | | | | | |
-| 2026-11-21 | Left | Lower left | Outer | R | | | | 1 try only |
+| 2026-11-21 | Left | Lower left | Outer | | | | | Read `lower` on 1 try; 3 needed |
 | | Left | Lower left | Chewing | | | | | |
 | | Left | Lower left | Inner | | | | | |
 | | Left | Lower right | Outer | | | | | |
@@ -113,7 +113,8 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 
 Verdicts, in Dr. Yatin's own words, with initials and date:
 
-Side check: "I have taken the two screenshots with the right hand, but the side should be shown on the left. It is showing on the right." Decision 21 Nov 2026, chosen in chat: option 1, the camera checks that the child is brushing, not which side (side is not checked; the game still tells the child which zone). Initials: 
+Side check:
+"I have taken the two screenshots with the right hand, but the side should be shown on the left. It is showing on the right." Decision 21 Nov 2026, chosen in chat: option 1, the camera checks that the child is brushing, not which side (side is not checked; the game still tells the child which zone). Initials: 
 
 Level check:
 
