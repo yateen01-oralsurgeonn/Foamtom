@@ -388,6 +388,17 @@ run without an exception to it, work SHALL stop and Dr. Yatin SHALL decide.
 `src/tracking/` contains `console.`, and if the drawing value of requirement 8.3 is
 imported from anywhere under `src/logic/` or `src/storage/`.
 
+9.6 THE build SHALL remove MediaPipe's usage-logging network call from the game and from
+the debug page, in both `npm run dev` and `npm run build`, with no new npm package and
+without editing anything under `node_modules`. The removal matches the code of
+`@mediapipe/tasks-vision` **1.2.3**, so `package.json` SHALL pin that package to exactly
+`1.2.3` (no `^`, no `~`). The logger SHALL send nothing: no request at all, and not a
+request to another address. The removal SHALL NOT change what the trackers detect. IF the
+expected code is not found (for example after a MediaPipe update), THE build SHALL fail
+with a clear message instead of shipping the call. The built `dist/` SHALL NOT contain the
+text `odml.pa.googleapis.com`. The Content-Security-Policy of requirement 9.3 stays as the
+second guard.
+
 ---
 
 ### 10. Size and speed
@@ -531,3 +542,17 @@ Dr. Yatin decided this on 21 Nov 2026, after the level check (requirement 1.12) 
    as no longer required.
 5. **The other checks of section 5 of the results file are still to be done:** second
    hand, both hands, second person and poor light.
+
+
+## Decision 3, 21 Nov 2026
+
+Dr. Yatin decided this on 21 Nov 2026, after the browser check of `mirror-and-screens`
+(`docs/review/MIRROR-SCREENS-CHECKS.md`).
+
+1. **MediaPipe logs usage by itself.** `@mediapipe/tasks-vision` 1.2.3 has a built-in logger
+   with no public off switch. Every task creates it. Every 60 seconds and on close it POSTs
+   protobuf usage statistics (task type, running mode, OS, library version, latency numbers;
+   no images or landmarks) to `https://odml.pa.googleapis.com/v1/log`. The Content-Security-Policy
+   blocked both attempts in the browser check, so nothing was sent.
+2. **Switch it off at the source as well.** The CSP stays as the second guard. This is
+   requirement 9.6.

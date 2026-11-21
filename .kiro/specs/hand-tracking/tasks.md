@@ -2,11 +2,11 @@
 
 ## Implementation plan
 
-Eleven tasks. Task 1 is the feasibility test and is the only large one: it has eleven parts
+Twelve tasks. Task 1 is the feasibility test and is the only large one: it has eleven parts
 (1A to 1K), and each part is one run. Task 2 does not start until Dr. Yatin has filled in
 `docs/review/TRACKING-TEST-RESULTS.md` and written both verdicts (requirement 1.14).
 Tasks 3 to 9 build the real camera source, the preview and the wiring. Task 10 is the manual
-check on a real phone. Task 11 corrects one stale line in the README.
+check on a real phone. Task 11 corrects one stale line in the README. Task 12 (added 21 Nov 2026) switches off MediaPipe's own usage logging.
 
 The game keeps working after every task. Nothing is wired into `src/main.ts` until task 9,
 so tasks 1 to 8 change nothing a player can see. The camera is used only in a session that
@@ -262,6 +262,19 @@ starts in camera mode. Guided-timer mode is never changed.
   - _Requirements: 9.1, 1.2_
   - Test file: none new; the existing wording and privacy tests must still pass
   - Files this task may change: `README.md`
+
+- [ ] 12. **Switch off MediaPipe usage logging at the source** (requirement 9.6; design 10.1; Decision 3, 21 Nov 2026)
+  - [ ] 12.1 `package.json`: pin `@mediapipe/tasks-vision` to exactly `1.2.3` (remove the caret). Run `npm install` so `package-lock.json` agrees. Install no new package, and do not edit anything under `node_modules`
+  - [ ] 12.2 Read (do not edit) the logger code in `node_modules/@mediapipe/tasks-vision/vision_bundle.mjs`: the class that POSTs to the usage endpoint, its send step, and its 60-second cycle and close. Build the test fixture from the shape of that code
+  - [ ] 12.3 `scripts/strip-mediapipe-logging.mjs`: pure `stripMediapipeLogging(code)` as design 10.1. The logger makes no request at all (no `fetch`, `sendBeacon` or `XMLHttpRequest`, and no request to another address); the logger is still created and closed; detection is untouched. If the expected code is not found it throws an error naming the package and version 1.2.3 and never returns the input unchanged. No clock, no randomness, no file access. If `tsc --noEmit` needs types for the import, add `scripts/strip-mediapipe-logging.d.mts`
+  - [ ] 12.4 `vite.config.ts`: use the function in a small inline plugin for `npm run build` (a `transform` on the `vision_bundle.mjs` of `@mediapipe/tasks-vision` only), and in the dependency pre-bundling option of the installed Vite (`optimizeDeps`, see design 10.1) for `npm run dev`, so the game and the debug page are both covered. Keep `build.rollupOptions.input` as it is. Change nothing else in the file
+  - [ ] 12.5 Tests in `tests/strip-mediapipe-logging.test.ts`: `stripsLoggingCall` (fixture string in, no `odml.pa.googleapis.com` and no send call out; with fake `fetch`, `sendBeacon` and `XMLHttpRequest` none is called) and `failsWhenPatternMissing` (text without the logger throws; text with the endpoint but a changed send step throws; the message names 1.2.3)
+  - [ ] 12.6 Extend `tests/build-output.test.ts` with `noMediapipeTelemetryInDist`: the real production build has no built file containing `odml.pa.googleapis.com`, and `package.json` pins `@mediapipe/tasks-vision` to exactly `1.2.3`
+  - [ ] 12.7 **Check by hand:** delete the `node_modules/.vite` cache folder, then `npm run dev`, open the game, allow the camera and start a session. In the browser's Network panel there is no request to `odml.pa.googleapis.com`, and the console shows no Content-Security-Policy error for it. Leave the session running past 60 seconds, then end it, because the logger sent on both occasions
+  - [ ] 12.8 `npm run test:run` and `npm run build` both pass. Nothing under `src/`, `.kiro/` or `node_modules/` changed, and `privacyGuard` and `cspIsStillSameOrigin` still pass unchanged
+  - _Requirements: 9.3, 9.4, 9.6_
+  - Test file: `tests/strip-mediapipe-logging.test.ts`, `tests/build-output.test.ts`
+  - Files this task may change: `package.json`, `package-lock.json`, `vite.config.ts`, `scripts/strip-mediapipe-logging.mjs`, `scripts/strip-mediapipe-logging.d.mts` (only if needed), `tests/strip-mediapipe-logging.test.ts`, `tests/build-output.test.ts`
 
 ---
 

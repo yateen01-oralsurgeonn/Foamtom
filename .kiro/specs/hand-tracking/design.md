@@ -135,6 +135,7 @@ One concept per file, kebab-case names (`structure.md`).
 | `docs/review/TRACKING-TEST-RESULTS.md` | Dr. Yatin's results (words only). Layout in section 7. | 1.5 to 1.13, 10.4 |
 | `scripts/copy-mediapipe-wasm.mjs` | Dev-time script: copies the WASM files from `node_modules/@mediapipe/tasks-vision/wasm/` into `public/models/wasm/` before `dev` and `build`. Not under `src/`. | 6.2 |
 | `scripts/measure-assets.mjs` | Dev-time script: prints the byte size of every file in `public/models/`. | 10.1 |
+| `scripts/strip-mediapipe-logging.mjs` | Pure `stripMediapipeLogging(code)`: makes MediaPipe's usage logger send nothing; throws if the expected code is missing. Used by `vite.config.ts` for build and dev pre-bundling (section 10.1). | 9.6 |
 
 The camera source is loaded with `import('./tracking/camera-source')` from `main.ts` inside
 the start-button handler, so the title screen loads none of the camera code, the models or
@@ -710,6 +711,80 @@ function monsterAnchor(draw: DrawValue | null, zone: Zone): Anchor | null   // n
 - **Camera stops (kid-safety).** `stop()` is called by the loop at session end and when the
   tab is hidden (existing behaviour, req 7.2). The debug page does the same on its own.
 
+### 10.1 Switching off MediaPipe usage logging (req 9.6)
+
+**Finding (21 Nov 2026, Decision 3).** `@mediapipe/tasks-vision` 1.2.3 creates a usage logger
+(class `xh` in `vision_bundle.mjs`) for every task. Every 60 s and on close it POSTs protobuf
+usage statistics to `https://odml.pa.googleapis.com/v1/log`. The CSP blocked it, so nothing was
+sent. The CSP stays as the second guard; this section removes the call at the source.
+
+**Pin.** `package.json` lists `"@mediapipe/tasks-vision": "1.2.3"` (no caret), because the
+removal matches that version's code. `package-lock.json` already records 1.2.3.
+
+**The function.** `stripMediapipeLogging(code: string): string` is a pure function in
+`scripts/strip-mediapipe-logging.mjs`. Reasons for the place: `scripts/` is where the other
+build-time helpers live (`copy-mediapipe-wasm.mjs`), `check-task.sh` already allows it, and
+the privacy guard that scans `src/` would otherwise trip on the endpoint text the function has
+to name. It takes the text of `vision_bundle.mjs` and returns it with the logger's send step
+replaced so that the logger makes **no request at all**: no `fetch`, no `sendBeacon`, no XHR,
+and no request to another address. The logger object itself stays, so the code that creates
+it, starts its 60-second cycle and closes it still runs and the tasks behave as before.
+Detection (landmarks, running modes, `detectForVideo`) is not touched. The function has
+no clock, no randomness and no file access.
+
+- It finds the logger's send step by the stable parts of the code (the endpoint text and the
+  request call next to it), not by the minified names (`xh` changes with every MediaPipe
+  build). The task that writes it reads the real 1.2.3 code first (read only) and builds the
+  test fixture from the shape of that code.
+- If the pattern is not found exactly where expected, it **throws** an `Error` whose message
+  names the package, the version it expects (1.2.3) and says what to do ("MediaPipe code
+  changed: the usage-logging removal no longer matches. Check
+  `scripts/strip-mediapipe-logging.mjs` before updating the package."). It never returns the
+  input unchanged. A file that has no endpoint text at all also throws, so the plugin only
+  passes the one bundle file to it.
+- After a successful strip the result contains no `odml.pa.googleapis.com`.
+
+**Where it runs.** Both paths go through `vite.config.ts`, which imports the function:
+
+| Path | Hook | Why |
+|------|------|-----|
+| `npm run build` | A small Vite plugin with `name: 'strip-mediapipe-logging'`, `enforce: 'pre'` and a `transform(code, id)` that calls the function only when `id` is the `vision_bundle.mjs` file of `@mediapipe/tasks-vision` | The bundle is rolled into the lazy camera chunk |
+| `npm run dev` (game and `/debug/tracking-debug.html`) | A plugin of the same function passed in `optimizeDeps`, so Vite's pre-bundled copy of the package is stripped, not only the build copy. Vite 8 pre-bundles with Rolldown, so the option is `optimizeDeps.rolldownOptions.plugins`; the task checks the exact name in the installed Vite's types and uses that | Dev serves the pre-bundled copy from `node_modules/.vite`, which a `transform` hook does not see |
+
+Both hooks call the same function. If the build hook throws, `vite build` fails and prints
+the message. If the pre-bundle hook throws, `npm run dev` fails to start the dependency and
+prints it.
+
+> **Design choice (cache):** Vite keeps the pre-bundle in `node_modules/.vite` and may reuse
+> an old copy made before the plugin existed. The manual check therefore starts by deleting
+> that cache folder (it holds only generated files). The plugin is also listed in the
+> `optimizeDeps` config, which Vite includes in its cache key.
+
+> **Design choice (why not a fake `fetch`):** wrapping `fetch` or `sendBeacon` globally would
+> also hide real mistakes in our own code and would not remove the endpoint text from
+> `dist/`. Editing the bundle text removes both. Patching `node_modules` (a `postinstall`
+> edit) is not allowed by req 9.6, and a new package such as `patch-package` is not allowed
+> either.
+
+**Tests.**
+
+- `stripsLoggingCall` (`tests/strip-mediapipe-logging.test.ts`): a fixture string shaped like
+  the real logger code goes in; the output has no `odml.pa.googleapis.com`, no send call
+  (`fetch`, `sendBeacon`, `XMLHttpRequest`), and still contains the lines around it, so the
+  logger is still created and closed. A second case runs the output with a fake `fetch`,
+  fake `navigator.sendBeacon` and fake `XMLHttpRequest` and asserts none is called, and that
+  no request goes to any other address either.
+- `failsWhenPatternMissing` (same file): text without the logger throws with a message
+  naming `1.2.3`; text with the endpoint but a changed send step throws; the input is never
+  returned unchanged.
+- `noMediapipeTelemetryInDist` (added to `tests/build-output.test.ts`): the real production
+  build (the same temporary build the other tests use) has no built file containing
+  `odml.pa.googleapis.com`, and `package.json` pins the package to exactly `1.2.3`.
+- Existing guards still pass: `privacyGuard` (the endpoint text lives in `scripts/`, outside
+  `src/`), `trackingPrivacyGuard`, `cspIsStillSameOrigin` (the CSP is not loosened or
+  tightened by this change).
+- Manual: task 12.7 (dev server, Network panel and console).
+
 ---
 
 ## 11. Error handling
@@ -732,6 +807,7 @@ function monsterAnchor(draw: DrawValue | null, zone: Zone): Anchor | null   // n
 | Face lost during a camera session | Monster goes to the plain-screen position, no message | 8.4 |
 | Results file holds an image or landmark-like numbers | `resultsFileIsWordsOnly` fails (it never skips: the first task creates the file as an empty template, so the test always runs) | 1.5, 1.14 |
 | MediaPipe needs a CSP or guard exception | Work stops; Dr. Yatin decides | 9.4 |
+| MediaPipe's logger code is not found (package updated) | `stripMediapipeLogging` throws; `vite build` or `npm run dev` fails with a message naming version 1.2.3; nothing ships | 9.6 |
 
 
 ---
@@ -776,6 +852,9 @@ or a real person's data. Fixtures are plain numbers written by hand in
 | 30 | `surfacePasses` | 1.12, 1.13 | Any three codes from `R`, `W`, `U`, `N` | True exactly when at least two are `R` (`N` counts as not right) |
 | 31 | `resultsFileIsWordsOnly` | 1.5 | `docs/review/TRACKING-TEST-RESULTS.md` (never skipped: the first task creates it as an empty template, headings and empty tables, no readings, so the test always runs) | No image syntax, no `data:`, no number with three or more decimals; every table row has a date; reading cells use only `R`, `W`, `U`, `N` |
 | 32 | `debugUsesSharedFunctions` | 1.4 | Imports of `debug/tracking-debug.ts` | Imports `classifyFrame`, `aggregateSecond` and `thresholds.ts` from `src/tracking/` and defines none of its own |
+| 33 | `stripsLoggingCall` | 9.6 | A fixture string shaped like the 1.2.3 logger | Output has no `odml.pa.googleapis.com` and no send call; the logger is still created and closed; with fake `fetch`, `sendBeacon` and `XMLHttpRequest` none is called |
+| 34 | `failsWhenPatternMissing` | 9.6 | Text without the logger; text with the endpoint but a changed send step | Throws with a message naming 1.2.3; never returns the input unchanged |
+| 35 | `noMediapipeTelemetryInDist` (in `build-output`) | 9.6 | A real production build; `package.json` | No built file contains `odml.pa.googleapis.com`; `@mediapipe/tasks-vision` is pinned to exactly `1.2.3` |
 
 Test helpers: a `frameArb` that builds a valid `FrameInput` from a face centre, face width, tilt
 and hand offsets in face widths (so every property states its input in the unit the rule
@@ -852,6 +931,7 @@ page and on a real phone.
 | 9.3 | Same-origin files; CSP with one added keyword (10) | `cspIsStillSameOrigin`; manual: no third-party request in the network panel |
 | 9.4 | Core guard unchanged; stop and ask on any exception (10) | `privacyGuard` |
 | 9.5 | Second guard test (10) | `trackingPrivacyGuard` |
+| 9.6 | Pinned package; `stripMediapipeLogging` in a Vite plugin for build and dev pre-bundling; CSP stays as second guard (10.1) | `stripsLoggingCall`, `failsWhenPatternMissing`, `noMediapipeTelemetryInDist`; manual: dev Network panel and console (task 12.7) |
 | 10.1 | Size table and `measure-assets.mjs` (8.2) | manual: run the script; table in design and results file match the output |
 | 10.2 | Face detector by default; docs check as first task (8.1) | manual: check model names and point order against the documentation of the installed version |
 | 10.3 | Lazy loading; first-load budget (8.3) | `cameraCodeIsLazy`, `firstLoadUnder5MB` |
