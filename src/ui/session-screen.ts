@@ -14,7 +14,7 @@ import type { CameraPreview } from './camera-preview';
 import { frameGuidance } from './frame-guidance';
 import { createMirrorFrame } from './mirror-frame';
 import { drawMonster } from './monster-art';
-import { MIN_MONSTER_SCALE } from './monster-draw-state';
+import { monsterDrawState, monsterScale, smokeLook } from './monster-draw-state';
 
 /** Mouth grid in mirror order: the child's right is on the right of the screen. */
 const GRID: readonly { id: ZoneId; label: string }[] = [
@@ -88,7 +88,12 @@ export function createSessionScreen(
   const stage = el('div', 'stage');
   const monsterName = el('span', 'stage__name');
   const smoke = el('div', 'smoke');
-  smoke.append(el('span', 'smoke__puff smoke__puff--a'), el('span', 'smoke__puff smoke__puff--b'), el('span', 'smoke__puff smoke__puff--c'));
+  const smokePuffs = [
+    el('span', 'smoke__puff smoke__puff--a'),
+    el('span', 'smoke__puff smoke__puff--b'),
+    el('span', 'smoke__puff smoke__puff--c'),
+  ];
+  smoke.append(...smokePuffs);
   const sessionCaption = el('p', 'caption caption--session');
   sessionCaption.setAttribute('aria-live', 'polite');
   // The haunted-mirror frame is the guidance. It is a sibling of the mirrored preview, never
@@ -162,13 +167,22 @@ export function createSessionScreen(
       if (home && monster && stage.parentElement !== home) home.append(stage);
 
       if (monster) {
-        const defeated = view.healthFraction <= 0;
-        monster.hidden = defeated;
-        monsterName.hidden = defeated;
-        const scale = MIN_MONSTER_SCALE + (1 - MIN_MONSTER_SCALE) * view.healthFraction;
-        monster.style.transform = `scale(${scale.toFixed(3)})`;
-        smoke.hidden = view.smokeFraction <= 0;
-        smoke.style.opacity = view.smokeFraction.toFixed(3);
+        const drawState = monsterDrawState(view, null);
+        const alive = drawState === 'sitting' || drawState === 'shrinking';
+        monster.hidden = !alive;
+        monsterName.hidden = !alive;
+        if (alive) monster.style.transform = `scale(${monsterScale(view.healthFraction).toFixed(3)})`;
+        // Smoke only after a defeat; it thins in puffs, size and opacity.
+        const look = smokeLook(view.smokeFraction);
+        const showSmoke = drawState === 'defeated';
+        smoke.hidden = !showSmoke;
+        if (showSmoke) {
+          smokePuffs.forEach((puff, index) => {
+            puff.hidden = index >= look.puffs;
+          });
+          smoke.style.transform = `scale(${look.scale.toFixed(3)})`;
+          smoke.style.opacity = look.opacity.toFixed(3);
+        }
       }
       sessionPanel.classList.toggle('is-paused', view.phase === 'paused');
     },

@@ -355,6 +355,35 @@
   clip-path: polygon(0 100%, 0 20%, 25% 60%, 50% 0, 75% 60%, 100% 20%, 100% 100%);
 }
 
+/* ---- Smoke after a defeat: puff count, size and opacity come from the painter ---- */
+.smoke {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.smoke__puff {
+  animation: smoke-drift var(--cycle-smoke-drift) ease-in-out infinite;
+}
+
+.smoke__puff--b {
+  animation-direction: reverse;
+}
+
+@keyframes smoke-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2px, -4px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.fx-no-smoke-drift .smoke__puff {
+  animation: none;
+}
+
 /* ---- Silhouette: one friendly blob for every monster not met yet ---- */
 .silhouette {
   position: relative;
