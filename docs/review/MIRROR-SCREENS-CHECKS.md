@@ -10,7 +10,7 @@ browser, so the game fell back to timer-only. Boxes are NOT ticked: Dr. Yatin de
 | 24.5 end card (visual part) | PASS. Four monsters, "Well done! Two minutes of brushing!", then "Two minutes. Every corner.", Done + smaller Monster Book. Sound not checked. |
 | Monster Book | PASS. 8 owned monsters with names, 4 rare silhouettes "Not met yet", Back. Nit: an empty caption pill shows under the grid when nothing is tapped. |
 | 32.7 reduced motion (switched on mid-page) | PASS. Flicker, fog, smoke drift, leaving and Book effects all off; only plain fades remain. |
-| 32.10 network | PASS with a FINDING. The game itself requests nothing outside localhost. MediaPipe tried twice to POST to `https://odml.pa.googleapis.com/v1/log` (Google telemetry); the CSP BLOCKED both, nothing was sent. Decide: leave (CSP proves the guard) or switch the logging off in the loader. Also seen: Kaspersky (his antivirus) injects a script and adds itself to the CSP on this laptop; not the app. |
+| 32.10 network | PASS. MediaPipe usage logging (odml.pa.googleapis.com) was found here, then STRIPPED at the source by hand-tracking task 12 (b7317aa). Re-checked 21 Nov with the cache cleared: full 120 s session, MediaPipe start and close, no request and no CSP error. Kaspersky (his antivirus) injects a script on this laptop; not the app. |
 | 32.11 wording | PASS for new lines seen. "Brush!" and "Done" labels date from core task 8 (19 Nov), not new in this spec. |
 | Other | favicon.ico 404 (harmless). Brief scrollbars during the fog drift in one screenshot; none measured afterwards. |
 
