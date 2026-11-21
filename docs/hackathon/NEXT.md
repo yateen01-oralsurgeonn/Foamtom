@@ -134,3 +134,8 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   13.5, 13.6, 15.4, 16.4, 18.4, 21.4, 24.5, 28.7, 29.2, 30.3, 32.2-32.11 (32.5 phone fps row is his).
   Later tasks 33-40 not started. Build loop script tolerates "Check by hand" boxes; note Kiro once
   wrote "[x]31." with no space (fixed by hand).
+- 21 Nov ~20:50: Dr. Yatin raised 3-4 min brushing (his clinical view), chose 3 min / 45 s per zone, then
+  DROPPED the change before anything was edited. Game stays 2 minutes; do not re-propose unasked.
+  Browser hand checks done by Claude: docs/review/MIRROR-SCREENS-CHECKS.md (boxes not ticked). Foamtom dev
+  server runs on port 5180 (5173 = SafeRefer). Finding: MediaPipe telemetry POST to odml.pa.googleapis.com
+  blocked by CSP; option to switch off at source, his call.
