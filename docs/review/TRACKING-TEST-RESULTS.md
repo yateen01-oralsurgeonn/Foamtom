@@ -114,7 +114,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 Verdicts, in Dr. Yatin's own words, with initials and date:
 
 Side check:
-"I have taken the two screenshots with the right hand, but the side should be shown on the left. It is showing on the right." Decision 21 Nov 2026, chosen in chat: option 1, the camera checks that the child is brushing, not which side (side is not checked; the game still tells the child which zone). Initials: YGS, 2026-11-21.
+Fail. "I have taken the two screenshots with the right hand, but the side should be shown on the left. It is showing on the right." Decision 21 Nov 2026, chosen in chat: option 1, the camera checks that the child is brushing, not which side (side is not checked; the game still tells the child which zone). Initials: YGS, 2026-11-21.
 
 Level check:
 Failed for the chewing surface of the upper right teeth (WUW; the palm hangs below the mouth). Decision 21 Nov 2026, chosen in chat: option 1, stop the test and set `REQUIRE_LEVEL_MATCH` to `false`; the camera checks brushing at the mouth and moving, the game guides the zone. Initials: YGS, 2026-11-21.
