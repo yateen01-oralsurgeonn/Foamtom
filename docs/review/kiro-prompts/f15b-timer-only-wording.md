@@ -1,0 +1,2 @@
+This is a SPEC EDIT. Edit only .kiro/specs/mirror-and-screens/requirements.md.
+Near line 747 the timer-only sentence says monsters lose `DAMAGE_PER_SECOND` per second. Since 21 Nov 2026 (evening) timer-only uses its own `TIMER_ONLY_DAMAGE = 3` (still defeated at 20 s) and `DAMAGE_PER_SECOND` is 4 for camera mode. Change that sentence to name `TIMER_ONLY_DAMAGE`. Change nothing else. Print the sentence, then stop.

@@ -744,7 +744,7 @@ requirement 16.4.
 pure functions above; the screens only paint.
 
 16.4 THE one game-rule change made through this spec is core requirement 8.5 (timer-only
-monsters lose `DAMAGE_PER_SECOND` per second, are defeated at 20 s, and show smoke for the
+monsters lose `TIMER_ONLY_DAMAGE` per second, are defeated at 20 s, and show smoke for the
 last 10 s), with the new constant `TIMER_ONLY_DAMAGE` (core requirement 8.6). Dr. Yatin
 decided it on 21 Nov 2026 (Decision 8). It SHALL be built in the one task that names the
 core files and the core tests that pinned the old rule (task 42). Those tests are changed to

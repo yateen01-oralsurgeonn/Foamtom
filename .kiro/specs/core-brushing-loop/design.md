@@ -16,8 +16,8 @@ browser or camera.
 **Key design decisions (all flagged "Design choice" inline for Dr. Yatin's review):**
 
 - Tick granularity is 1 second.
-- `H_MAX = 60`, `DAMAGE_PER_SECOND = 3`: a normal monster is defeated after 20 s of
-  matching brushing.
+- `H_MAX = 60`, `DAMAGE_PER_SECOND = 4`: a normal camera-mode monster is defeated after
+  15 counted brushing seconds out of 30 (changed 21 Nov 2026, Dr. Yatin; it was 3 and 20 s).
 - One tick rule for both modes, with one difference: a `null` signal drains 2 per second in
   camera mode, and every guided-timer second costs the monster `TIMER_ONLY_DAMAGE` (3), so a
   guided-timer monster is defeated at 20 s and its smoke shows for the last 10 s
@@ -281,7 +281,7 @@ tick(state, signal):
 
   if state.mode == 'timer-only': damage = TIMER_ONLY_DAMAGE (3); untracked[zone] += 1; progress = true
   else if s == null:            damage = UNTRACKED_DRAIN (2); untracked[zone] += 1; progress = true
-  else if isBrushing(s, zone):  damage = DAMAGE_PER_SECOND (3); brushed[zone] += 1; progress = true
+  else if isBrushing(s, zone):  damage = DAMAGE_PER_SECOND (4); brushed[zone] += 1; progress = true
   else:                         damage = 0; progress = false
 
   if monster.outcome == 'defeated':
@@ -367,40 +367,49 @@ startSession(input):
 | `ZONE_COUNT` | 4 | Zones per session |
 | `SESSION_DURATION` | 120 s | Total session (req 2.1) |
 | `H_MAX` | 60 | Normal monster health (max) |
-| `DAMAGE_PER_SECOND` | 3 | Camera-mode damage per second of correct brushing (normal monster defeated after 20 s: `H_MAX / DAMAGE_PER_SECOND = 60 / 3 = 20`) |
+| `DAMAGE_PER_SECOND` | 4 | Camera-mode damage per second of correct brushing (normal monster defeated after 15 counted seconds: `H_MAX / DAMAGE_PER_SECOND = 60 / 4 = 15`; changed 21 Nov 2026 from 3 and 20 s) |
 | `KIND_FLOOR_RATIO` | 0.6 | Kind-proximity floor: starting health ≥ 60% of `H_MAX` (req 14.2) |
 | `KIND_FLOOR` | 36 | `KIND_FLOOR_RATIO × H_MAX` |
 | `RESCUE_THRESHOLD` | 9 | 15% of `H_MAX`; monster at ≤ 9 health at zone end is rescued (req 14.3) |
 | `UNTRACKED_DRAIN` | 2 | Health lost per second when the signal is `null` in a camera-mode session (req 7.7); `H_MAX / ZONE_DURATION` |
-| `TIMER_ONLY_DAMAGE` | 3 | Health lost per second in guided-timer mode (req 8.5, 8.6); equal to `DAMAGE_PER_SECOND`; a guided-timer monster is defeated after `H_MAX / TIMER_ONLY_DAMAGE = 20` s (added 21 Nov 2026) |
+| `TIMER_ONLY_DAMAGE` | 3 | Health lost per second in guided-timer mode (req 8.5, 8.6); its own value, not derived from `DAMAGE_PER_SECOND` (which became 4 on 21 Nov 2026); a guided-timer monster is defeated after `H_MAX / TIMER_ONLY_DAMAGE = 20` s (added 21 Nov 2026) |
 | `UNTRACKED_LIMIT` | 10 | A camera-mode zone with more untracked seconds than this is unverified (req 9.3) |
 | `MISS_WINDOW` | 7 | Number of most recent camera-mode sessions used for miss scores (req 14.1) |
 | `REQUIRE_LEVEL_MATCH` | false | `false` since 21 Nov 2026 by Dr. Yatin's decision (level check failed). When false, level is ignored (req 5.7) |
 | `REQUIRE_SIDE_MATCH` | false | `false` since 21 Nov 2026 by Dr. Yatin's decision (side check failed). When false, side is ignored (req 5.7) |
 
-> **Design choice:** `H_MAX = 60` and `DAMAGE_PER_SECOND = 3` so that a normal-strength
-> monster is defeated after exactly 20 seconds of matching brushing (`60 / 3 = 20`).
-> Starting health is rounded to a whole number and every change is −2 or −3, so health is
-> always a whole number. Approved: defeat after 20 s of matching brushing. The 20 s leaves
-> slack for seconds the tracker misses.
+> **Design choice:** `H_MAX = 60` and `DAMAGE_PER_SECOND = 4` so that a normal-strength
+> monster is defeated after exactly 15 counted brushing seconds (`60 / 4 = 15`).
+> Starting health is rounded to a whole number and every change is −2, −3 or −4, so health is
+> always a whole number. Changed 21 Nov 2026 by Dr. Yatin (it was 3 per second and 20 s):
+> measured camera play counted only 37-47% of seconds, so 20 counted seconds were rarely
+> reached. The 15 s leaves slack of 15 seconds for seconds the tracker misses or the child
+> pauses. Guided-timer mode keeps `TIMER_ONLY_DAMAGE = 3` and defeat at 20 s.
 
 ### Normal health (req 7.1)
 
 Each zone monster's `maxHealth = H_MAX = 60`. Before kind-proximity adjustment, starting
-health equals `maxHealth`. A child who brushes correctly for 20 seconds deals
-`20 × 3 = 60` damage and defeats the monster.
+health equals `maxHealth`. A child who brushes correctly for 15 seconds deals
+`15 × 4 = 60` damage and defeats the monster.
 
 ### Camera-mode per-second damage (req 7.2)
 
 When `isBrushing(signal, activeZone)` is true, the active monster loses
-`DAMAGE_PER_SECOND = 3` health per second.
+`DAMAGE_PER_SECOND = 4` health per second.
 
 | Seconds brushed correctly | Damage | Remaining health | Outcome |
 |---------------------------|--------|-----------------|---------|
-| 20 | 60 | 0 | Defeated |
-| 17 | 51 | 9 | Fled (rescued: 9 ≤ 9) |
-| 16 | 48 | 12 | Trapped (12 > 9) |
+| 15 | 60 | 0 | Defeated |
+| 13 | 52 | 8 | Fled (rescued: 8 ≤ 9) |
+| 12 | 48 | 12 | Trapped (12 > 9) |
 | 0 | 0 | 60 | Trapped |
+
+**What the floor and the rescue mean in seconds (21 Nov 2026).** `KIND_FLOOR` (36),
+`RESCUE_THRESHOLD` (9) and `H_MAX` (60) are unchanged. At 4 per second, a monster at the
+kind-proximity floor (36) is defeated after 9 counted seconds and flees after 7 (28 damage
+leaves 8; 6 seconds leave 12 and trap it). A normal monster (60) is defeated after 15
+counted seconds and flees after 13. Untracked seconds are not counted seconds and still
+cost 2 each.
 
 ### Untracked drain (req 7.7, 8.5)
 
@@ -410,8 +419,8 @@ When `isBrushing(signal, activeZone)` is true, the active monster loses
   `TIMER_ONLY_DAMAGE = 3`, so health is `60 − 3 × elapsed` and reaches 0 at 20 s. The smoke
   then shows for the last 10 s of the zone (req 7.8, 8.5). Changed 21 Nov 2026 by Dr. Yatin;
   before that the drain was 2 per second and defeat came at exactly 30 s.
-- Camera mode: a second the tracker cannot see costs the monster 2 instead of 3. Mixed
-  example: 12 untracked seconds (−24) and 12 matched seconds (−36) defeat a normal
+- Camera mode: a second the tracker cannot see costs the monster 2 instead of 4. Mixed
+  example: 12 untracked seconds (−24) and 9 matched seconds (−36) defeat a normal
   monster.
 - A camera-mode zone with more than 10 untracked seconds is saved as unverified.
 
@@ -465,8 +474,8 @@ In timer-only mode health is 0 at zone end (the monster is defeated at 20 s), so
 rescue never applies.
 
 With kind proximity (starting health = 36), a child needs to brush only
-`ceil((36 - 9) / 3) = 9` seconds correctly to defeat the monster (with rescue), instead of
-17 seconds at full health. That is the kindness: often-missed zones need less brushing to
+`ceil((36 - 9) / 4) = 7` seconds correctly to defeat the monster (with rescue), and 9 seconds to defeat it outright,
+instead of 13 seconds (rescued) or 15 seconds (defeated) at full health. That is the kindness: often-missed zones need less brushing to
 win.
 
 ### After a monster is beaten: smoke (req 7.8)
@@ -629,9 +638,9 @@ use fakes or read source files. No browser or camera is needed.
 | # | Test name | Req | Input | Assertion |
 |---|---|---|---|---|
 | 1 | `isBrushingTruthTable` | 5.4–5.7 | Every signal (2 × 3 × 3 × 2 = 36) × every zone (4), plus `null` | True only when hand near, moving, side matches and level matches. With `REQUIRE_LEVEL_MATCH` false, level is ignored. `null` is never brushing. |
-| 2 | `healthChangesOnlyByTheRule` | 13.1 | 120 signals-or-null, either mode, any past sessions | Each tick: active monster changes by −3 (match, or any timer-only second), −2 (`null` in camera mode), or 0 (stopping at 0 if less than that is left), never below 0; no other monster changes; health is a whole number; never increases. |
+| 2 | `healthChangesOnlyByTheRule` | 13.1 | 120 signals-or-null, either mode, any past sessions | Each tick: active monster changes by −4 (`DAMAGE_PER_SECOND`, signal matches), −3 (`TIMER_ONLY_DAMAGE`, any timer-only second), −2 (`null` in camera mode), or 0 (stopping at 0 if less than that is left), never below 0; no other monster changes; health is a whole number; never increases. |
 | 3 | `sessionIsExactly120Ticks` | 13.2, 13.7 | 120 signals-or-null, either mode, any past sessions | Running after each of ticks 1–119 with `activeZoneIndex == floor(ticksDone / 30)`; ended after tick 120; tick 121 returns an equal state; `durationSeconds == 120`. Ticks sent while paused change nothing. |
-| 4 | `timerOnlyDefeatsEveryMonsterAt20` | 8.5, 8.6, 7.8 | Timer-only session, any past sessions | Every monster starts at 60 and loses 3 per tick; it is defeated on exactly the 20th tick of its zone (`defeatedAtElapsed` 20) and not before; it stays defeated to the zone end; the smoke is showing from tick 20 to tick 30 and `smokeFraction` reaches 0 at tick 30; `TIMER_ONLY_DAMAGE` equals `DAMAGE_PER_SECOND`; result has 30 brushed, 0 untracked, unverified for every zone. (Was `timerOnlyDefeatsEveryMonsterAt30`, changed by Dr. Yatin 21 Nov 2026.) |
+| 4 | `timerOnlyDefeatsEveryMonsterAt20` | 8.5, 8.6, 7.8 | Timer-only session, any past sessions | Every monster starts at 60 and loses 3 per tick; it is defeated on exactly the 20th tick of its zone (`defeatedAtElapsed` 20) and not before; it stays defeated to the zone end; the smoke is showing from tick 20 to tick 30 and `smokeFraction` reaches 0 at tick 30; `TIMER_ONLY_DAMAGE` is 3 and is not `DAMAGE_PER_SECOND` (4); result has 30 brushed, 0 untracked, unverified for every zone. (Was `timerOnlyDefeatsEveryMonsterAt30`, changed by Dr. Yatin 21 Nov 2026.) |
 | 5 | `rescueAtOrBelow9` | 13.8 | Monster with any whole health 1–60 at zone end | ≤ 9 → `fled`; > 9 → `trapped`. |
 | 6 | `resultInvariants` | 9.1–9.3, 10.1, 10.2 | 120 signals-or-null, camera mode | Per zone: brushed + untracked ≤ 30; verified exactly when untracked ≤ 10; `monstersEarned` holds all four ids. |
 | 7 | `smokeChangesNothingThatCounts` | 7.8 | Two signal sequences that differ only after a monster is defeated in its zone | Same outcome and same `monstersEarned`; `smokeFraction` stays within [0, 1]. |
@@ -681,3 +690,24 @@ const signalArb = fc.record({
 - `monsterOutcome` is one of `'defeated' | 'fled' | 'trapped'`.
 - `monsterId` is drawn from the monster table, and `monstersEarned` equals the four
   `monsterId`s.
+
+
+
+---
+
+## Decision (2026-11-21, evening): gentle brushing counts, camera monster falls at 15 s
+
+Dr. Yatin Shinde decided, after measuring camera mode on his laptop (brisk brushing 85% of
+seconds counted, gentle brushing 69%, real game play 37-47%; camera speed about 7.5 frames
+per second in both the game and the debug page, so speed was not the cause):
+
+- `DAMAGE_PER_SECOND` 3 -> 4. A camera-mode monster at normal health is defeated after 15
+  counted brushing seconds out of 30 (it was 20). Section 6 shows the new numbers.
+- `TIMER_ONLY_DAMAGE = 3` is its own value in `src/logic/constants.ts`, no longer
+  `= DAMAGE_PER_SECOND`. Guided-timer mode does not change (defeat at 20 s, smoke for 10 s).
+- `UNTRACKED_DRAIN` 2, `H_MAX` 60, `KIND_FLOOR` 36 and `RESCUE_THRESHOLD` 9 do not change. In
+  seconds: a normal monster flees at 13 counted seconds and falls at 15; a monster at the
+  floor flees at 7 and falls at 9.
+- `MOVING_MIN_TRAVEL` 0.3 -> 0.2 is in the `hand-tracking` spec.
+- Tests 2 and 4 in section 11 are updated to these values. Updating a test to a rule Dr.
+  Yatin changed is not weakening it. Work is task 48 of `mirror-and-screens`.

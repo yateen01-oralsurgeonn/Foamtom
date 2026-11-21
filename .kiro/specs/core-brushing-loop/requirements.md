@@ -207,7 +207,11 @@ right spot, so that brushing feels like defeating it.**
 7.1 THE SYSTEM SHALL assign each zone a monster with a fixed maximum health.
 
 7.2 WHILE the active zone is being brushed (signal matches per 5.4) THE SYSTEM SHALL
-reduce the active monster's health.
+reduce the active monster's health by `DAMAGE_PER_SECOND` (4) per second, so that a
+camera-mode monster at normal health (60) is defeated after 15 counted brushing seconds
+out of the zone's 30 (changed 21 Nov 2026 by Dr. Yatin: it was 3 per second and 20
+counted seconds). A monster that starts below normal health (kind proximity, requirement
+14) is defeated sooner.
 
 7.3 WHILE the active zone is not being brushed THE SYSTEM SHALL NOT reduce the active
 monster's health (signal present and not matching per 5.4).
@@ -257,16 +261,18 @@ any prompt or nag for camera permission.
 announcement, every Monster Book unlock rule works identically to camera mode.
 
 8.5 WHILE in guided-timer mode every monster SHALL start at normal health (kind proximity
-is not applied) and SHALL lose `DAMAGE_PER_SECOND` (3) health per second, so that it is
+is not applied) and SHALL lose `TIMER_ONLY_DAMAGE` (3) health per second, so that it is
 defeated after 20 seconds of its zone. Its smoke SHALL then show for the last 10 seconds
 of the zone, with the line of requirement 7.8 ('Keep brushing! Brush the smoke away!').
 This rule changed on 21 Nov 2026 by Dr. Yatin's decision (it was 2 per second and
 defeat at 30 seconds), so that the smoke can be seen in a guided-timer session. It is a
 rule change, not a weakening of a test.
 
-8.6 THE SYSTEM SHALL hold a constant `TIMER_ONLY_DAMAGE`, equal to `DAMAGE_PER_SECOND`
-(3), as the health lost per second in guided-timer mode (requirement 8.5). It is a
-separate name so that the two rules can be read and tested apart.
+8.6 THE SYSTEM SHALL hold a constant `TIMER_ONLY_DAMAGE` with its own value, 3, as the
+health lost per second in guided-timer mode (requirement 8.5). Since 21 Nov 2026 it is no
+longer equal to `DAMAGE_PER_SECOND` (4, requirement 7.2) and SHALL NOT be defined as
+`DAMAGE_PER_SECOND`, so that the two rules can be read and tested apart and a change to
+one cannot move the other.
 
 ---
 
@@ -450,7 +456,7 @@ any arbitrary input sequence.
 
 13.1 **Monster health:** For any sequence of 120 signals, in either mode, and for any
 history of past sessions: on every second the active monster's health SHALL change by
-exactly −3 when the signal matches the active zone (per 5.4), by exactly −2 when the
+exactly −4 (`DAMAGE_PER_SECOND`) when the signal matches the active zone (per 5.4), by exactly −2 when the
 signal is `null` in camera mode, by exactly −3 (`TIMER_ONLY_DAMAGE`) on every second of
 guided-timer mode, and by 0 otherwise, never going below zero. Only the active zone's
 monster SHALL change. Health SHALL always be a whole number and SHALL never increase.
@@ -651,10 +657,40 @@ Confirmed with Dr. Yatin Shinde on 15 November 2026 after the spec review
 Dr. Yatin Shinde decided this on 21 November 2026, after he played a camera session at the
 laptop while brushing (needed for the video).
 
-1. **Timer-only smoke.** In guided-timer mode the monster loses `DAMAGE_PER_SECOND` (3) per
-   second, so it is defeated at 20 seconds and its smoke shows for the last 10 seconds, with
+1. **Timer-only smoke.** In guided-timer mode the monster loses `TIMER_ONLY_DAMAGE` (3) per
+   second (written as `DAMAGE_PER_SECOND` (3) until the second decision below), so it is defeated at 20 seconds and its smoke shows for the last 10 seconds, with
    the existing line 'Keep brushing! Brush the smoke away!' (requirements 7.8, 8.5, 8.6).
    Reason: the smoke was never seen in a guided-timer session, because the monster was
    defeated on the last second. A second, camera-mode second with no tracking keeps the
    untracked drain of 2 (requirement 7.7). The old test rule 'defeated exactly at 30
    seconds' is replaced by this one; the tests that pinned it are updated in the same task.
+
+
+## Decision (2026-11-21, evening): gentle brushing counts, camera monster falls at 15 s
+
+Dr. Yatin Shinde decided this on 21 November 2026, after measuring camera mode on his laptop
+(a person read only the debug page's yes/no readout). Brisk brushing counted 85% of seconds.
+Gentle brushing as in the game counted 69%, with 13% lost as "near mouth but not moving".
+Real game play counted 37-47% of seconds (pauses, repositioning). Camera speed was the same in
+the game and the debug page (about 7.5 frames per second), so speed was not the cause. With 20
+counted seconds needed out of 30, monsters were rarely defeated and smoke rarely appeared in
+camera mode.
+
+1. **`MOVING_MIN_TRAVEL` 0.3 -> 0.2 face widths per second** (hand-tracking spec, requirement
+   4.5), so gentle, short strokes (correct technique) count as brushing. Clinical decision by
+   Dr. Yatin.
+2. **`DAMAGE_PER_SECOND` 3 -> 4** (requirements 7.2, 13.1). A camera-mode monster at normal
+   health (60) is defeated after 15 counted brushing seconds out of 30 (it was 20).
+3. **`TIMER_ONLY_DAMAGE = 3` as its own value**, no longer `= DAMAGE_PER_SECOND`
+   (requirements 8.5, 8.6). Guided-timer mode does not change: defeated at 20 s, smoke for
+   the last 10 s.
+4. **Unchanged:** untracked drain 2 (requirement 7.7), `H_MAX` 60, kind proximity (floor 36
+   = 60% of normal health, requirement 14.2) and the "so close" rescue threshold 9 (15% of
+   normal health, requirement 14.3). In seconds of counted brushing at 4 per second: a
+   normal monster (60) is defeated at 15 s and flees (rescued) at 13 s (52 damage leaves 8,
+   which is 9 or less; 12 s leaves 12, which is trapped). A monster at the floor (36) is
+   defeated at 9 s and flees at 7 s (28 damage leaves 8; 6 s leaves 12, which is trapped).
+   Untracked seconds still cost 2 each and are not counted brushing.
+
+The tests that pinned the old values are updated in the same task (mirror-and-screens task
+48). Changing a test to a rule Dr. Yatin changed is not weakening it.

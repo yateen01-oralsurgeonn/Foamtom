@@ -319,7 +319,7 @@ return { handNearMouth, side, level, moving }
 All in `src/tracking/thresholds.ts`. These are **starting values**, set from reasoning and
 not yet tried on a face; Dr. Yatin and the developer tune them on the debug page (by
 editing this one file) after the feasibility test begins. None is a dental rule or a number
-a parent sees.
+a parent sees, except `MOVING_MIN_TRAVEL`, which Dr. Yatin set on 21 Nov 2026 as a clinical decision (Decision 4 in section 14).
 
 | Constant | Start | Unit | Meaning |
 |----------|-------|------|---------|
@@ -328,7 +328,7 @@ a parent sees.
 | `LEVEL_DEAD_ZONE` | 0.10 | face widths | Distance above or below mouth height inside which `level` is `unknown` |
 | `MIN_FRAMES_PER_SECOND` | 5 | frames | Fewer frames in a second gives `null` (req 4.2) |
 | `MIN_FACE_FRACTION` | 0.5 | fraction of frames | Face seen in fewer than this gives `null` (req 4.3) |
-| `MOVING_MIN_TRAVEL` | 0.30 | face widths per second | Hand path length above this counts as moving |
+| `MOVING_MIN_TRAVEL` | 0.20 | face widths per second | Hand path length above this counts as moving (changed 21 Nov 2026 by Dr. Yatin from 0.30, so gentle short strokes count; Decision 4) |
 | `MOVE_JITTER_STEP` | 0.01 | face widths | A step between two frames smaller than this is camera noise and adds no travel |
 | `WINDOW_MS` | 1000 | ms | Length of the window `latest()` looks at |
 | `TRACK_MIN_INTERVAL_MS` | 100 | ms | Least time between two frames sent to MediaPipe (about 10 per second; at least 5 are needed) |
@@ -962,3 +962,16 @@ Dr. Yatin approved these after the design review (`docs/review/DESIGN-REVIEW-han
 
 No dental wording and no number a parent will see is set in this spec. The thresholds in
 section 5.5 are starting values for tuning on the debug page, and are not dental rules.
+
+
+---
+
+## 15. Decision 4, 21 Nov 2026 (evening)
+
+Dr. Yatin set `MOVING_MIN_TRAVEL` from 0.3 to 0.2 face widths per second (section 5.5; core
+spec Decision 2026-11-21 evening). Measured on his laptop: brisk brushing 85% of seconds
+counted, gentle brushing as in the game 69% (13% lost as "near mouth but not moving"), real
+game play 37-47%. Camera speed was about 7.5 frames per second in both the game and the debug
+page, so speed was not the cause. Gentle, short strokes are correct technique and must count.
+`MOVE_JITTER_STEP` (0.01) is unchanged. Test 10 (`aggregateMoving`) and the tests that pin
+0.3 are updated in `mirror-and-screens` task 48; no new behaviour is added.

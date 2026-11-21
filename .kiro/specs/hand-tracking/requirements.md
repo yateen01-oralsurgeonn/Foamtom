@@ -235,7 +235,8 @@ for a field, that field SHALL be `unknown` (`side` and `level`) or `false`
 (`handNearMouth`). `side` and `level` are decided by majority among the frames in which `handNearMouth` is true.
 
 4.5 `moving` SHALL be decided from how far the hand travelled during the second, measured
-relative to face width (requirement 3.2) and compared with `MOVING_MIN_TRAVEL`.
+relative to face width (requirement 3.2) and compared with `MOVING_MIN_TRAVEL` (0.2 face widths per second since 21 Nov 2026; it was
+0.3, see Decision 4).
 
 4.6 `aggregateSecond` SHALL NOT use the wall clock or any randomness. The same frames
 SHALL always give the same signal.
@@ -556,3 +557,23 @@ Dr. Yatin decided this on 21 Nov 2026, after the browser check of `mirror-and-sc
    blocked both attempts in the browser check, so nothing was sent.
 2. **Switch it off at the source as well.** The CSP stays as the second guard. This is
    requirement 9.6.
+
+
+## Decision 4, 21 Nov 2026 (evening)
+
+Dr. Yatin decided this on 21 Nov 2026, after measuring camera mode on his laptop. A person
+read only the debug page's yes/no readout. Brisk brushing counted 85% of seconds. Gentle
+brushing as in the game counted 69%, with 13% lost as "near mouth but not moving". Real game
+play counted 37-47% of seconds (pauses, repositioning). Camera speed was the same in the game
+and the debug page (about 7.5 frames per second), so speed was not the cause.
+
+1. **`MOVING_MIN_TRAVEL` 0.3 -> 0.2 face widths per second** (requirements 4.5 and 11.4g), so
+   gentle, short strokes (correct technique) count as brushing. This is a clinical decision by
+   Dr. Yatin.
+2. **Nothing else in the tracker changes.** `MOVE_JITTER_STEP` stays 0.01, and the signal
+   shape and the null rules are the same.
+3. The matching change in how fast a monster falls is in `core-brushing-loop` (requirements
+   7.2, 8.5, 8.6, 13.1). The work is task 48 of `mirror-and-screens`.
+4. The tests that pin 0.3 (`tests/thresholds.test.ts`, `tests/aggregate-second.test.ts`,
+   `tests/tracking-source-rules.test.ts`) are updated to 0.2 in that task. This follows a rule
+   Dr. Yatin changed and does not weaken them.
