@@ -189,10 +189,10 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/camera-source.test.ts`, `tests/draw-value.test.ts`
   - Files this task may change: `src/tracking/draw-value.ts`, `src/tracking/camera-source.ts`, `tests/camera-source.test.ts`, `tests/draw-value.test.ts`
 
-- [ ] 4. **Restart the camera when the tab comes back**
-  - [ ] 4.1 In `src/ui/game-loop.ts`, in the visibility handler, after the check that the session may continue (under the 60-second limit of core requirement 2.6), add the single behaviour: if the session mode is `camera`, call `source.start()` and ignore its answer. Timer-only sessions do not call it. Change nothing else
-  - [ ] 4.2 Test `gameLoopResumeRestart` (design test 21) in `tests/game-loop.test.ts` with the fake clock: hidden then visible in camera mode calls `start()` once more; in timer-only mode it does not; a session dropped after more than 60 s hidden does not; when the restart answers `'unavailable'` the mode does not change and the session ticks on
-  - [ ] 4.3 The existing game-loop tests (exact ticks, `start()` once per session, `stop()` at the end and when hidden, the 8-second fallback) still pass unchanged
+- [x] 4. **Restart the camera when the tab comes back**
+  - [x] 4.1 In `src/ui/game-loop.ts`, in the visibility handler, after the check that the session may continue (under the 60-second limit of core requirement 2.6), add the single behaviour: if the session mode is `camera`, call `source.start()` and ignore its answer. Timer-only sessions do not call it. Change nothing else
+  - [x] 4.2 Test `gameLoopResumeRestart` (design test 21) in `tests/game-loop.test.ts` with the fake clock: hidden then visible in camera mode calls `start()` once more; in timer-only mode it does not; a session dropped after more than 60 s hidden does not; when the restart answers `'unavailable'` the mode does not change and the session ticks on
+  - [x] 4.3 The existing game-loop tests (exact ticks, `stop()` at the end and when hidden, the 8-second fallback) still pass unchanged, except that `start()` is now counted exactly: in camera mode `start()` is called once when the session starts plus exactly once for each resume that does not drop the session; in timer-only mode it is never called again after the session starts (changed 21 Nov 2026 by Dr. Yatin's decision, restart on resume)
   - _Requirements: 7.2, 7.3, 7.4_
   - Test file: `tests/game-loop.test.ts`
   - Files this task may change: `src/ui/game-loop.ts`, `tests/game-loop.test.ts`

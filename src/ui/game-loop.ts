@@ -170,6 +170,15 @@ export function createGameLoop(deps: GameLoopDeps): GameLoop {
       emitDueTicks();
     }
 
+    /** Camera sessions only: start the source again after a hide. The answer is ignored (req 7.3). */
+    function restartSource(): void {
+      try {
+        Promise.resolve(source.start()).catch(() => {});
+      } catch {
+        // a failed restart leaves latest() null; the mode does not change
+      }
+    }
+
     function onVisibility(hidden: boolean): void {
       if (finished) return;
       if (hidden && hiddenAt === null) {
@@ -187,6 +196,7 @@ export function createGameLoop(deps: GameLoopDeps): GameLoop {
         mark = clock.now();
         state = resume(state);
         deps.onState(state);
+        if (state.mode === 'camera') restartSource();
       }
     }
 

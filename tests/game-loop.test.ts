@@ -214,6 +214,7 @@ describe('gameLoopExactTicks', () => {
           expect(h.modes).toEqual([mode]);
 
           let remaining = 120000;
+          let resumes = 0; // hide-then-show events that do not drop the session
           const move = (ms: number, jump: boolean) => (jump ? h.world.jump(ms) : h.world.advance(ms));
           for (const chunk of chunks) {
             const ms = Math.min(chunk.visibleMs, remaining);
@@ -225,6 +226,7 @@ describe('gameLoopExactTicks', () => {
               const before = h.ticks(); // visible time up to the hide is already counted
               move(chunk.hiddenMs, chunk.hiddenJump);
               h.visibility.set(false);
+              resumes += 1;
               expect(h.ticks()).toBe(before); // hidden time gives no ticks
             }
           }
@@ -238,7 +240,7 @@ describe('gameLoopExactTicks', () => {
           expect(h.last.phase).toBe('ended');
           expect(h.wakeLock.requests).toBe(1);
           expect(h.wakeLock.releases).toBe(1);
-          expect(h.source.startCalls).toBe(1);
+          expect(h.source.startCalls).toBe(mode === 'camera' ? 1 + resumes : 1);
 
           const seen = h.states.length;
           h.world.advance(30000); // nothing more happens after the end
@@ -438,5 +440,62 @@ describe('game loop: 8 s start limit', () => {
     const h = makeLoop('rejects');
     await h.loop.begin();
     expect(h.modes).toEqual(['timer-only']);
+  });
+});
+
+describe('gameLoopResumeRestart', () => {
+  it('camera mode: hidden then visible calls start() once more', async () => {
+    const h = makeLoop('ready');
+    await h.loop.begin();
+    h.world.advance(5000);
+    h.visibility.set(true);
+    expect(h.source.startCalls).toBe(1);
+    h.visibility.set(false);
+    expect(h.source.startCalls).toBe(2);
+    h.world.advance(1000);
+    expect(h.last.ticksDone).toBe(6);
+  });
+
+  it('timer-only mode: hidden then visible does not call start()', async () => {
+    const h = makeLoop('unavailable');
+    await h.loop.begin();
+    h.world.advance(5000);
+    h.visibility.set(true);
+    h.visibility.set(false);
+    expect(h.source.startCalls).toBe(1);
+  });
+
+  it('a session dropped after more than 60 s hidden does not call start()', async () => {
+    const h = makeLoop('ready');
+    await h.loop.begin();
+    h.world.advance(5000);
+    h.visibility.set(true);
+    h.world.skip(60001);
+    h.visibility.set(false);
+    expect(h.dropped).toBe(1);
+    expect(h.source.startCalls).toBe(1);
+  });
+
+  it("when the restart answers 'unavailable' or fails, the mode does not change and the session ticks on", async () => {
+    for (const how of ['unavailable', 'rejects', 'throws'] as const) {
+      const h = makeLoop('ready');
+      await h.loop.begin();
+      h.world.advance(5000);
+      h.visibility.set(true);
+      h.source.start = (): Promise<'ready' | 'unavailable'> => {
+        h.source.startCalls += 1;
+        if (how === 'throws') throw new Error('no camera');
+        return how === 'rejects'
+          ? Promise.reject(new Error('no camera'))
+          : Promise.resolve('unavailable');
+      };
+      h.visibility.set(false);
+      await Promise.resolve();
+      expect(h.source.startCalls).toBe(2);
+      expect(h.last.mode).toBe('camera');
+      h.world.advance(3000);
+      expect(h.last.mode).toBe('camera');
+      expect(h.last.ticksDone).toBe(8);
+    }
   });
 });
