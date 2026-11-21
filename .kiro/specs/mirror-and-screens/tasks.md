@@ -316,13 +316,13 @@ through to the end card.
   - Test file: none new (`cssGuards` and `endCardNoUrging` cover it)
   - Files this task may change: `src/ui/screens.css`, `index.html`, `src/main.ts`
 
-- [ ] 25. **Monster Book model (pure)**
+- [x] 25. **Monster Book model (pure)**
   - Mark: needed for the video (req 7.1, 7.2, 7.5, 7.6, 15.3). The `invite` flag, `showRareInvitation` and the `say-line` action are later (task 34).
-  - [ ] 25.1 Create `src/ui/book-model.ts` with `BookEntry` (`id`, `rare`, `owned`, `name`: the name, or `null` when not owned), `BookView` (`entries`), `BookTapAction` (`say-name` with the text, or `none`), `monsterBookView(sessions)`, `bookViewFromLoader(load)` and `bookTapAction(entry)` as in design section 5.7. `owned` comes only from `computeMonsterBook(sessions).unlockedIds`. The model takes no date and no time of day. `bookViewFromLoader` is `try { monsterBookView(load()) } catch { monsterBookView([]) }`. `bookTapAction` gives `say-name` for an owned entry and `none` for every other
-  - [ ] 25.2 Test `monsterBookView` (design test 9, needed part): always twelve entries in table order (8 common, then 4 rare); `owned` exactly when the id is in `computeMonsterBook(sessions).unlockedIds`; not-owned entries have `name` null; `rare` is true for rares whether owned or not; the result is the same for any order of the sessions and any dates and times of day with the same earned monsters; empty sessions give twelve silhouettes; an id in `monstersEarned` that is not in the table changes nothing
-  - [ ] 25.3 Test `bookFromLoader` (design test 10): a loader that returns sessions gives the same as `monsterBookView`; a loader that throws gives twelve silhouettes and does not throw
-  - [ ] 25.4 Test: `bookTapAction` gives `say-name` with the monster's name for an owned entry and `none` for every not-owned entry
-  - [ ] 25.5 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
+  - [x] 25.1 Create `src/ui/book-model.ts` with `BookEntry` (`id`, `rare`, `owned`, `name`: the name, or `null` when not owned), `BookView` (`entries`), `BookTapAction` (`say-name` with the text, or `none`), `monsterBookView(sessions)`, `bookViewFromLoader(load)` and `bookTapAction(entry)` as in design section 5.7. `owned` comes only from `computeMonsterBook(sessions).unlockedIds`. The model takes no date and no time of day. `bookViewFromLoader` is `try { monsterBookView(load()) } catch { monsterBookView([]) }`. `bookTapAction` gives `say-name` for an owned entry and `none` for every other
+  - [x] 25.2 Test `monsterBookView` (design test 9, needed part): always twelve entries in table order (8 common, then 4 rare); `owned` exactly when the id is in `computeMonsterBook(sessions).unlockedIds`; not-owned entries have `name` null; `rare` is true for rares whether owned or not; the result is the same for any order of the sessions and any dates and times of day with the same earned monsters; empty sessions give twelve silhouettes; an id in `monstersEarned` that is not in the table changes nothing
+  - [x] 25.3 Test `bookFromLoader` (design test 10): a loader that returns sessions gives the same as `monsterBookView`; a loader that throws gives twelve silhouettes and does not throw
+  - [x] 25.4 Test: `bookTapAction` gives `say-name` with the monster's name for an owned entry and `none` for every not-owned entry
+  - [x] 25.5 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
   - _Requirements: 7.1, 7.2, 7.5, 7.6, 15.3, 16.2_
   - Test file: `tests/book-model.test.ts`
   - Files this task may change: `src/ui/book-model.ts`, `tests/book-model.test.ts`
