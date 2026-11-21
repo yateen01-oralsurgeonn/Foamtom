@@ -598,15 +598,15 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - Test file: `tests/smoke-outline.test.ts`
   - Files this task may change: `src/ui/monster-art.css`, `tests/smoke-outline.test.ts`
 
-- [ ] 47. **Check by hand (camera)**
+- [x] 47. **Check by hand (camera)**
   - Mark: needed for the video (req 6.9, 6.11, 6.12, 6.13, 11.9; design M11).
-  - [ ] 47.1 Check by hand: `npm run dev`, a camera session on the laptop, brush one zone. Each brushing second the monster visibly flinches once, and it shrinks clearly, down to about a fifth of its size. The smoke is easy to see over the camera picture. At a zone change no two monsters are on screen at once: the old one leaves, then the new one appears within about 2 s, while the glow, caption and voice change at the zone end. Do the same with "reduce motion" on: no flinch, the size change and smoke still show, and the new monster still appears. Do the same in a timer-only session: the monster turns to smoke at 20 s
-  - [ ] 47.2 Run `npm run test:run` and `npm run build` and report both results
+  - [x] 47.1 Check by hand: `npm run dev`, a camera session on the laptop, brush one zone. Each brushing second the monster visibly flinches once, and it shrinks clearly, down to about a fifth of its size. The smoke is easy to see over the camera picture. At a zone change no two monsters are on screen at once: the old one leaves, then the new one appears within about 2 s, while the glow, caption and voice change at the zone end. Do the same with "reduce motion" on: no flinch, the size change and smoke still show, and the new monster still appears. Do the same in a timer-only session: the monster turns to smoke at 20 s
+  - [x] 47.2 Run `npm run test:run` and `npm run build` and report both results
   - _Requirements: 6.9, 6.11, 6.12, 6.13, 11.9_
   - Test file: none new
   - Files this task may change: none
 
-- [ ] 48. **Gentle brushing counts and a camera monster falls after 15 brushed seconds**
+- [x] 48. **Gentle brushing counts and a camera monster falls after 15 brushed seconds**
   - Mark: needed for the video (core 7.2, 8.5, 8.6, 13.1; hand-tracking 4.5, Decision 4; core Decision 2026-11-21 evening).
   - Reason: measured on 21 Nov 2026, brisk brushing counted 85% of seconds, gentle brushing 69% (13% lost as "near mouth but not moving"), real game play 37-47%. Camera speed was the same in the game and the debug page, so speed is not the cause. With 20 counted seconds needed out of 30, camera-mode monsters were rarely defeated and smoke rarely appeared. Both values below are Dr. Yatin's decisions of 21 Nov 2026 (A is a clinical decision).
   - [x] 48.1 In `src/tracking/thresholds.ts` change `MOVING_MIN_TRAVEL` from 0.3 to 0.2 (face widths per second) and update its comment. No other threshold changes
@@ -619,7 +619,7 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
     - `tests/session.test.ts`: in `healthChangesOnlyByTheRule` the expected damage for a match in camera mode is 4 (`DAMAGE_PER_SECOND`); timer-only stays 3; `null` in camera mode stays 2. Add or update one fixed case: a camera-mode monster at 60 brushed on every second is `pending` at tick 14 with health 4 and `defeated` at tick 15 with `defeatedAtElapsed` 15; 13 brushed seconds (not brushed otherwise) end `fled` with health 8; 12 end `trapped` with health 12; a monster that starts at 36 is defeated at 9 brushed seconds and `fled` at 7. Timer-only still defeats at 20
     - any other test that fails only because it asserted the old values (3 damage per matched second in camera mode, 20 counted seconds, 17 seconds for a rescue, 0.3 travel): update it the same way and **name each one in the report**
   - [x] 48.4 Run `npm run test:run`. If any test fails for another reason, stop and report. Do not weaken any test
-  - [ ] 48.5 Check by hand (camera): `npm run dev`, one camera session brushed gently, with short strokes as the dentist teaches. Monsters are defeated in most zones and smoke appears
+  - [x] 48.5 Check by hand (camera): `npm run dev`, one camera session brushed gently, with short strokes as the dentist teaches. Monsters are defeated in most zones and smoke appears
   - [x] 48.6 Run `npm run test:run` and `npm run build`: both pass
   - _Requirements: core 7.2, 8.5, 8.6, 13.1; hand-tracking 4.5, 11.4(g)_
   - Test files: `tests/aggregate-second.test.ts`, `tests/constants.test.ts`, `tests/session.test.ts`, `tests/thresholds.test.ts`, `tests/tracking-source-rules.test.ts`

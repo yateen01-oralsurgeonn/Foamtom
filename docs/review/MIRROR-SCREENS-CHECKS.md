@@ -16,3 +16,13 @@ browser, so the game fell back to timer-only. Boxes are NOT ticked: Dr. Yatin de
 
 Still his: 13.6 camera frame, 15.4/32.9 monster look, 21.4/32.6 sound, 32.2 full camera session,
 32.3/32.5 phone, 32.8 screen reader.
+
+## Camera checks, 21 Nov 2026 evening (Dr. Yatin at the laptop, Claude read screen values only)
+
+- 47.1 PASS (Dr. Yatin): monster flinches on each brushing second, shrinks clearly, smoke readable,
+  never two monsters at once.
+- 48.5 PASS (Dr. Yatin): gentle full session after MOVING_MIN_TRAVEL 0.2 + DAMAGE_PER_SECOND 4:
+  zone 1 beaten at 15 s, zone 3 at 17 s, zone 4 at 19 s, each followed by smoke; zone 2 (upper
+  left) only 3 counted seconds, not beaten (varies run to run; earlier run it was the best zone).
+- Before the change: 37-47% of seconds counted, monsters rarely beaten. Debug page: brisk 85%,
+  gentle 69% (13% lost as "not moving"). Camera speed the same in game and debug page (~7.5 fps).

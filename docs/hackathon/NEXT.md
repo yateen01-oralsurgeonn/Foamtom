@@ -145,3 +145,9 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   next monster waits for leaving copy (max 2 paints), MIN_MONSTER_SCALE 0.2, hit flinch each damaged
   tick (fx-no-hit with reduced motion), smoke +20% with #8a6fc4 outline. Verified timer-only in
   Playwright. Open: task 47 = his camera check. Build loop now repairs Kiro tick slips (mojibake, "[x]N").
+- 21 Nov ~22:45: MEASURED his brushing (debug page + game, readings only): speed same (~7.5 fps);
+  gentle strokes lost as "not moving"; game counted 37-47%. He approved f15: MOVING_MIN_TRAVEL 0.2,
+  DAMAGE_PER_SECOND 4 (camera beaten after 15 counted s), TIMER_ONLY_DAMAGE 3 (timer-only still 20 s).
+  Task 48 built (475 tests). His camera run: 3 of 4 monsters beaten + smoke; 47 + 48.5 PASSED (his word).
+  Watch: upper-left zone varied (3 counted s in last run). Next: remaining hand checks (sound, phone,
+  monster look 15.4/32.9), later tasks 33-40, parent-screen spec, video.
