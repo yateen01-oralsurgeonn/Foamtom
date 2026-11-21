@@ -18,6 +18,7 @@ import { createEndCard } from './ui/end-card';
 import { startEffects } from './ui/effects-host';
 import { createGameLoop } from './ui/game-loop';
 import type { Scheduler, VisibilitySource, WakeLockHelper } from './ui/game-loop';
+import { createMonsterBookScreen } from './ui/monster-book-screen';
 import { createSessionPresenter } from './ui/session-presenter';
 import { createSessionScreen } from './ui/session-screen';
 
@@ -108,7 +109,19 @@ if (app) {
   const kit = createAudioKit();
   const speaker = kit.speaker;
   const storage = createStorage(browserBackend());
-  const screen = createSessionScreen(app, { onStart: () => void loop.begin() }, speaker);
+  // Where the Monster Book was opened from, so Back returns there.
+  let bookFrom: 'title' | 'end' = 'title';
+  function openBook(from: 'title' | 'end'): void {
+    bookFrom = from;
+    if (from === 'title') screen.hide();
+    else endCard.hide();
+    book.open();
+  }
+  const screen = createSessionScreen(
+    app,
+    { onStart: () => void loop.begin(), onOpenBook: () => openBook('title') },
+    speaker,
+  );
   const presenter = createSessionPresenter({ screen, sounds: kit.sounds });
   const endCard = createEndCard(
     app,
@@ -117,10 +130,21 @@ if (app) {
         endCard.hide();
         screen.showStart();
       },
+      onOpenBook: () => openBook('end'),
     },
     speaker,
     kit.sounds,
   );
+  const book = createMonsterBookScreen({
+    root: app,
+    loadSessions: () => storage.loadSessions(),
+    speaker,
+    onBack: () => {
+      book.close();
+      if (bookFrom === 'end') endCard.unhide();
+      else screen.showStart();
+    },
+  });
 
   // The camera for the current session, loaded lazily after the start tap. Null in timer-only
   // mode and before the first start.
