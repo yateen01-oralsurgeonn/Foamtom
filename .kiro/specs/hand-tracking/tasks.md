@@ -173,18 +173,18 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/tracking-decision.test.ts`
   - Files this task may change: `src/tracking/thresholds.ts` (only the lines Dr. Yatin decided), `tests/tracking-decision.test.ts`
 
-- [ ] 3. **Draw value and the camera SignalSource**
-  - [ ] 3.1 `src/tracking/draw-value.ts`: `DrawValue` (`mouth`, `faceWidth`, `roll`) and `toDrawValue(face, aspect)` as design 5.7. Pure
-  - [ ] 3.2 `src/tracking/camera-source.ts`: `createCameraSignalSource(deps)` returning `CameraSignalSource`: the unchanged `SignalSource` plus `latestDraw()`, `onDraw(listener)` and `attachVideo(video)`. Browser only; `CameraDeps` (`now`, `getUserMedia`, `loadTrackers`) are injected. States and rules exactly as design 6.1:
+- [x] 3. **Draw value and the camera SignalSource**
+  - [x] 3.1 `src/tracking/draw-value.ts`: `DrawValue` (`mouth`, `faceWidth`, `roll`) and `toDrawValue(face, aspect)` as design 5.7. Pure
+  - [x] 3.2 `src/tracking/camera-source.ts`: `createCameraSignalSource(deps)` returning `CameraSignalSource`: the unchanged `SignalSource` plus `latestDraw()`, `onDraw(listener)` and `attachVideo(video)`. Browser only; `CameraDeps` (`now`, `getUserMedia`, `loadTrackers`) are injected. States and rules exactly as design 6.1:
     - `start()` asks `getUserMedia({ video: { facingMode: 'user' }, audio: false })` and `loadTrackers()` in parallel, answers `'ready'` only when the stream plays and both trackers exist, answers `'unavailable'` on any failure or refusal, never rejects, never keeps error text, and does not ask again after a refusal
     - `stop()` stops every track, closes the trackers, cancels the pending frame callback, empties the frames and the draw value, and is safe to call twice
     - a generation counter releases a camera that arrives after `stop()`
     - `latest()` is `null` unless running; otherwise `aggregateSecond(framesInLastSecond(frames, now()))`, then empties the frames
     - the frame pump uses `requestVideoFrameCallback` (fallback `requestAnimationFrame`), sends a frame to the trackers at most every `TRACK_MIN_INTERVAL_MS`, skips a frame that throws, and clears the draw value when no face is seen
     - nothing but the signal and the `DrawValue` leaves the module
-  - [ ] 3.3 Test `cameraSourceLifecycle` (design test 20) with fake `getUserMedia`, `loadTrackers` and `now`: refusal, failed load and no camera give `'unavailable'` with no second `getUserMedia`; `stop()` stops every fake track and closes the trackers; `stop()` during `start()` releases on arrival; `latest()` is `null` before ready, after `stop()` and during a restart; a restart after `stop()` works; `latest()` empties the frames; a stalled tracker gives `null`
-  - [ ] 3.4 Test: `toDrawValue` for a face gives the mouth, the width as a fraction of image width and the roll of the face axis; a face of width zero gives no value
-  - [ ] 3.5 Extend nothing else: `trackingPrivacyGuard`, `thresholdsInOneFile` and the core privacy guard already cover these files and must pass
+  - [x] 3.3 Test `cameraSourceLifecycle` (design test 20) with fake `getUserMedia`, `loadTrackers` and `now`: refusal, failed load and no camera give `'unavailable'` with no second `getUserMedia`; `stop()` stops every fake track and closes the trackers; `stop()` during `start()` releases on arrival; `latest()` is `null` before ready, after `stop()` and during a restart; a restart after `stop()` works; `latest()` empties the frames; a stalled tracker gives `null`
+  - [x] 3.4 Test: `toDrawValue` for a face gives the mouth, the width as a fraction of image width and the roll of the face axis; a face of width zero gives no value
+  - [x] 3.5 Extend nothing else: `trackingPrivacyGuard`, `thresholdsInOneFile` and the core privacy guard already cover these files and must pass
   - _Requirements: 6.1, 6.2, 6.4, 6.5, 6.6, 6.7, 7.1, 7.4, 8.3, 9.1, 9.2_
   - Test file: `tests/camera-source.test.ts`, `tests/draw-value.test.ts`
   - Files this task may change: `src/tracking/draw-value.ts`, `src/tracking/camera-source.ts`, `tests/camera-source.test.ts`, `tests/draw-value.test.ts`
