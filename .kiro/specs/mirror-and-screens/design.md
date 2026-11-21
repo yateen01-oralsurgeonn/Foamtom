@@ -1,0 +1,1056 @@
+# Design: mirror-and-screens
+
+## 1. Overview
+
+This design covers how the game looks and sounds: the title screen with its Monster Book and
+parent buttons, the haunted-mirror frame that tells the child which part of the mouth to
+brush, twelve monster drawings and their smoke, the Monster Book screen, the end card, the
+soft sounds, and the comfort and access rules.
+
+Since 21 Nov 2026 the camera checks only that the child is brushing at the mouth and moving
+(`REQUIRE_SIDE_MATCH` and `REQUIRE_LEVEL_MATCH` are both `false`). The frame glow, the monster
+position and the spoken line are the only ways the game says **which** zone to brush. The
+frame is therefore part of how the app works, which is what the Costume Contest asks for.
+
+This spec changes only how things look and sound. It reuses, and does not redefine, these
+things from `core-brushing-loop` and `hand-tracking`: `BrushingSignal`, `SignalSource`,
+`SessionResult`, `SessionState`, `View` and `toView`, the tick rule, every constant in
+`src/logic/constants.ts`, the storage schema `foamtom:v1`, `GAIN_LEVEL`, `GAIN_STEP_PER_MS` and
+`rampGain` (`src/audio/speaker.ts`), `drawMonster`'s signature, `monsterAnchor`, the 8-second
+start limit, and the CSP in `index.html`. Nothing under `src/logic/` changes. `game-loop.ts`
+does not change.
+
+Everything decided by data is a pure function with a named test (req 15, 16.2). The screens
+only paint what those functions return (req 16.3). Nothing drawn or played reads the camera
+(req 13.4).
+
+**Key design decisions (each flagged "Design choice" inline):**
+
+- Four new pure functions, as the requirements name them: `frameGuidance`, `monsterDrawState`,
+  `monsterBookView`, `effectsFor`. They live in `src/ui/`, import from `src/logic/` only, and
+  nothing in `src/logic/` imports them (req 16.2).
+- The zone-end outcome reaches the drawing code through a small pure helper,
+  `zoneEndEvent(prev, next)`, that compares two `SessionState` values. `toView` does not change
+  (req 6.1).
+- The frame is one component used in both modes. It is never inside the mirrored element
+  (req 3.3, 4.4).
+- Looping effects are CSS animations whose durations come from one table, applied to the page
+  with `style.setProperty`, so a test can read the table (req 11.2, 15.5).
+- Sounds are plain data (an envelope and a pitch) played with the Web Audio clock. No timer
+  (req 10.5, 13.3).
+- The twelve monster names are spoken from `monsters.ts` through a new `sayText` method added
+  next to the existing `Speaker` interface, which is not changed (req 7.4; Decision 3).
+- No new test environment. The project has no DOM library, so screens are split into a pure
+  model (tested) and a thin painter (checked by source scan and by hand), like
+  `camera-preview.ts` today.
+- No new words. Every text the child or parent sees or hears is one of the 19 approved lines
+  (req 14.1).
+
+---
+
+## 2. Architecture
+
+```mermaid
+graph TD
+    subgraph Shell ["Shell: src/main.ts (wiring only)"]
+        MAIN["main.ts<br/>builds the screens, routes title / session / end card / Book,<br/>passes handlers and loadSessions"]
+    end
+    subgraph Logic ["src/logic (unchanged)"]
+        VIEW["view.ts<br/>toView(state)"]
+        SESSION["session.ts, session-result.ts"]
+        MONSTERS["monsters.ts<br/>MONSTERS table"]
+        BOOK["monster-book.ts<br/>computeMonsterBook"]
+    end
+    subgraph Pure ["Pure UI functions: src/ui, no DOM, no clock, no randomness"]
+        FG["frame-guidance.ts<br/>frameGuidance"]
+        DS["monster-draw-state.ts<br/>monsterDrawState, monsterScale,<br/>smokeLook, zoneEndEvent"]
+        CUES["sound-cues.ts<br/>cuesFor(prev, next)"]
+        BV["book-model.ts<br/>monsterBookView, bookTapAction,<br/>bookViewFromLoader"]
+        FX["effects.ts<br/>effectsFor, LOOP_CYCLES_MS,<br/>REGION_LOOKS, effectClasses"]
+        LOOKS["monster-looks.ts<br/>MONSTER_LOOKS table"]
+        TM["title-model.ts, tap-targets.ts<br/>controls and sizes"]
+        TXT["display-text.ts<br/>second text table"]
+    end
+    subgraph Paint ["Painters: src/ui (DOM)"]
+        PRES["session-presenter.ts<br/>update(state): paint, cues, zone end"]
+        SCREEN["session-screen.ts<br/>(existing, extended)"]
+        TITLE["title-panel.ts"]
+        FRAME["mirror-frame.ts, frame-art.ts"]
+        ART["monster-art.ts<br/>drawMonster, drawSilhouette"]
+        ENDC["end-card.ts (existing, extended)"]
+        BOOKSCR["monster-book-screen.ts"]
+        HOST["effects-host.ts<br/>root classes, CSS variables,<br/>matchMedia and visibility listeners"]
+        CSS["frame.css, monster-art.css, screens.css<br/>(styles.css kept)"]
+    end
+    subgraph Audio ["src/audio"]
+        LINES["lines.ts (+2 lines)"]
+        SPEAKER["speaker.ts (+ sayText)"]
+        SOUNDS["sounds.ts<br/>SOUNDS data, envelopeGainAt"]
+        PLAYER["sound-player.ts<br/>Web Audio"]
+        KIT["audio-kit.ts<br/>speaker + sounds, one unlock, one stop"]
+    end
+    subgraph Existing ["Existing, unchanged"]
+        LOOP["ui/game-loop.ts<br/>the only timer"]
+        PREVIEW["ui/camera-preview.ts, monster-anchor.ts"]
+        STORE["storage/storage.ts"]
+    end
+
+    LOOP -- "onState(state)" --> MAIN
+    MAIN --> PRES
+    PRES -- "toView(state)" --> VIEW
+    PRES --> DS
+    PRES --> CUES
+    PRES --> SCREEN
+    SCREEN --> FG
+    SCREEN --> FRAME
+    SCREEN --> DS
+    SCREEN --> ART
+    SCREEN --> TITLE
+    TITLE --> TM
+    TM --> TXT
+    ART --> LOOKS
+    ART --> MONSTERS
+    CUES --> SOUNDS
+    PRES -- "play(cue)" --> PLAYER
+    KIT --> SPEAKER
+    KIT --> PLAYER
+    BOOKSCR --> BV
+    BV --> BOOK
+    BV --> MONSTERS
+    BOOKSCR --> ART
+    BOOKSCR --> SPEAKER
+    MAIN -- "loadSessions()" --> STORE
+    MAIN --> BOOKSCR
+    MAIN --> ENDC
+    MAIN --> HOST
+    HOST --> FX
+    FRAME --> FX
+    SCREEN --> PREVIEW
+```
+
+**Data flow.** The loop calls `onState(state)` once per tick (unchanged). `main.ts` hands the
+state to `session-presenter.ts`. The presenter keeps the previous state and calls three pure
+functions: `toView(state)` for the picture, `zoneEndEvent(prev, state)` for a monster that just
+left, and `cuesFor(prev, state)` for sounds. It passes the results to `session-screen.ts` and
+the sound player. The screen asks `frameGuidance(view)` for the frame and `monsterDrawState(view,
+null)` for the monster, and paints. In one `paint` call the glow, the spoken line and the
+monster all change together (req 3.6).
+
+The "Pure UI functions" box takes plain values and returns plain data. It has no DOM, no
+clock, no randomness (req 6.7, 16.2). Nothing under `src/logic/` imports from `src/ui/`,
+`src/tracking/`, `src/storage/` or `src/audio/` (unchanged; this spec adds no file under
+`src/logic/`).
+
+> **Design choice (where the pure functions live):** `src/ui/`, next to the code that uses
+> them, because `structure.md` puts "mirror frame, monsters, screens" there and the
+> requirements let them import from `src/logic/`. The alternative, a new `src/present/`
+> folder, adds a folder for six small files. Not chosen.
+
+---
+
+## 3. Module list
+
+One concept per file, kebab-case (`structure.md`). "New" files are added by this spec.
+"Changed" files keep every export and every existing test passing (req 15.10).
+
+| Module | Status | Responsibility | Req |
+|--------|--------|----------------|-----|
+| `src/ui/frame-guidance.ts` | new, pure | `frameGuidance(view)`, `ZONE_REGION` table, `REGION_ORDER`. | 3.2, 3.3, 3.4, 3.5, 3.7 to 3.9, 15.1 |
+| `src/ui/effects.ts` | new, pure | `effectsFor(prefersReducedMotion)`, `effectClasses(effects)`, `LOOP_CYCLES_MS`, `MIN_CYCLE_MS`, `REGION_LOOKS`, `ONE_SHOT_MS`. | 11.2, 11.3, 15.4, 15.5 |
+| `src/ui/monster-draw-state.ts` | new, pure | `monsterDrawState(view, endOutcome)`, `monsterScale`, `smokeLook`, `MIN_MONSTER_SCALE` (moved from `session-screen.ts`), `zoneEndEvent(prev, next)`. | 6.1 to 6.7, 15.2 |
+| `src/ui/sound-cues.ts` | new, pure | `cuesFor(prev, next)`: which sounds a state change calls for. | 10.4, 10.6 |
+| `src/ui/monster-looks.ts` | new, pure | `MONSTER_LOOKS`: one row per monster, shape features only. `shapeKey(look)`. | 5.1 to 5.4 |
+| `src/ui/book-model.ts` | new, pure | `monsterBookView(sessions)`, `bookViewFromLoader(load)`, `bookTapAction(entry)`. | 7.2 to 7.6, 8, 15.3 |
+| `src/ui/book-speech.ts` | new | `createBookSpeech(speaker)`: runs a tap action on a speaker. No DOM. | 7.4, 7.5, 8.1, 15.9 |
+| `src/ui/title-model.ts` | new, pure | `titleControls()`: the controls of the title screen, their text ids and sizes. | 1.1, 1.2, 1.8, 2.2, 10.11 |
+| `src/ui/tap-targets.ts` | new, pure | `TAP_TARGETS`: size in px of every tappable thing. | 1.6, 1.8, 2.2, 7.7, 9.3, 11.4 |
+| `src/ui/display-text.ts` | new, pure | `DISPLAY_TEXT`: the second text table (shown text and names for screen readers). | 1.3, 14.1, 14.4 |
+| `src/ui/end-lines.ts` | new | `END_LINE_IDS = ['end', 'end-close']`, `speakEnd(speaker)`. | 9.2, 15.9 |
+| `src/ui/session-presenter.ts` | new | `createSessionPresenter(deps)`: `update(state)`, `reset()`. Keeps the previous state; calls the pure functions and the painters. | 3.6, 6.3, 10.4 |
+| `src/ui/mirror-frame.ts` | new | The frame element: four corner regions, fog, cracks, a `glass` slot. `paint(guidance)`. | 3, 4 |
+| `src/ui/frame-art.ts` | new | Builds the crack drawing (SVG namespace) and the candle pieces. | 4.1, 4.2, 13.2 |
+| `src/ui/monster-art.ts` | new | `drawMonster(def)` (moved here; `session-screen.ts` re-exports it) and `drawSilhouette(rarity)`. | 5, 6.4, 7.5 |
+| `src/ui/title-panel.ts` | new | The title panel: name, start button, Monster Book button, privacy line, parent control. | 1, 2 |
+| `src/ui/monster-book-screen.ts` | new | The Book screen: grid, back button, caption, rare invitation. `open()` reads sessions. | 7, 8 |
+| `src/ui/effects-host.ts` | new | `startEffects(deps)`: sets CSS variables from the tables, puts effect classes on the root, listens for reduced-motion and tab-hidden changes. | 11.2, 11.3, 13.3 |
+| `src/ui/frame.css`, `monster-art.css`, `screens.css` | new | Frame, monster art, and title / end card / Book styles. Linked from `index.html`. | 3, 4, 5, 7, 11, 12 |
+| `src/audio/sounds.ts` | new, pure | `SOUNDS` data, `envelopeGainAt(spec, ms)`, `EFFECT_PEAK_GAIN`. | 10.2 to 10.5 |
+| `src/audio/sound-player.ts` | new | `createSoundPlayer()`: `unlock()`, `play(id)`, `stop()`. Web Audio, no timer. | 10.1, 10.7, 10.8 |
+| `src/audio/audio-kit.ts` | new | `createAudioKit()`: one speaker and one player; one `unlock()` and one `stop()` for both. | 10.7, 7.9 |
+| `src/audio/lines.ts` | changed | Adds two lines: `end-close`, `rare-invite`. The seven existing lines are not touched. | 9.2, 8.1, 14.2, 14.3 |
+| `src/audio/speaker.ts` | changed | Adds `TextSpeaker { sayText(text) }` and returns `Speaker & TextSpeaker` from `createBrowserSpeaker`. `Speaker`, `silentSpeaker`, `rampGain`, constants unchanged. | 7.4 |
+| `src/ui/session-screen.ts` | changed | Uses `title-panel`, `mirror-frame`, `monster-art`; `paint(view, zoneEnd?)` gets an optional second argument; optional `sounds` argument. Class names `.zone`, `.zone--active`, `.big-button`, `.caption` stay. | 3, 4, 6 |
+| `src/ui/end-card.ts` | changed | Two lines, two buttons, outcome classes, optional `sounds`. | 9 |
+| `src/main.ts` | changed | Wiring only: effects host, audio kit, presenter, Book routing, optional parent handler. Its scheduler adapter is not touched. | 7.8, 2.1 |
+| `src/ui/styles.css`, `index.html` | changed | `styles.css` is only added to (rules that `camera-preview.test.ts` reads stay as they are). `index.html` gets three `<link>` lines. The CSP is not touched. | 13.2 |
+| `src/ui/camera-preview.ts`, `monster-anchor.ts`, `game-loop.ts`, everything under `src/logic/`, `src/tracking/`, `src/storage/` | unchanged | | 16.1 |
+
+> **Design choice (`drawMonster` moves, its export stays):** `monster-art.ts` holds the code;
+> `session-screen.ts` keeps `export { drawMonster } from './monster-art'`, so `end-card.ts` and
+> any caller keep their import (req 5.6).
+
+---
+
+## 4. TypeScript types
+
+`View`, `ZoneId`, `Zone`, `MonsterDef`, `MonsterOutcome`, `Rarity`, `SessionState`,
+`SessionResult` come from `src/logic/` and are not redefined. `Speaker` comes from
+`src/audio/speaker.ts` and is not changed.
+
+```typescript
+// ── src/ui/frame-guidance.ts ──
+type FrameRegion = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+type RegionLevel = 'active' | 'dim' | 'off';           // off: no session is running (req 3.9)
+
+interface RegionLook {                                  // from REGION_LOOKS in effects.ts
+  readonly glowOpacity: number;      // 0 to 1: brightness
+  readonly glowSizePx: number;       // size of the glow: not hue
+  readonly flame: boolean;           // the lit-candle ornament: not hue
+  readonly flickerAmplitude: number; // 0 to 1: size of the brightness change, never its speed
+}
+interface RegionState { readonly region: FrameRegion; readonly level: RegionLevel; readonly look: RegionLook }
+interface FrameGuidance {
+  readonly regions: readonly RegionState[];             // always 4, in REGION_ORDER
+  readonly activeRegion: FrameRegion | null;
+  readonly flickering: boolean;                         // false when paused or off
+}
+// The argument type allows only the two fields that may matter (req 3.8).
+type GuidanceInput = Pick<View, 'phase' | 'zoneId'> | null;   // null: no session running
+
+// ── src/ui/monster-draw-state.ts ──
+type MonsterDrawState = 'sitting' | 'shrinking' | 'defeated' | 'gone' | 'fled' | 'trapped';
+type ZoneEndOutcome = 'defeated' | 'fled' | 'trapped';
+interface ZoneEnd { readonly zoneId: ZoneId; readonly monsterId: string; readonly outcome: ZoneEndOutcome }
+interface SmokeLook { readonly puffs: 0 | 1 | 2 | 3; readonly scale: number; readonly opacity: number }
+
+// ── src/ui/effects.ts ──
+interface Effects {
+  // moving effects: off under reduced motion
+  readonly flicker: boolean; readonly fogDrift: boolean; readonly smokeDrift: boolean;
+  readonly leavingMotion: boolean;   // false: a monster that leaves only fades
+  readonly bookMotion: boolean;      // the end-card "going into the Book" movement
+  // states: always on (req 11.3)
+  readonly glow: true; readonly ornament: true; readonly sizeChange: true; readonly smokeThinning: true;
+}
+type LoopId = 'flameActive' | 'glowActive' | 'glowDim' | 'fogDrift' | 'smokeDrift';
+
+// ── src/ui/monster-looks.ts ──
+type BodyShape = 'round' | 'tall' | 'wide' | 'drop';
+type EarShape = 'none' | 'round' | 'points' | 'horns';
+type ExtraShape = 'none' | 'tail' | 'tuft' | 'wings' | 'bumps' | 'wisps';
+type MouthShape = 'smile' | 'oh' | 'tongue' | 'wavy';        // no teeth in any value (req 5.3)
+type CrestShape = 'none' | 'moon' | 'sun' | 'halo' | 'crown';
+interface MonsterLook {
+  readonly body: BodyShape; readonly ears: EarShape; readonly eyes: 1 | 2 | 3;
+  readonly extra: ExtraShape; readonly mouth: MouthShape;
+  readonly crest: CrestShape;   // rare only
+  readonly star: boolean;       // rare only
+}                               // no colour field: colour is in monster-art.css
+
+// ── src/ui/book-model.ts ──
+interface BookEntry {
+  readonly id: string;
+  readonly rare: boolean;
+  readonly owned: boolean;
+  readonly name: string | null;     // null when not owned (req 7.5)
+  readonly invite: boolean;         // rare and not owned (req 8.1)
+}
+interface BookView { readonly entries: readonly BookEntry[]; readonly showRareInvitation: boolean }
+type BookTapAction =
+  | { readonly kind: 'say-name'; readonly text: string }     // owned
+  | { readonly kind: 'say-line'; readonly lineId: 'rare-invite' }  // rare, not owned
+  | { readonly kind: 'none' };                                // common, not owned
+
+// ── src/ui/title-model.ts, tap-targets.ts, display-text.ts ──
+type TapTargetId = 'start' | 'titleBook' | 'parent' | 'bookCell' | 'bookBack' | 'endDone' | 'endBook';
+interface TapTarget { readonly minWidthPx: number; readonly minHeightPx: number }
+type DisplayTextId = 'privacy' | 'book-title' | 'back' | 'grown-ups' | 'not-met';
+interface DisplayText { readonly id: DisplayTextId; readonly text: string; readonly kind: 'shown' | 'name-only' }
+interface TitleControl {
+  readonly id: 'start' | 'book' | 'parent';
+  readonly size: 'large' | 'small' | 'quiet';
+  readonly target: TapTargetId;
+  readonly textId: DisplayTextId | 'start-line';   // 'start-line' is the existing spoken line
+  readonly icon: true;
+}
+
+// ── src/audio/sounds.ts ──
+type SoundId = 'zone-start' | 'defeat' | 'flee' | 'trapped' | 'end';
+interface SoundVoice { readonly wave: 'sine' | 'triangle'; readonly fromHz: number; readonly toHz: number; readonly level: number }
+interface SoundSpec {
+  readonly id: SoundId;
+  readonly voices: readonly SoundVoice[];     // summed; the levels add up to 1 or less
+  readonly peakGain: number;                  // at most EFFECT_PEAK_GAIN
+  readonly attackMs: number; readonly holdMs: number; readonly releaseMs: number;
+}
+interface TextSpeaker { sayText(text: string): void }          // src/audio/speaker.ts
+interface Sounds { unlock(): void; play(id: SoundId): void; stop(): void }
+```
+
+---
+
+## 5. Behaviour
+
+### 5.1 The frame is the guidance (req 3)
+
+**Regions and mapping (req 3.2, 3.3).** The frame has four regions at the four corners of the
+play area, in screen terms with the child's own left on the left of the screen.
+
+```typescript
+// src/ui/frame-guidance.ts. The only zone-to-region table. No swap, no negation.
+const ZONE_REGION: Record<ZoneId, FrameRegion> = {
+  'upper-left':  'top-left',
+  'upper-right': 'top-right',
+  'lower-left':  'bottom-left',
+  'lower-right': 'bottom-right',
+};
+const REGION_ORDER: readonly FrameRegion[] = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+```
+
+`rawToChildSide` in `src/tracking/side.ts` stays the only left/right swap in the code base. The
+preview is mirrored by CSS and the child's left cheek already appears on the left of the
+screen, so the frame needs no swap. The frame element is a **sibling** of the mirrored stage
+(the `.preview--mirrored` element), never a parent or child of it, and no frame file contains
+`scaleX` (req 3.3).
+
+**`frameGuidance(input)` (req 3.4 to 3.9, 3.8).**
+
+```
+frameGuidance(input):
+  if input == null or input.phase == 'ended':
+      return { regions: all four 'off', activeRegion: null, flickering: false }
+  active = ZONE_REGION[input.zoneId]
+  regions = REGION_ORDER.map(r => r == active ? 'active' : 'dim')      # look from REGION_LOOKS[level]
+  flickering = (input.phase == 'running')                               # paused: lit, not flickering (3.9)
+  return { regions, activeRegion: active, flickering }
+```
+
+The function reads `phase` and `zoneId` only. Its argument type is `Pick<View, 'phase' |
+'zoneId'>`, so the health, the smoke, the caption, the signal and the mode cannot reach it
+(req 3.8). Because `zoneId` does not change after a monster is defeated, the glow stays on the
+zone until the zone ends (req 3.7).
+
+**Looks (req 3.4, 3.5).** `REGION_LOOKS` in `effects.ts`, starting values:
+
+| Level | `glowOpacity` | `glowSizePx` | `flame` | `flickerAmplitude` |
+|-------|---------------|--------------|---------|--------------------|
+| `active` | 0.9 | 72 | true | 0.20 |
+| `dim` | 0.25 | 24 | false | 0.05 |
+| `off` | 0 | 0 | false | 0 |
+
+The active region differs from a dim one in brightness, size of glow and the lit-candle
+ornament, none of which is a hue (req 3.5). "Flicker more" is the larger `flickerAmplitude`;
+the cycle is never shorter (section 5.8).
+
+> **Design choice:** the glow layer sits **behind** the glass content (`z-index` below the
+> preview and the grid), so it is seen only in the frame ring and outside it, and can never
+> cover the preview, the monster, the countdown or the caption (req 3.10). The ring is 32 px
+> wide (20 px in short landscape) so a 32 px candle fits in each corner. `FRAME_METRICS` holds
+> these starting values.
+
+**Painting (req 3.6, 4.3, 4.4).** `mirror-frame.ts` builds:
+
+```
+div.mirror-frame
+  div.mirror-frame__deco  [aria-hidden="true"]       (req 11.8)
+     div.frame-fog          (drifting fog, behind the glass)
+     div.frame-region.frame-region--top-left ... (x4: glow layer + candle stick + flame, flame only when look.flame)
+     svg.frame-cracks       (drawn cracks, inside the ring only)
+  div.mirror-frame__glass                              (the play area slot)
+```
+
+`session-screen.ts` puts `preview.element` in the glass in a camera session and the plain
+`mouth` grid in a timer-only session (req 4.3, 4.4). In a camera session the `mouth` grid stays
+below the frame as it is today, so the existing behaviour is kept. The same component and the
+same `frameGuidance` run in both modes. `MirrorFrame.paint(guidance)` sets classes
+(`frame-region--active`, `--dim`, `--off`, `--flicker`) and the three look values as CSS
+variables with `element.style.setProperty`. It makes no decision.
+
+**Same moment (req 3.6).** `SessionScreen.paint(view, zoneEnd?)` is one synchronous function.
+In it, in this order: `frame.paint(frameGuidance(view))`, the caption and `speaker.say(...)`,
+`showMonster(...)`. All three change in the same task of the event loop, so the glow, the line
+and the monster move together. The only thing that differs is the CSS fade of the glow
+(0.4 s, `ONE_SHOT_MS.glowMove`), which is a transition and not a timer.
+
+**When no region glows (req 3.9).** The frame exists only inside the session panel. The title
+screen, end card and Book never show it. `frameGuidance(null)` and the `ended` phase give four
+`off` regions, which the tests use to pin the rule.
+
+### 5.2 Look and mood (req 4)
+
+- **Effects (req 4.1).** Candle flicker (flame and glow, CSS keyframes on opacity), drifting fog
+  (a slow CSS `transform` on a layer behind the glass), cracked glass (a fixed drawing). All
+  CSS or an SVG built with `createElementNS`, the one SVG exception of core req 13.10 (req 13.2).
+- **Cute-spooky (req 4.2).** The cracks are a short, regular, star-shaped pattern in the ring
+  corners with thin strokes at about 35% opacity, so they read as pattern and not as a broken
+  screen. No face, figure or shape in the fog: it is two soft blurred ellipses. No dark flash,
+  no shake: the only moving properties are `opacity` and `transform: translate` at small
+  distances.
+- **Fog and cracks behind the text (req 4.5).** The fog layer is under the glass content. The
+  caption and countdown sit outside the frame element and on opaque plates (section 5.8). Fog
+  never reaches the face in the preview or the monster, because the preview is opaque above it.
+- **Fade in (req 4.6).** Each of the frame, fog, cracks and the screens has a one-shot CSS
+  fade (`opacity` 0 to 1 over `ONE_SHOT_MS.fadeIn` = 600 ms) that plays whenever its parent
+  stops being `hidden`.
+- **Speed (req 4.7).** All effects are CSS on compositor properties (`opacity`, `transform`), no
+  `filter`, no `backdrop-filter`, no `mix-blend-mode`. The check is manual on the 2022 Android
+  phone with effects on; the result goes into `docs/review/TRACKING-TEST-RESULTS.md`, section 7,
+  as a dated row in words.
+
+### 5.3 Monster drawings (req 5)
+
+`MONSTER_LOOKS: Record<monsterId, MonsterLook>` in `monster-looks.ts` is the one table of
+shapes. Starting values (shapes only; colours stay in CSS and are not a feature):
+
+| Monster | body | ears | eyes | extra | mouth | crest | star |
+|---------|------|------|------|-------|-------|-------|------|
+| `plaque-puff` | round | round | 2 | none | smile | none | no |
+| `sugar-sprite` | drop | points | 2 | wings | oh | none | no |
+| `gummy-gloop` | wide | none | 2 | bumps | wavy | none | no |
+| `fuzzlefang` | round | points | 2 | tuft | tongue | none | no |
+| `crumb-goblin` | tall | points | 2 | none | smile | none | no |
+| `sticky-wisp` | drop | none | 1 | wisps | oh | none | no |
+| `molar-mumbler` | wide | round | 3 | none | wavy | none | no |
+| `tartar-tot` | round | horns | 1 | tail | smile | none | no |
+| `midnight-molar-ghoul` | tall | horns | 2 | none | wavy | moon | yes |
+| `dawn-drool-dragon` | wide | horns | 2 | tail | tongue | sun | yes |
+| `moonlit-mint-phantom` | drop | none | 2 | wisps | smile | halo | yes |
+| `twilight-toffee-wraith` | tall | none | 3 | wisps | oh | crown | yes |
+
+- **Different shapes (req 5.2).** `shapeKey(look)` joins `body, ears, eyes, extra, crest`. The
+  twelve keys are pairwise different. No colour field exists in a look, so a pair cannot differ
+  "by colour alone".
+- **Cute (req 5.3).** Eyes are large round circles with a small highlight. `mouth` has four
+  values and none is a tooth shape. There is no value for blood, wounds, drips, fangs or
+  bulging eyes. `fuzzlefang` has a tongue, no fangs. See "Dr. Yatin to confirm".
+- **Rare marks (req 5.4).** Every rare monster has the star and a crest (a different
+  silhouette detail). No common monster has either.
+- **Made in code (req 5.5, 13.1).** `drawMonster(def)` builds the element from the look: class
+  names `monster--body-tall`, `monster--ears-horns`, `monster--eyes-3`, `monster--extra-tail`,
+  `monster--mouth-smile`, `monster--crest-moon`, plus the existing `monster--<id>` colour class.
+  Every size in `monster-art.css` is a multiple of one variable `--u` (default `1px`), so a Book
+  cell sets `--u: 0.8px` and the cheek sets its own, and the drawing reads at both sizes.
+- **Signature (req 5.6).** `drawMonster(def: MonsterDef): HTMLElement`, `role="img"`,
+  `aria-label` = the monster's name. As today.
+
+### 5.4 Monster states and smoke (req 6)
+
+**`monsterDrawState(view, endOutcome)` (req 6.1, 6.2, 6.7).**
+
+```
+monsterDrawState(view, endOutcome):
+  if endOutcome != null: return endOutcome            # 'defeated' | 'fled' | 'trapped'
+  h = view.healthFraction
+  if h >= 1: return 'sitting'
+  if h > 0:  return 'shrinking'
+  return view.smokeFraction > 0 ? 'defeated' : 'gone'
+```
+
+Total and deterministic: every `(view, endOutcome)` gives exactly one state. No DOM, no clock,
+no randomness.
+
+```
+monsterScale(h)  = MIN_MONSTER_SCALE + (1 - MIN_MONSTER_SCALE) * clamp01(h)       # 0.35 to 1; never below the floor
+smokeLook(f)     = f <= 0 ? { puffs: 0, scale: 0, opacity: 0 }
+                         : { puffs: ceil(3 * f), scale: 0.6 + 0.4 * f, opacity: 0.35 + 0.65 * f }
+```
+
+`MIN_MONSTER_SCALE` is 0.35, the value `session-screen.ts` has now. The smoke thins in the number of
+puffs (3, 2, 1), in their size and in their opacity (req 6.5). It carries no text, score,
+colour change or sound (req 6.6): nothing outside `smokeLook` reads `smokeFraction`.
+
+**Zone end (req 6.1, 6.3).** `toView` describes the active zone only, so the outcome of a zone
+that just ended is not in the view. A pure helper compares two states:
+
+```
+zoneEndEvent(prev, next):
+  if prev == null or next.phase == 'paused' or prev.phase == 'paused': return null
+  endedIndex = null
+  if next.activeZoneIndex > prev.activeZoneIndex: endedIndex = prev.activeZoneIndex
+  else if prev.phase != 'ended' and next.phase == 'ended': endedIndex = prev.activeZoneIndex
+  if endedIndex == null: return null
+  m = next.monsters[endedIndex]
+  if m.outcome == 'pending': return null                 # cannot happen; no event rather than a wrong one
+  return { zoneId: m.zoneId, monsterId: m.def.id, outcome: m.outcome }
+```
+
+`session-presenter.ts` passes the event to `screen.paint(view, zoneEnd)`. The screen then
+draws a **leaving copy** of that monster and, in the same call, shows the next zone's monster
+at once (req 6.3). The copy is a one-shot CSS animation (`ONE_SHOT_MS.leave` = 1400 ms) on an
+extra element that is removed by its `animationend` event. It is not a timer, and it changes
+nothing in `SessionState`, so it cannot delay, pause or shorten the zone (core req 2.5).
+
+| State | Picture | Req |
+|-------|---------|-----|
+| `sitting` | Monster at full size on the zone. | 6.2 |
+| `shrinking` | Same monster, size from `monsterScale`. | 6.2 |
+| `defeated` | Monster hidden, smoke puffs from `smokeLook`. At zone end the leaving copy puffs into smoke once. | 6.2, 6.3 |
+| `gone` | Nothing on the zone. | 6.2 |
+| `fled` | Leaving copy slips sideways and fades into a puff. | 6.2, 6.3 |
+| `trapped` | Leaving copy sits in a small glass bubble and waves or sleeps (two classes, `trapped-wave`, `trapped-sleep`, chosen by the zone index parity so no randomness), then fades. The face stays happy: same eyes and mouth, no tears, no frown. | 6.2, 6.3, 6.4 |
+
+Under `effectsFor(true)` the leaving copy only fades (no sideways movement, no wave). It is
+still drawn, so the state shows (req 11.3).
+
+> **Design choice (last zone):** the session screen stops painting at phase `ended`, and the
+> end card takes over. The fourth monster's outcome is shown by the end card (section 5.6),
+> not by a leaving copy on the session screen. All four outcomes therefore appear in the same
+> way on the end card. It costs one rule: `zoneEndEvent` still returns the fourth event (the
+> tests count four), and the presenter does not paint it.
+
+**Cleanup without a timer.** At most one leaving copy exists. It is removed when its animation
+ends, when the next zone-end event arrives, on `pause`, on `ended`, and in `showStart()`. A
+copy cannot be stuck on screen if `animationend` never arrives (hidden tab, reduced motion).
+
+### 5.5 Title screen and parent entry (req 1, 2)
+
+`title-model.ts` returns the controls as data; `title-panel.ts` paints them.
+
+```typescript
+titleControls(hasParentHandler: boolean): TitleControl[]
+// [ { id:'start',  size:'large', target:'start',     textId:'start-line', icon:true },
+//   { id:'book',   size:'small', target:'titleBook', textId:'book-title', icon:true },
+//   (hasParentHandler) { id:'parent', size:'quiet', target:'parent', textId:'grown-ups', icon:true } ]
+```
+
+- **One large button (req 1.1, 1.2).** The start button keeps its icon, its label "Brush!", its
+  caption and the spoken `start` line. Its tap calls `speaker.unlock()`, `speaker.say('start')`
+  and the existing `onStart`. The `start` line does not change. It is the only `large` control
+  (req 1.1).
+- **Monster Book button (req 1.8, 7.8, 7.9).** `small`, with an icon, the visible label "Monster
+  Book" and an accessible name. Its tap calls `speaker.unlock()` and the `onOpenBook` handler
+  passed in by `main.ts`. It does not call `onStart`, loads no camera code and starts no session.
+- **Privacy line (req 1.3).** `DISPLAY_TEXT['privacy']` is "The camera stays on this phone.
+  Nothing is saved or sent." It is a `<p>`, visible, never spoken. It lives in `display-text.ts`
+  and not in `lines.ts`, because the core wording guard forbids "camera" there. The new guard
+  covers the file (section 6).
+- **Nothing asked (req 1.4, 1.5).** The panel has no form, no `beforeinstallprompt` handler and
+  no camera call. It imports nothing from `src/tracking/` and makes no request. It loads
+  nothing lazily.
+- **Fits (req 1.6).** Start, Book button and privacy line are visible without scrolling at
+  360 x 640. That layout is checked by hand (manual). The sizes are in `TAP_TARGETS`.
+- **No pressure (req 1.7).** No countdown, no animation faster than the table, no sound before
+  the first tap (the player has no context until `unlock()`), no text about earlier sessions.
+- **Parent control (req 2).** `main.ts` passes `onOpenParent` only when the `parent-screen`
+  spec provides one. With a handler, the control is a small `quiet` icon button (a padlock-free
+  grown-up silhouette made in CSS) whose accessible name is "Grown-ups". It is absent from the
+  session screen and the end card because only the title panel creates it (req 2.3). This spec
+  builds no gate (req 2.1).
+- **No mute (req 10.11).** `titleControls` has no such control, and no file adds one.
+
+`TAP_TARGETS` starting values (px, minimum width and height):
+
+| Id | Width | Height | Note |
+|----|-------|--------|------|
+| `start` | 160 | 72 | Equal to the existing `.big-button` rule. |
+| `titleBook` | 128 | 52 | Smaller than `start` in both. |
+| `parent` | 48 | 48 | Smaller and quieter than both. |
+| `bookCell` | 72 | 72 | |
+| `bookBack` | 96 | 48 | |
+| `endDone` | 160 | 72 | The existing end-card button. |
+| `endBook` | 128 | 56 | |
+
+The painter applies each pair with `style.minWidth` and `style.minHeight`.
+
+### 5.6 End card (req 9)
+
+- **Content (req 9.1).** The four monsters of the session, each drawn with `drawMonster`, and
+  each item carries a class for its outcome (`end-card__item--defeated`, `--fled`, `--trapped`).
+  The outcomes come from `state.monsters[i].outcome`, passed as an optional second argument:
+  `show(defs, outcomes?)`. Each item plays a one-shot "into the Book" movement
+  (`ONE_SHOT_MS.intoBook`); the fled and trapped ones look like the defeated ones except for
+  their small leaving style (section 5.4). Trapped ones are friendly (req 6.4). All four go
+  into the Book (core req 10.2).
+- **Lines (req 9.2).** `END_LINE_IDS = ['end', 'end-close']`. `speakEnd(speaker)` calls
+  `speaker.say('end')`, then `speaker.say('end-close')`. `say` queues speech after what is
+  already being said, so the lines do not overlap. Both captions are shown together, `end`
+  first, so no timer is needed to swap them. `end` is not changed. The new line is
+  "Two minutes. Every corner." (approved line 2). A test pins that `CLIP_LINE_IDS` holds
+  neither id: a clip would not queue, and it would then be cut by the next `say`.
+- **Buttons (req 9.3).** Exactly two: a big "Done" button (the existing one, back to the title
+  screen) and a smaller "Monster Book" button. Each has an icon, a label and an accessible
+  name, and the sizes are in `TAP_TARGETS`. Both are visible at 360 x 640 (manual).
+- **No urging (req 9.4).** The card has only those two buttons and the two captions. A test
+  scans `end-card.ts` and `display-text.ts` for the urging words (section 6).
+- **Timing (req 9.5).** The card is shown from `onEnded`, after `endCameraRun()` has stopped
+  the camera (existing order in `main.ts`).
+- **Sound.** `show` plays the `end` sound after `speaker.stop()` (existing order), so the stop
+  does not cut it.
+- **Coming back from the Book.** The Book is opened over a hidden end card. A new
+  `EndCard.unhide()` shows it again without speaking or playing anything.
+
+### 5.7 Monster Book screen (req 7, 8)
+
+**`monsterBookView(sessions)` (req 7.1, 7.2, 8.1, 8.3, 15.3).**
+
+```
+monsterBookView(sessions):
+  owned = computeMonsterBook(sessions).unlockedIds          # the only rule for "owned" (7.2)
+  entries = MONSTERS.map(m => {
+      id: m.id, rare: m.rarity == 'rare', owned: owned.has(m.id),
+      name: owned.has(m.id) ? m.name : null,
+      invite: m.rarity == 'rare' and not owned.has(m.id) })
+  return { entries, showRareInvitation: entries.some(e => e.invite) }
+```
+
+Always 12 entries in table order, 8 common then 4 rare. It reads nothing but each session's
+`monstersEarned`, so dates, times of day and session order cannot change it.
+
+**`bookViewFromLoader(load)` (req 7.6).** `try { monsterBookView(load()) } catch { monsterBookView([]) }`.
+`open()` calls it every time the Book opens, with `() => storage.loadSessions()` from `main.ts`.
+The Book stores nothing and shows no message when reading fails (twelve silhouettes).
+
+**`bookTapAction(entry)` (req 7.4, 7.5, 8.1).**
+
+```
+owned                 -> { kind: 'say-name', text: entry.name }
+rare and not owned    -> { kind: 'say-line', lineId: 'rare-invite' }
+common and not owned  -> { kind: 'none' }
+```
+
+`createBookSpeech(speaker)` runs the action. For `say-name` it calls `speaker.stop()` and then
+`speaker.sayText(name)`; for `say-line` it calls `speaker.stop()` and then
+`speaker.say('rare-invite')`. A new tap therefore replaces what is being said and never queues
+(req 7.4). `sayText` in `speaker.ts` cancels, picks a local voice with `pickLocalVoice`, and
+speaks. With no local voice it does nothing and the caption is the only output (core req
+12.9). The caption area under the grid shows the same words (`aria-live="polite"`).
+
+**Screen (req 7.3, 7.5, 7.7, 7.8, 7.10, 8).**
+
+```
+section.book
+  header: back button (icon + "Back") , h1 "Monster Book"
+  div.book__commons   (8 cells)
+  div.book__rares     (4 cells, then the rare invitation caption when showRareInvitation)
+  p.book__caption     (aria-live)
+```
+
+- An owned cell is a `<button>` with the monster's drawing and its name as visible text (req
+  7.3), accessible name = the name.
+- A not-owned cell shows `drawSilhouette(rarity)`: one friendly blob, same for every common
+  one, so it reveals nothing. No padlock, no cross, no grey "lost" look, no number, no
+  countdown (req 7.5). A rare silhouette carries the star and a small crest shape (req 5.4).
+  Its accessible name is "Not met yet" and it shows no name. A rare silhouette is a `<button>`
+  (it speaks the invitation); a common silhouette is a non-interactive `div role="img"`.
+- **Invitation (req 8.1 to 8.4).** One line, "Brush morning AND night.", shown as visible text
+  under the four rare cells while `showRareInvitation`, and spoken on a rare-silhouette tap. It
+  is the same whatever the sessions say about today: `monsterBookView` has no date input. It is
+  hidden when all four rare monsters are owned. It states the rule in the words the rule uses
+  and changes nothing about the rule (core req 10.6).
+- **Back (req 7.7).** One button, icon + "Back", sized from `TAP_TARGETS.bookBack`. `main.ts`
+  remembers where the Book was opened from (`'title'` or `'end'`) and the handler returns
+  there: `screen.showStart()` or `endCard.unhide()`.
+- **Opened from (req 7.8, 7.9).** The title Monster Book button and the end-card button both
+  call `speaker.unlock()` in their tap, then `openBook(from)`.
+- **No camera, no frame (req 7.10).** `monster-book-screen.ts` imports nothing from
+  `src/tracking/`, creates no frame and has no network call.
+- **Reflow (req 12.2).** The two grids use `grid-template-columns: repeat(auto-fit,
+  minmax(72px, 1fr))`; the screen scrolls (`overflow-y: auto`) when the content is taller than
+  the window.
+
+### 5.8 Sound (req 10)
+
+**Data (req 10.2, 10.3, 10.5).** `SOUNDS` holds one `SoundSpec` per `SoundId`. All values are
+starting values, tuned by ear:
+
+| Id | Voices (wave, from Hz to Hz) | Peak gain | Attack / hold / release ms | When |
+|----|------------------------------|-----------|----------------------------|------|
+| `zone-start` | sine 520 to 660 | 0.20 | 160 / 60 / 500 | a new zone becomes active |
+| `defeat` | triangle 440 to 700 (level 0.7) + sine 880 to 880 (0.3) | 0.25 | 190 / 40 / 420 | a monster is defeated |
+| `flee` | sine 600 to 360 | 0.20 | 160 / 40 / 520 | a monster flees |
+| `trapped` | sine 330 to 330 (0.6) + sine 495 to 495 (0.4) | 0.20 | 200 / 120 / 600 | a monster is trapped |
+| `end` | sine 392 to 392 (0.5) + sine 523 to 523 (0.5) | 0.22 | 200 / 200 / 700 | the end card opens |
+
+```typescript
+const EFFECT_PEAK_GAIN = 0.25;       // less than GAIN_LEVEL (0.8), so effects stay under the voice
+envelopeGainAt(spec, ms):            // piecewise linear
+  ms <= 0 -> 0;  0..attack -> peak * ms / attack;  hold -> peak;  release -> peak * (1 - t/release);  after -> 0
+```
+
+The steepest rise of any sound is `peakGain / attackMs`. It must not exceed `GAIN_STEP_PER_MS`
+(0.8 / 600, about 0.00133 per ms), which is why every attack is at least 160 ms and the sounds
+are soft swells, not clicks. `GAIN_LEVEL` and `GAIN_STEP_PER_MS` are imported from
+`speaker.ts`, not copied. Pitches stay between 200 Hz and 1000 Hz and the voices are sine or
+triangle waves, so there is no shrill or scream-like sound (req 10.4).
+
+**Which sounds, when (`cuesFor(prev, next)`, req 10.4, 10.6).**
+
+```
+cuesFor(prev, next):
+  if next.phase == 'ended': return []                    # the end card plays 'end' itself
+  cues = []
+  for i in 0..3:  if prev != null and prev.monsters[i].outcome != next.monsters[i].outcome:
+      cues.push( {defeated:'defeat', fled:'flee', trapped:'trapped'}[next.monsters[i].outcome] )
+  if prev == null or next.activeZoneIndex > prev.activeZoneIndex: cues.push('zone-start')
+  return cues
+```
+
+A monster defeated mid-zone gives `defeat` once, when it is defeated, and nothing again at zone
+end, because its outcome does not change then. Fled and trapped sounds come at zone end. Cues
+depend only on outcomes and the zone index, never on the signal or on brushing speed. Every
+cue is paired with a change on screen (req 10.6): `defeat` with the smoke, `flee` and `trapped`
+with the leaving copy, `zone-start` with the glow and the monster, `end` with the end card.
+
+**Player (req 10.1, 10.7, 10.8).** `createSoundPlayer()` creates its `AudioContext` in
+`unlock()`, called from the start tap, the title Monster Book tap and the end-card Book tap. It
+is silent until then (req 10.7, 1.7). `play(id)` builds one `GainNode` whose gain follows a
+curve sampled from `envelopeGainAt` every 20 ms of sound time with `setValueCurveAtTime`, and one
+oscillator per voice with `frequency.setValueAtTime` and `linearRampToValueAtTime`, started and
+stopped on the audio clock. No `setTimeout`, no `setInterval`. The same approach as the
+existing `rampCurve()` in `speaker.ts`. `stop()` stops every live oscillator. Everything is in
+`try/catch`; when audio fails, the game carries on silently with every caption shown.
+
+`audio-kit.ts` returns `{ speaker, sounds }` where `speaker.unlock()` and `speaker.stop()` also
+call the player's. So the existing `speaker.stop()` calls (pause, session end, drop, back to
+start) already stop every sound (req 10.7), and no screen needs a second call. There is no
+background music (req 10.10) and no mute control (req 10.11). All sounds are synthesised, so
+no audio file ships and there is no third-party sound. If a recorded file is ever added, it
+must be named in `public/assets/NOTICE.txt` (req 10.1).
+
+### 5.9 Comfort, motion and access (req 11, 12)
+
+**Loop cycles (req 11.2).** One table, in `effects.ts`:
+
+```typescript
+const MIN_CYCLE_MS = 334;                         // three flashes a second is the limit
+const LOOP_CYCLES_MS: Record<LoopId, number> = {
+  flameActive: 1700,   // candle flame at the active region
+  glowActive:  2200,   // glow at the active region
+  glowDim:     3600,   // glow at the other three
+  fogDrift:   30000,
+  smokeDrift:  2800,
+};
+```
+
+`effects-host.ts` writes each one as `--cycle-<id>` on the page root with `style.setProperty`
+(`--cycle-flame-active: 1700ms`, and so on). Every CSS rule with `infinite` takes its duration
+from `var(--cycle-…)`, never from a literal, so the table and the CSS cannot drift apart. The
+flicker is a change of `opacity` between about 0.75 and 1 on keyframes of uneven spacing, never
+between light and dark (req 11.2). One-shot durations (`ONE_SHOT_MS`: `fadeIn` 600, `glowMove`
+400, `leave` 1400, `intoBook` 1200) are not loops and may be below the limit only if they do
+not repeat; none is.
+
+**Reduced motion (req 11.3).**
+
+```typescript
+effectsFor(reduced) = {
+  flicker: !reduced, fogDrift: !reduced, smokeDrift: !reduced, leavingMotion: !reduced, bookMotion: !reduced,
+  glow: true, ornament: true, sizeChange: true, smokeThinning: true,
+}
+effectClasses(e) = [ !e.flicker && 'fx-no-flicker', !e.fogDrift && 'fx-no-fog', !e.smokeDrift && 'fx-no-smoke-drift',
+                     !e.leavingMotion && 'fx-no-leaving', !e.bookMotion && 'fx-no-book' ].filter(Boolean)
+```
+
+`startEffects({ root, matchMedia, visibility })` reads `matchMedia('(prefers-reduced-motion:
+reduce)')`, applies the classes, and listens to its `change` event, so the page follows the
+setting while it is open. If `matchMedia` is missing it uses `effectsFor(false)`. Under a
+`fx-no-*` class the matching CSS rule sets `animation: none`. The state rules (lit region,
+ornament, monster size, smoke puffs) do not depend on those classes. The existing
+`@media (prefers-reduced-motion: reduce)` block in `styles.css` stays.
+
+**Tab hidden (req 13.3).** `startEffects` also listens to `visibilitychange` and puts
+`fx-paused` on the root while the document is hidden (`animation-play-state: paused`). An event
+listener is not a timer.
+
+**Touch targets (req 11.4).** Section 5.5, `TAP_TARGETS`. Every entry is at least 48 x 48.
+
+**Colour never alone (req 11.5).** Active zone: brightness, glow size and flame (section 5.1).
+Rare: star and crest (5.3). Owned: drawing and name against a plain silhouette (5.7). Smoke:
+puff count and size, not only opacity (5.4).
+
+**One-handed portrait (req 11.6).** Controls are at the thumb's reach: start, Book and the end
+buttons are in the lower half; the layout is a single column; checked by hand.
+
+**Captions (req 11.7).** Captions sit on an opaque plate. `styles.css`-side variables
+`--caption-fg` and `--caption-bg` are 6-digit hex colours, and a test computes their contrast
+ratio and requires at least 4.5. Because the plate is opaque and outside the frame, fog and
+cracks cannot change it.
+
+**Screen readers (req 11.8).** The whole `mirror-frame__deco` element is `aria-hidden="true"`.
+The caption (`aria-live="polite"`, existing) is what a screen reader reads.
+
+**Landscape and desktop (req 12).** The frame is `width: min(100%, 480px)` and its ring shrinks
+in short landscape (`FRAME_METRICS.ringLandscapePx`); the preview keeps `max-height: 60dvh`.
+Nothing blocks rotation. Every control is a `<button>` with a `:focus-visible` outline (the
+existing `.big-button` outline pattern, applied to `.small-button`, `.book-cell`, `.icon-button`),
+so mouse and keyboard work (req 12.3). Layout and focus are checked by hand; a test checks that
+every interactive class has a `:focus-visible` rule.
+
+### 5.10 Assets, privacy, CSP, no timers (req 13)
+
+- **Original assets (req 13.1).** Drawings and the frame are CSS and an SVG built in code.
+  Sounds are synthesised. No font file, no `@font-face`, no `url(` in the new CSS, no `<img>`,
+  no icon pack. Icons on buttons are characters from the system font, as the existing
+  `\u25B6` and `\u2302`, or CSS shapes.
+- **CSP (req 13.2).** Styles come from the three new stylesheets (same origin) and from
+  `element.style` / `setProperty`. No `style=""` attribute, no `<style>` element, no
+  `innerHTML` with styles. The SVG uses `createElementNS('http://www.w3.org/2000/svg', …)`. The
+  policy in `index.html` is not edited and `csp.test.ts` is not touched.
+- **No new timers (req 13.3).** Frame, fog, flicker, smoke and end-card movement are CSS
+  animations and transitions. This design uses no `requestAnimationFrame` either. No new file
+  calls `setInterval` or `setTimeout`. Event listeners (`animationend`, `change`,
+  `visibilitychange`) are not timers. `game-loop.ts` stays the only module that owns a timer;
+  `main.ts` keeps its existing scheduler adapter and gets no second one.
+- **Nothing reads the camera (req 13.4).** The new files never import `src/tracking/`. Frame,
+  monster states and Book take only `View`, `SessionState` (for the outcome) and
+  `SessionResult[]`. `DrawValue` stays inside `camera-preview.ts`, `monster-anchor.ts` and
+  `main.ts`.
+- **No storage, network, cookie or log (req 13.5).** The Book calls the existing
+  `loadSessions`; nothing calls `saveSession`, `localStorage` or `console`. The privacy guard
+  and tracking guard scan every new file because they scan `src/` as a whole.
+- **Size (req 13.6).** The additions are source and CSS only, and nothing is lazy-loaded that was
+  not before. `firstLoadUnder5MB` and `cameraCodeIsLazy` stay as they are.
+
+---
+
+## 6. Wording (req 14)
+
+Every new child-facing or parent-facing text is one of the 19 approved lines of
+`requirements.md`. This design introduces no other word. If building needs one, the work
+stops and the line goes to Dr. Yatin first (req 14.1).
+
+| Approved line | Where it lives in code |
+|---------------|-----------------------|
+| 1 "The camera stays on this phone. Nothing is saved or sent." | `DISPLAY_TEXT['privacy']` (shown) |
+| 2 "Two minutes. Every corner." | `lines.ts`, id `end-close` |
+| 3 "Brush morning AND night." | `lines.ts`, id `rare-invite` |
+| 4 to 15 the twelve monster names | `monsters.ts` `name`, spoken with `sayText`, shown as caption |
+| 16 "Monster Book" | `DISPLAY_TEXT['book-title']` (heading, title button, end-card button) |
+| 17 "Back" | `DISPLAY_TEXT['back']` |
+| 18 "Grown-ups" | `DISPLAY_TEXT['grown-ups']` (name only) |
+| 19 "Not met yet" | `DISPLAY_TEXT['not-met']` (name only) |
+
+- **Existing lines (req 14.2).** `start`, the four `zone-` lines, `smoke` and `end` are not edited.
+  `tests/existing-lines-pinned.test.ts` holds their exact `text` and `caption`.
+- **New spoken lines (req 14.3).** `end-close` and `rare-invite` are added to `lines.ts` with a
+  caption each, so the existing `tests/lines.test.ts` covers them without being edited.
+- **New guard (req 14.4).** `tests/new-text-guard.test.ts` checks every row of `DISPLAY_TEXT`,
+  every monster name (with its caption, which is the same string) and both new lines against the
+  core banned list (prevent, cure, cavity-free, guarantee, diagnose, clinic, doctor, almost,
+  lost, lose, failed, missed) and the second list (again, tomorrow, "come back", streak, hurry,
+  blood, gore, kill, die, dead, hurt, scream). Matching is by whole word, with a regular
+  expression of the form `(^|[^a-z])word([^a-z]|$)` on lower-case text. The camera and light
+  rule of the core test is not applied (the privacy line has to say "camera"). The test also
+  pins `DISPLAY_TEXT` to the exact approved strings, so an unapproved edit fails.
+- **Dental rules (req 14.5).** No line claims prevention or cure, names a clinic, or judges the
+  child. None says anything was missed, lost or failed. The guard covers the banned words; the
+  rest is checked by reading the 19 lines once, and the table above is that list.
+
+---
+
+## 7. Error handling
+
+| Condition | Behaviour | Req |
+|-----------|-----------|-----|
+| Audio not available, `AudioContext` blocked, or a sound throws | `play` is wrapped in `try/catch`; the game carries on silently; every caption is still shown | 10.8 |
+| No local speech voice | `sayText` and `say` do nothing; the caption is the only output | 7.4, core 12.9 |
+| Sessions cannot be read when the Book opens | `bookViewFromLoader` returns twelve silhouettes; no message | 7.6 |
+| Stored session lists an id that is not in the table | `monsterBookView` ignores it; the twelve entries do not change | 7.1, 7.2 |
+| Tab hidden while a leaving copy or fog is animating | `fx-paused` stops loops; the copy is removed on `pause` | 13.3, 6.3 |
+| `animationend` never fires (reduced motion, hidden tab) | The copy is also removed by the next zone end, `pause`, `ended` and `showStart()`; at most one exists | 6.3, 11.3 |
+| `matchMedia` missing or throws | `effectsFor(false)` is used | 11.3 |
+| `prefers-reduced-motion` changes during a session | The `change` listener re-applies the classes at once | 11.3 |
+| `zoneEndEvent` sees a `pending` outcome at a zone change | Returns `null`: no leaving copy rather than a wrong one | 6.3 |
+| View names a monster id that is not in the table | The screen shows no monster for that zone (as `showMonster` does today); the timer is not affected | 6.1 |
+| Camera preview lost mid-session (face lost) | Unchanged from `hand-tracking`: the monster moves to the plain position; the frame and the glow do not change | 3.8 |
+| Book opened with no sessions | Twelve silhouettes and the rare invitation | 7.5, 8.1 |
+| Sound unlock tap happens before audio is ready | `unlock()` is safe to repeat; a `play` before the context exists is ignored | 10.7 |
+| Browser has no `visibilitychange` or `matchMedia` | Both are optional in `startEffects`; the game works without them | 13.3 |
+
+---
+
+## 8. Testing strategy
+
+Tests live in `/tests/`. Pure functions use Vitest and fast-check. The project has no DOM
+library and this spec adds none: painters are checked by scanning their source (like
+`camera-preview.test.ts`) and by hand, and their decisions are checked as pure functions.
+Tests 5 to 7 reuse the session helpers of `core-brushing-loop` (`startSession`, `tick`, the
+`signalArb` and `sessionResultArb` arbitraries) and do not redefine them.
+
+| # | Test name | Req | Input | Assertion |
+|---|---|---|---|---|
+| 1 | `frameGuidanceZones` | 3.2, 3.3, 3.7 to 3.9, 15.1 | Every zone, every phase, `null`; generated `View`s | Each zone gives exactly one active region; the four are different; upper-left is top-left, upper-right top-right, lower-left bottom-left, lower-right bottom-right; `ended` and `null` give four `off` regions and no `activeRegion`; `paused` keeps the region lit with `flickering` false; the result is equal for two views that differ only in health, smoke, caption, countdown or monster; the region is the same before and after a defeat |
+| 2 | `frameRegionLooksDiffer` | 3.4, 3.5 | `REGION_LOOKS` | `active` differs from `dim` in `glowOpacity` (higher), `glowSizePx` (larger) and `flame` (true against false), and has the larger `flickerAmplitude`; `off` has opacity 0 |
+| 3 | `glowMatchesLineAndMonster` | 3.6, 3.7, 3.8 | Any 120 signals-or-null, either mode | At every tick the active region equals `ZONE_REGION` of `toView(state).zoneId`; when the caption id is `zone-X`, X is that zone; the region does not change between a defeat and the zone end; modes give the same regions for the same zone |
+| 4 | `monsterDrawStateProperties` | 6.1, 6.2, 6.7, 15.2 | Generated `View`s and outcomes | One state for every input; `healthFraction` 1 gives `sitting`; in (0, 1) gives `shrinking`; 0 with smoke above 0 gives `defeated`; 0 with no smoke gives `gone`; `fled` and `trapped` and `defeated` outcomes give those states; the same input gives the same state |
+| 5 | `scaleAndSmokeLook` | 6.2, 6.5, 6.6, 15.2 | Generated fractions | `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1, and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff; above 0 gives at least one; `smokeLook` is the only export of its file that takes `smokeFraction` |
+| 6 | `zoneEndEvents` | 6.1, 6.3, 6.4 | Any 120 signals-or-null, either mode | Exactly four events per session, in zone order, none `pending`; each equals the final `monsters[i].outcome`; no event on pause or resume; the number of events is the same for every signal sequence |
+| 7 | `soundCues` | 10.4, 10.6 | Any 120 signals-or-null, either mode | Over a session: one cue per monster, equal to its final outcome (`defeat`, `flee` or `trapped`), and four `zone-start`; none at the `ended` tick; no cue appears twice for one outcome change |
+| 8 | `monsterLooks` | 5.1 to 5.4 | `MONSTER_LOOKS`, `MONSTERS` | Keys equal the twelve ids in order; `shapeKey` values are pairwise different; every field is in its allowed set; no `mouth` value names teeth; every rare has `star` and a crest, the four crests are different; no common has either |
+| 9 | `monsterBookView` | 7.1, 7.2, 7.5, 8.1, 8.3, 15.3 | Any sessions | Twelve entries in table order (8 common then 4 rare); `owned` exactly when the id is in `computeMonsterBook(sessions).unlockedIds`; not-owned entries have `name` null; `rare` flag is true for rares owned or not; `invite` exactly for rares not owned; `showRareInvitation` is true exactly when some rare is not owned; same result for any order of sessions and any dates and times of day with the same earned monsters; empty sessions give twelve silhouettes |
+| 10 | `bookFromLoader` | 7.6 | A loader that returns sessions and one that throws | The first gives the same as `monsterBookView`; the throwing one gives twelve silhouettes and does not throw |
+| 11 | `bookSpeech` | 7.4, 7.5, 8.1, 15.9 | A fake speaker that records calls; taps on any entries | An owned tap calls `stop` then `sayText(name)` once; a second tap replaces (a `stop` before each); a not-owned tap never calls `sayText`; a rare silhouette says `rare-invite`; a common silhouette says nothing |
+| 12 | `effectsForReducedMotion` | 11.3, 15.4 | `true` and `false` | `true`: all five moving fields false, four state fields true; `false`: all nine true; `effectClasses` lists exactly the off effects |
+| 13 | `effectsHostFollowsPreference` | 11.3, 13.3 | Fake root, fake `matchMedia` with a `change` event, fake visibility | Classes on the root match the preference at start and after a change; `fx-paused` is set while hidden and cleared when visible again; missing `matchMedia` gives no classes and no error |
+| 14 | `flashRate` | 11.2, 15.5 | `LOOP_CYCLES_MS`, `REGION_LOOKS`, the three CSS files | Every cycle is at least `MIN_CYCLE_MS` (334); every `LoopId` has a cycle; every CSS rule containing `infinite` takes its time from a `var(--cycle-…)` and contains no literal time; `effects-host.ts` writes one `--cycle-` variable per `LoopId`; no flicker amplitude is above 0.25 |
+| 15 | `soundData` | 10.2, 10.3, 10.5, 15.6 | `SOUNDS`, sampled every 1 ms | Five sounds, one per `SoundId`; gain at 0 ms is 0; no 1 ms step rises by more than `GAIN_STEP_PER_MS`; no gain is above `GAIN_LEVEL` or above `EFFECT_PEAK_GAIN`; `EFFECT_PEAK_GAIN` is below `GAIN_LEVEL`; voice levels add to at most 1; pitches are within 200 to 1000 Hz; total length at most 1500 ms; gain is 0 again at the end |
+| 16 | `displayTextPinned` | 1.3, 14.1 | `DISPLAY_TEXT`, `LINES`, `MONSTERS` | `DISPLAY_TEXT` equals the approved strings of rows 1, 16, 17, 18 and 19 exactly; `lines.ts` has `end-close` = "Two minutes. Every corner." and `rare-invite` = "Brush morning AND night."; monster names are the twelve approved ones |
+| 17 | `newTextGuard` | 14.4, 14.5 | `DISPLAY_TEXT`, monster names, `end-close`, `rare-invite` | None contains a core banned word or an urging or scary word, matched as whole words; the matcher passes "Twilight Toffee Wraith" and "Midnight Molar Ghoul" and flags "die" in "Do not die" but not in "Diet" |
+| 18 | `existingLinesPinned` | 14.2, 15.7 | Seven existing lines | Exact `text` and `caption` of `start`, four `zone-` lines, `smoke`, `end`; the old `lines.test.ts` passes unchanged with the two new lines present |
+| 19 | `endLines` | 9.2, 15.9 | A fake speaker | `speakEnd` calls `say('end')` then `say('end-close')`, in that order, once each; `CLIP_LINE_IDS` holds neither |
+| 20 | `endCardNoUrging` | 9.3, 9.4 | Source of `end-card.ts`, `display-text.ts` | Exactly two `<button>` creations; no string literal with again, next, tomorrow, "come back", streak, score, timer; no button that calls `onStart` |
+| 21 | `titleModel` | 1.1, 1.2, 1.8, 2.2, 10.11, 15.9 | `titleControls(true)` and `(false)` | Exactly one `large` control, and it is `start`; one `small` control, `book`; the parent control is `quiet` and present only with a handler; each has an icon and a text id; no control id or text mentions sound, mute or volume; the privacy line is a `DISPLAY_TEXT` entry of kind `shown` |
+| 22 | `tapTargets` | 1.8, 2.2, 7.7, 9.3, 11.4, 15.9 | `TAP_TARGETS` | Every entry is at least 48 x 48; `titleBook` is smaller than `start` in width and in height; `parent` is smaller than `titleBook` in both; `start` equals the `min-width` and `min-height` of `.big-button` in `styles.css` |
+| 23 | `captionContrast` | 11.7 | The CSS files | `--caption-fg` and `--caption-bg` are 6-digit hex; their contrast ratio is at least 4.5 |
+| 24 | `decorativeFrame` | 3.3, 3.10, 11.8, 4.2 | Source of `mirror-frame.ts`, `frame-art.ts`, `frame.css` | The deco element has `aria-hidden`; no `scaleX` in any frame file or rule; the frame class is never inside or given to `.preview--mirrored`; the glow layer has a lower `z-index` than the glass; `pointer-events: none` on deco |
+| 25 | `focusVisible` | 12.3 | The CSS files | Every interactive class (`big-button`, `small-button`, `icon-button`, `book-cell`) has a `:focus-visible` rule |
+| 26 | `noNewTimers` | 13.3, 15.8 | Every file under `src/` | `setInterval` and `setTimeout` appear nowhere except `src/main.ts` (once each, the scheduler adapter that exists today); `requestAnimationFrame` appears nowhere; the tracking guard still passes |
+| 27 | `pureFilesAreClean` | 6.7, 16.2 | The nine pure files of section 3 | No `document`, `window`, `Date`, `performance`, `Math.random`, `setTimeout`, `localStorage`, import from `src/tracking/`; nothing under `src/logic/` imports from any of them (the core privacy guard covers `ui` and `audio`) |
+| 28 | `drawValueStaysInPreview` | 13.4 | Every file under `src/` | `DrawValue` and `draw-value` appear only in `src/tracking/`, `camera-preview.ts`, `monster-anchor.ts` and `main.ts` |
+| 29 | `noExternalAssets` | 13.1, 13.2, 10.1 | New CSS and TS files, `public/assets/` | No `@font-face`, no `url(` to a host, no `<style`, no `style=` attribute strings, no `innerHTML`, no `<img`; each audio file under `public/assets/`, if any, is named in `public/assets/NOTICE.txt` |
+| 30 | `bookScreenIsReadOnly` | 1.4, 7.6, 7.10 | Source of `monster-book-screen.ts` and `title-panel.ts` | Neither has `saveSession`, `setItem`, `localStorage`, `import(`, `getUserMedia`, `beforeinstallprompt` or an import from `src/tracking/`; the Book screen has no import of `mirror-frame` or `frame-guidance` and calls `bookViewFromLoader` |
+| 31 | `existingSuite` | 15.10, 13.2, 13.5, 13.6, 16.1 | Every existing test | All pass unchanged, in particular `view`, `lines`, `camera-preview`, `monster-anchor`, `privacy-guard`, `tracking-guards`, `csp`, `build-output` |
+| 32 | `drawMonsterSignature` | 5.6 | Source of `monster-art.ts` and `session-screen.ts` | `monster-art.ts` exports `drawMonster(def: MonsterDef): HTMLElement`, sets `role="img"` and an `aria-label` from `def.name`; `session-screen.ts` re-exports `drawMonster` |
+
+**Helpers.** `viewArb` builds a valid `View` (any phase, any zone, fractions in [0, 1]);
+`outcomeArb` is `fc.constantFrom('defeated', 'fled', 'trapped')`; a `recordingSpeaker()` fake
+records `say`, `sayText`, `stop` and `unlock`; `fakeRoot`, `fakeMediaQuery` and
+`fakeVisibility` are plain objects with `classList`-like `add/remove/contains` and a listener
+list, used by test 13.
+
+**Manual checks** (what to look at):
+
+| # | Check | What to look at |
+|---|-------|-----------------|
+| M1 | Frame guidance, both modes | Run a timer-only session and a camera session. In each zone the glow, the lit candle, the spoken line and the monster all move together. Cover the face mid-zone: the glow does not change |
+| M2 | Mood | Watch a full session on a phone. Nothing appears suddenly, nothing flashes, the cracks look like a pattern, there is no face in the fog, a 5-year-old would giggle |
+| M3 | Layout at 360 x 640 | Title screen: start button, Monster Book button and privacy line all visible. End card: both buttons visible. Book: reaches all twelve cells by scrolling at most |
+| M4 | Speed | Camera session on the 2022 mid-range Android phone in Chrome with all effects on: 20 frames per second or more. Add a dated row in words to `docs/review/TRACKING-TEST-RESULTS.md`, section 7 |
+| M5 | Sounds | Listen on a phone at medium volume: nothing sharp or loud, the voice stays clear over the effects, silence on the title screen until the first tap, silence after pause |
+| M6 | Reduced motion | Turn on "reduce motion" in the device settings, also during a session: flicker, fog, smoke drift, leaving and end-card movement stop; the lit region, monster size and smoke thinning remain |
+| M7 | Keyboard and screen reader | Tab through title, Book and end card on a desktop: each control has a visible focus mark. With a screen reader, the frame is silent and the caption is read |
+| M8 | Landscape and desktop | Rotate the phone and open on a laptop: no rotate message, nothing clipped |
+| M9 | Monster drawings | View all twelve in the Book and on the cheek: easy to tell apart, none scary, rare ones carry star and crest, silhouettes show no name |
+| M10 | Network panel | Title screen, Book and end card make no request beyond the same-origin page files; no model, no font, no image |
+
+---
+
+## 9. Requirement → design element → test
+
+| Req | Design element | Test |
+|-----|----------------|------|
+| 1.1 | `titleControls`; one large, one small control, privacy line (5.5) | `titleModel` |
+| 1.2 | Start button keeps icon, label, `start` line; tap unlocks sound (5.5) | `titleModel`, `existingLinesPinned` |
+| 1.3 | `DISPLAY_TEXT['privacy']` outside `lines.ts` (5.5, 6) | `displayTextPinned`, `newTextGuard` |
+| 1.4 | No form, no install prompt, no camera call in `title-panel.ts` (5.5) | `bookScreenIsReadOnly` (also scans `title-panel.ts`); manual M10 |
+| 1.5 | No lazy load, no request from the title panel (5.5) | `existingSuite` (`cameraCodeIsLazy`); manual M10 |
+| 1.6 | Sizes in `TAP_TARGETS`; layout (5.5) | manual M3: title screen at 360 x 640 shows start, Book button and privacy line without scrolling |
+| 1.7 | No countdown or sound before the tap; player has no context until `unlock()` (5.5, 5.8) | `titleModel`; manual M5: silence on the title screen |
+| 1.8 | `small` Monster Book control, `onOpenBook` handler (5.5) | `titleModel`, `tapTargets` |
+| 2.1 | Optional `onOpenParent` handler; no gate built (5.5) | `titleModel` |
+| 2.2 | `quiet` control, 48 x 48, icon with accessible name "Grown-ups" (5.5) | `tapTargets`, `titleModel` |
+| 2.3 | Only `title-panel.ts` creates it (5.5) | `titleModel`; manual M3: not on session or end card |
+| 3.1 | Frame, monster and line are the guidance; frame is a component of the session (5.1) | `glowMatchesLineAndMonster`; manual M1 |
+| 3.2 | Four regions, `ZONE_REGION` (5.1) | `frameGuidanceZones` |
+| 3.3 | One table, no swap; frame outside the mirrored element (5.1) | `frameGuidanceZones`, `decorativeFrame`; the hand-tracking `onlyOneLeftRightSwap` test inside `existingSuite` |
+| 3.4 | `REGION_LOOKS`: brighter and larger glow, larger flicker amplitude (5.1) | `frameRegionLooksDiffer` |
+| 3.5 | Brightness, glow size and flame differ; no hue needed (5.1) | `frameRegionLooksDiffer` |
+| 3.6 | One synchronous `paint` changes glow, line and monster (5.1) | `glowMatchesLineAndMonster`; manual M1 |
+| 3.7 | Region follows `zoneId`, which does not change after a defeat (5.1) | `frameGuidanceZones`, `glowMatchesLineAndMonster` |
+| 3.8 | Argument type is `Pick<View, 'phase' \| 'zoneId'>` (5.1) | `frameGuidanceZones`, `glowMatchesLineAndMonster`; manual M1 (cover the face) |
+| 3.9 | `paused` lit and still; `ended` and `null` give `off` (5.1) | `frameGuidanceZones` |
+| 3.10 | Glow behind the glass content; ring around the play area (5.1) | `decorativeFrame`; manual M1 |
+| 4.1 | Flicker, fog and cracks in CSS and SVG (5.2) | `flashRate` (CSS), `noExternalAssets`; manual M2 |
+| 4.2 | Cracks as a drawn pattern; no face in fog; no flash or shake (5.2) | `decorativeFrame` (no shake, only opacity and translate); manual M2 |
+| 4.3 | Preview inside the glass in a camera session (5.1) | manual M1: camera session shows the frame around the mirrored picture |
+| 4.4 | Same component and function around the grid in timer-only (5.1) | `frameGuidanceZones` (mode-independent); manual M1 |
+| 4.5 | Fog behind the glass; caption on an opaque plate outside the frame (5.2, 5.9) | `captionContrast`, `decorativeFrame`; manual M2 |
+| 4.6 | One-shot `fadeIn` on every effect (5.2) | `flashRate` (one-shot durations are not loops); manual M2: nothing appears suddenly |
+| 4.7 | Compositor-only CSS properties (5.2) | manual M4: 20 or more frames per second with effects on, recorded in the results file |
+| 5.1 | `MONSTER_LOOKS` has the twelve ids (5.3) | `monsterLooks` |
+| 5.2 | `shapeKey` pairwise different; no colour in a look (5.3) | `monsterLooks` |
+| 5.3 | Allowed mouth, eye and extra values; no tooth, blood or drip value (5.3) | `monsterLooks`; manual M9 |
+| 5.4 | Star and crest on rares only (5.3, 5.7) | `monsterLooks`, `monsterBookView`; manual M9 |
+| 5.5 | Code-built art in `--u` units (5.3) | `noExternalAssets`; manual M9: readable in a Book cell and on the cheek |
+| 5.6 | `drawMonster(def: MonsterDef): HTMLElement` kept, re-exported (3, 5.3) | `drawMonsterSignature`, `existingSuite` |
+| 6.1 | `monsterDrawState(view, endOutcome)`, `zoneEndEvent` (5.4) | `monsterDrawStateProperties`, `zoneEndEvents` |
+| 6.2 | Six states and their pictures (5.4) | `monsterDrawStateProperties`, `scaleAndSmokeLook` |
+| 6.3 | Leaving copy shown once; next monster at once; no effect on state (5.4) | `zoneEndEvents`; manual M1 |
+| 6.4 | `trapped-wave` and `trapped-sleep`, happy face (5.4) | `zoneEndEvents`; manual M9, M2 |
+| 6.5 | `smokeLook`: puffs, scale and opacity (5.4) | `scaleAndSmokeLook` |
+| 6.6 | Only `smokeLook` reads `smokeFraction`; no text or sound by smoke (5.4) | `scaleAndSmokeLook`, `soundCues` |
+| 6.7 | Pure, deterministic functions (5.4) | `monsterDrawStateProperties`, `pureFilesAreClean` |
+| 6.8 | Every cue has a matching picture; picture is complete without sound (5.8) | `soundCues`; manual M5 with sound off: all states still show |
+| 7.1 | `monsterBookView` in table order, 8 then 4 (5.7) | `monsterBookView` |
+| 7.2 | `owned` = `computeMonsterBook` union (5.7) | `monsterBookView` |
+| 7.3 | Owned cell: drawing and visible name (5.7) | `monsterBookView`; manual M9 |
+| 7.4 | `bookTapAction`, `sayText`, replace not queue (5.7) | `bookSpeech`, `newTextGuard`, `displayTextPinned` |
+| 7.5 | `drawSilhouette`, name null, "Not met yet" (5.7) | `monsterBookView`, `bookSpeech`; manual M9 |
+| 7.6 | `bookViewFromLoader` on each open; no write (5.7) | `bookFromLoader`, `bookScreenIsReadOnly` |
+| 7.7 | One back button, 96 x 48 (5.7) | `tapTargets`; manual M3 |
+| 7.8 | `openBook(from)` from the title and the end card (5.7) | `titleModel`, `endCardNoUrging` (end card has the Book button); manual M3 |
+| 7.9 | Both tap handlers call `speaker.unlock()` (5.5, 5.7) | `bookSpeech` (unlock is called by the kit); manual M5 (names are spoken from either entry) |
+| 7.10 | No camera import, no frame in the Book screen (5.7) | `bookScreenIsReadOnly`; manual M10 |
+| 8.1 | `invite` flag, `rare-invite` caption and tap (5.7) | `monsterBookView`, `bookSpeech` |
+| 8.2 | Line has no countdown, count or "missed" wording (5.7, 6) | `newTextGuard` |
+| 8.3 | `monsterBookView` has no date input; hidden when all four rares owned (5.7) | `monsterBookView` |
+| 8.4 | The unlock rule is untouched in `src/logic/` (5.7) | `existingSuite` (`monster-book.test.ts`) |
+| 9.1 | `end-card.ts` draws four monsters with outcome classes (5.6) | manual M1: end card shows four monsters; `endCardNoUrging` for the structure |
+| 9.2 | `speakEnd`: `end` then `end-close` (5.6) | `endLines`, `existingLinesPinned`, `displayTextPinned` |
+| 9.3 | Two buttons with icon, label, name, sizes (5.6) | `endCardNoUrging`, `tapTargets`; manual M3 |
+| 9.4 | Only two buttons and two captions; scan for urging words (5.6) | `endCardNoUrging`, `newTextGuard` |
+| 9.5 | Card shown from `onEnded`, after the camera stops (5.6) | `existingSuite` (`integration.test.ts`); manual M10 (camera light is off) |
+| 10.1 | Synthesised sounds; `NOTICE.txt` for any file (5.8) | `noExternalAssets` |
+| 10.2 | Starts at 0; attack at least `peak / GAIN_STEP_PER_MS` (5.8) | `soundData` |
+| 10.3 | `EFFECT_PEAK_GAIN` 0.25 below `GAIN_LEVEL` 0.8 (5.8) | `soundData`; manual M5 |
+| 10.4 | Five sounds and `cuesFor` (5.8) | `soundCues`, `soundData` |
+| 10.5 | `SOUNDS` is plain data (5.8) | `soundData` |
+| 10.6 | Each cue paired with a picture (5.8) | `soundCues`; manual M5 (sound off) |
+| 10.7 | Context only after `unlock()`; `speaker.stop()` also stops sounds (5.8) | `soundCues` (none at `ended`); manual M5 |
+| 10.8 | `try/catch` in the player; captions stay (5.8, 7) | `bookSpeech` (fake speaker without voice); manual M5 (muted device) |
+| 10.9 | Two new lines in `lines.ts`; names from `monsters.ts` (5.7, 6) | `displayTextPinned`, `existingSuite` (`lines.test.ts`) |
+| 10.10 | No music module exists (5.8) | `soundData` (five sounds only, each at most 1500 ms) |
+| 10.11 | No mute control (5.5) | `titleModel` |
+| 11.1 | Ease-in on every effect, sound and monster (5.2, 5.8, 5.9) | `flashRate`, `soundData`; manual M2, M5 |
+| 11.2 | `LOOP_CYCLES_MS` at least 334 ms, set from the table (5.9) | `flashRate` |
+| 11.3 | `effectsFor`, `effectClasses`, `startEffects` (5.9) | `effectsForReducedMotion`, `effectsHostFollowsPreference`; manual M6 |
+| 11.4 | `TAP_TARGETS` all at least 48 px (5.5, 5.9) | `tapTargets` |
+| 11.5 | Three non-hue signals for zones; star and crest; silhouette; puff count (5.1, 5.3, 5.4, 5.7) | `frameRegionLooksDiffer`, `monsterLooks`, `scaleAndSmokeLook`, `monsterBookView` |
+| 11.6 | Single column, controls in thumb reach (5.9) | manual M3: one-handed in portrait |
+| 11.7 | Opaque caption plate, contrast at least 4.5 (5.9) | `captionContrast`; manual M2 |
+| 11.8 | `aria-hidden` on the decorative layer (5.9) | `decorativeFrame`; manual M7 |
+| 12.1 | Frame scales; short-landscape ring; no rotate block (5.9) | manual M8 |
+| 12.2 | Book grid `auto-fit` and scroll (5.7) | manual M8: Book reflows and scrolls |
+| 12.3 | `<button>` controls with `:focus-visible` (5.9) | `focusVisible`; manual M7 |
+| 13.1 | Code-built art, synthesised sound, no fonts or images (5.10) | `noExternalAssets` |
+| 13.2 | Stylesheets and `element.style` only; SVG by namespace (5.10) | `noExternalAssets`, `existingSuite` (`csp.test.ts`) |
+| 13.3 | CSS animations; no timer or `requestAnimationFrame`; loops paused when hidden (5.9, 5.10) | `noNewTimers`, `effectsHostFollowsPreference` |
+| 13.4 | No import of `src/tracking/` in new files (5.10) | `drawValueStaysInPreview`, `pureFilesAreClean` |
+| 13.5 | No write, request, cookie or log in new files (5.10) | `existingSuite` (`privacy-guard`, `tracking-guards`), `bookScreenIsReadOnly` |
+| 13.6 | No new asset, nothing new lazy (5.10) | `existingSuite` (`build-output.test.ts`) |
+| 14.1 | The 19 lines map to code (6) | `displayTextPinned` |
+| 14.2 | Seven existing lines not edited (6) | `existingLinesPinned` |
+| 14.3 | `end-close` and `rare-invite` in `lines.ts` (6) | `displayTextPinned`, `existingSuite` (`lines.test.ts`) |
+| 14.4 | `new-text-guard.test.ts`, whole-word matching (6) | `newTextGuard` |
+| 14.5 | Banned and urging words; reading of the 19 lines (6) | `newTextGuard`; manual: Dr. Yatin's approval of 21 Nov 2026 is the check for the rest |
+| 15.1 | Frame guidance properties (8) | `frameGuidanceZones` |
+| 15.2 | Draw-state properties (8) | `monsterDrawStateProperties`, `scaleAndSmokeLook` |
+| 15.3 | Book view properties (8) | `monsterBookView` |
+| 15.4 | `effectsFor` properties (8) | `effectsForReducedMotion` |
+| 15.5 | Flash rate test (8) | `flashRate` |
+| 15.6 | Sound data test (8) | `soundData` |
+| 15.7 | Wording tests (6, 8) | `newTextGuard`, `existingLinesPinned`, `existingSuite` |
+| 15.8 | No new timers (8) | `noNewTimers`, `existingSuite` |
+| 15.9 | Screen behaviour through pure models and a fake speaker (8) | `bookSpeech`, `endLines`, `endCardNoUrging`, `titleModel`, `tapTargets` |
+| 15.10 | Existing files kept; additions only (3) | `existingSuite` |
+| 16.1 | No logic, constant, storage or signal change (1, 3) | `existingSuite` |
+| 16.2 | New pure functions in `src/ui/`; nothing in `src/logic/` imports them (2, 3) | `pureFilesAreClean`, `existingSuite` (`privacy-guard`) |
+| 16.3 | Painters only paint; decisions are the pure functions (2, 5) | `pureFilesAreClean`, `bookScreenIsReadOnly`; manual M1 |
+
+---
+
+## 10. Dr. Yatin to confirm
+
+These are the only open choices. Nothing here is built on until he answers.
+
+1. **Tooth shapes in the drawings (req 5.3).** `dental-rules.md` says the game never claims it
+   can see individual teeth, and req 5.3 forbids realistic or large teeth. This design draws
+   **no tooth-like shape at all**: not on `molar-mumbler`, `midnight-molar-ghoul`, or any
+   other monster, and `fuzzlefang` is drawn with a silly tongue and no fangs even though its
+   name has "fang". Dr. Yatin to confirm whether a friendly cartoon tooth motif (for example
+   on the two "Molar" monsters) is wanted, and whether the name "Fuzzlefang" with a
+   fang-free drawing is acceptable. Until he answers, the drawings carry no tooth motif.
+
+No new word, number or dental rule is introduced by this design. The 19 lines approved on 21
+Nov 2026 are the complete list, and the sizes, cycle times, loudness values and look values
+above are drawing and sound choices, not dental rules and not numbers a parent will see.
