@@ -222,10 +222,10 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/csp.test.ts`
   - Files this task may change: `index.html`, `tests/csp.test.ts`
 
-- [ ] 8. **Session screen can show the preview**
-  - [ ] 8.1 In `src/ui/session-screen.ts` add an optional way to attach a `camera-preview` to the screen. When a preview is attached, the monster is drawn by the preview at the anchor it is given; when it is not, the screen is exactly the plain session screen it is today. Everything else is still painted from `toView(state)`; the preview only changes where the monster is drawn and shows the video
-  - [ ] 8.2 In guided-timer mode no preview is created and no video element is added to the page (requirement 8.6)
-  - [ ] 8.3 Check by hand: `npm run dev`, play a timer-only session. It looks and behaves as before, with no preview and no camera request
+- [x] 8. **Session screen can show the preview**
+  - [x] 8.1 In `src/ui/session-screen.ts` add an optional way to attach a `camera-preview` to the screen. When a preview is attached, the monster is drawn by the preview at the anchor it is given; when it is not, the screen is exactly the plain session screen it is today. Everything else is still painted from `toView(state)`; the preview only changes where the monster is drawn and shows the video
+  - [x] 8.2 In guided-timer mode no preview is created and no video element is added to the page (requirement 8.6)
+  - [x] 8.3 Check by hand: `npm run dev`, play a timer-only session. It looks and behaves as before, with no preview and no camera request
   - _Requirements: 8.1, 8.2, 8.4, 8.6_
   - Test file: none new (the logic it paints is already tested); the privacy guard and `camera-preview` source scan must still pass
   - Files this task may change: `src/ui/session-screen.ts`, `src/ui/camera-preview.ts`

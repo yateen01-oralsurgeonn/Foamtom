@@ -1,13 +1,16 @@
 // The plain session screen (design section 10, req 11.2-11.5, 11.10, 11.11, 15.1).
 // Start button, one monster over the active zone, countdown, caption, smoke after a
 // defeat. Everything painted during a session comes from `toView(state)`. Every captioned
-// line is also spoken through the speaker. No camera preview in this spec.
+// line is also spoken through the speaker. A camera preview can be attached in a camera-mode
+// session (`attachPreview`); it only changes where the monster is drawn and shows the video.
+// Without one, the screen is the plain session screen.
 // Styles are set through classes or element.style only (Content-Security-Policy).
 import { getLine } from '../audio/lines';
 import type { Speaker } from '../audio/speaker';
 import { MONSTERS } from '../logic/monsters';
 import type { MonsterDef, ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
+import type { CameraPreview } from './camera-preview';
 
 /** The smallest the monster is drawn, so it never vanishes before it is defeated. */
 const MIN_MONSTER_SCALE = 0.35;
@@ -56,6 +59,12 @@ export interface SessionScreen {
   /** Paints one view. Shows the session panel if it is not showing. */
   paint(view: View): void;
   hide(): void;
+  /**
+   * Shows a camera preview on the session panel and lets it draw the monster (it places the
+   * monster itself through `preview.placeMonster`). `null` removes it, and the screen is the
+   * plain session screen again. Never called in guided-timer mode.
+   */
+  attachPreview(preview: CameraPreview | null): void;
 }
 
 export function createSessionScreen(
@@ -102,6 +111,7 @@ export function createSessionScreen(
   let drawnMonsterId: string | null = null;
   let monsterEl: HTMLElement | null = null;
   let spokenLineId: string | null = null;
+  let currentPreview: CameraPreview | null = null;
 
   startButton.addEventListener('click', () => {
     startButton.disabled = true; // one tap starts one session
@@ -150,7 +160,8 @@ export function createSessionScreen(
       for (const [id, cell] of cells) cell.classList.toggle('zone--active', id === view.zoneId);
       const activeCell = cells.get(view.zoneId);
       const monster = showMonster(view.monsterId);
-      if (activeCell && monster && stage.parentElement !== activeCell) activeCell.append(stage);
+      const home = currentPreview ? currentPreview.monsterSlot : activeCell;
+      if (home && monster && stage.parentElement !== home) home.append(stage);
 
       if (monster) {
         const defeated = view.healthFraction <= 0;
@@ -166,6 +177,19 @@ export function createSessionScreen(
 
     hide(): void {
       screen.hidden = true;
+    },
+
+    attachPreview(preview: CameraPreview | null): void {
+      if (preview === currentPreview) return;
+      if (currentPreview) {
+        stage.remove(); // back to the zone cell on the next paint
+        currentPreview.element.remove();
+      }
+      currentPreview = preview;
+      if (preview) {
+        sessionPanel.insertBefore(preview.element, mouth);
+        if (monsterEl) preview.monsterSlot.append(stage);
+      }
     },
   };
 }
