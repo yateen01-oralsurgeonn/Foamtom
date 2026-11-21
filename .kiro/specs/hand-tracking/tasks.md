@@ -214,10 +214,10 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/camera-preview.test.ts`
   - Files this task may change: `src/ui/camera-preview.ts`, `src/ui/styles.css`, `tests/camera-preview.test.ts`
 
-- [ ] 7. **Allow WebAssembly in the Content-Security-Policy**
-  - [ ] 7.1 In `index.html` change only the Content-Security-Policy `<meta>`: add `'wasm-unsafe-eval'` to `script-src`. Nothing else in the policy changes. STOP if part 1K.1 found that any other relaxation is needed
-  - [ ] 7.2 Test `cspIsStillSameOrigin` (design test 25) in `tests/csp.test.ts`: parse the policy in `index.html`; fail if any directive names a host, `*`, `data:`, `'unsafe-inline'` or `'unsafe-eval'`; the only difference from the core policy is `'wasm-unsafe-eval'` in `script-src`
-  - [ ] 7.3 The core privacy guard still passes
+- [x] 7. **Allow WebAssembly in the Content-Security-Policy**
+  - [x] 7.1 In `index.html` change only the Content-Security-Policy `<meta>`: add `'wasm-unsafe-eval'` to `script-src`. Nothing else in the policy changes. STOP if part 1K.1 found that any other relaxation is needed
+  - [x] 7.2 Test `cspIsStillSameOrigin` (design test 25) in `tests/csp.test.ts`: parse the policy in `index.html`; fail if any directive names a host, `*`, `data:`, `'unsafe-inline'` or `'unsafe-eval'`; the only difference from the core policy is `'wasm-unsafe-eval'` in `script-src`
+  - [x] 7.3 The core privacy guard still passes
   - _Requirements: 9.3, 9.4_
   - Test file: `tests/csp.test.ts`
   - Files this task may change: `index.html`, `tests/csp.test.ts`
