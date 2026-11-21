@@ -3,11 +3,15 @@
 // It makes no game decision, owns no timer and touches no DOM.
 import type { SessionState } from '../logic/types';
 import { toView } from '../logic/view';
+import type { Sounds } from '../audio/sound-player';
 import { zoneEndEvent } from './monster-draw-state';
 import type { SessionScreen } from './session-screen';
+import { cuesFor } from './sound-cues';
 
 export interface SessionPresenterDeps {
   readonly screen: Pick<SessionScreen, 'paint'>;
+  /** Optional: soft sounds for zone starts and monster outcomes (req 10.4, 10.6). */
+  readonly sounds?: Pick<Sounds, 'play'>;
 }
 
 export interface SessionPresenter {
@@ -24,9 +28,13 @@ export function createSessionPresenter(deps: SessionPresenterDeps): SessionPrese
       const view = toView(state);
       // The last zone is shown by the end card, so no zone end is passed at `ended`.
       const zoneEnd = state.phase === 'ended' ? null : zoneEndEvent(previous, state);
+      const cues = cuesFor(previous, state); // none at `ended`
       previous = state;
       if (zoneEnd) deps.screen.paint(view, zoneEnd);
       else deps.screen.paint(view);
+      if (deps.sounds) {
+        for (const cue of cues) deps.sounds.play(cue.id, cue.delayMs);
+      }
     },
     reset(): void {
       previous = null;

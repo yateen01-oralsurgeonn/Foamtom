@@ -275,11 +275,11 @@ through to the end card.
 
 - [ ] 21. **Play the sound cues**
   - Mark: needed for the video (req 10.4, 10.6, 10.7).
-  - [ ] 21.1 In `src/ui/session-presenter.ts` add an optional `sounds` dependency (`Pick<Sounds, 'play'>`). On each update, for every cue in `cuesFor(prev, state)` call `sounds.play(cue.id, cue.delayMs)`. Nothing is played at the `ended` state, which `cuesFor` already guarantees
-  - [ ] 21.2 In `src/main.ts` pass `kit.sounds` to the presenter. No other change
-  - [ ] 21.3 Test `soundCuesPlayed` (extend `tests/session-presenter.test.ts`), with a fake sounds object: over a whole session the plays equal the concatenated `cuesFor` results, in order, with their delays; four `zone-start` plays; no play at the `ended` tick
+  - [x] 21.1 In `src/ui/session-presenter.ts` add an optional `sounds` dependency (`Pick<Sounds, 'play'>`). On each update, for every cue in `cuesFor(prev, state)` call `sounds.play(cue.id, cue.delayMs)`. Nothing is played at the `ended` state, which `cuesFor` already guarantees
+  - [x] 21.2 In `src/main.ts` pass `kit.sounds` to the presenter. No other change
+  - [x] 21.3 Test `soundCuesPlayed` (extend `tests/session-presenter.test.ts`), with a fake sounds object: over a whole session the plays equal the concatenated `cuesFor` results, in order, with their delays; four `zone-start` plays; no play at the `ended` tick
   - [ ] 21.4 Check by hand (M5): `npm run dev`. Open the title screen: it is silent. Tap start: sounds begin. At medium volume a new zone, a defeat, and (when they occur) a flee and a trapped monster each have a soft sound that rises gently; the spoken voice stays clear over the sounds; nothing is sharp or loud; switching to another tab stops all sound. Turn the volume off: every event still shows on screen
-  - [ ] 21.5 Run `npm run test:run` and `npm run build`: both pass. The game runs with soft sounds
+  - [x] 21.5 Run `npm run test:run` and `npm run build`: both pass. The game runs with soft sounds
   - _Requirements: 10.2, 10.3, 10.4, 10.6, 10.7, 1.7, 6.8, 15.6_
   - Test file: `tests/session-presenter.test.ts` (extended)
   - Files this task may change: `src/ui/session-presenter.ts`, `src/main.ts`, `tests/session-presenter.test.ts`

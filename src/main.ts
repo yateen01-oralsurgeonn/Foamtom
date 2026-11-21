@@ -109,7 +109,7 @@ if (app) {
   const speaker = kit.speaker;
   const storage = createStorage(browserBackend());
   const screen = createSessionScreen(app, { onStart: () => void loop.begin() }, speaker);
-  const presenter = createSessionPresenter({ screen });
+  const presenter = createSessionPresenter({ screen, sounds: kit.sounds });
   const endCard = createEndCard(
     app,
     {

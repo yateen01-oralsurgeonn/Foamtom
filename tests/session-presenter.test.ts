@@ -8,6 +8,8 @@ import { toView } from '../src/logic/view';
 import type { View } from '../src/logic/view';
 import type { ZoneEnd } from '../src/ui/monster-draw-state';
 import { createSessionPresenter } from '../src/ui/session-presenter';
+import { cuesFor } from '../src/ui/sound-cues';
+import type { SoundId } from '../src/audio/sounds';
 
 // Helpers live in this file (no shared helper file).
 const signalArb: fc.Arbitrary<BrushingSignal> = fc.record({
@@ -111,5 +113,40 @@ describe('sessionPresenterZoneEnds', () => {
     for (const word of ['setTimeout', 'setInterval', 'requestAnimationFrame', 'document', 'window']) {
       expect(source.includes(word)).toBe(false);
     }
+  });
+});
+
+describe('soundCuesPlayed', () => {
+  it('plays exactly the cuesFor results, in order, with their delays, and nothing at ended', () => {
+    fc.assert(
+      fc.property(modeArb, fc.array(maybeSignalArb, { minLength: 120, maxLength: 120 }), (mode, signals) => {
+        const plays: { id: SoundId; delayMs: number | undefined }[] = [];
+        const sounds = { play: (id: SoundId, delayMs?: number) => void plays.push({ id, delayMs }) };
+        const { screen } = fakeScreen();
+        const presenter = createSessionPresenter({ screen, sounds });
+        const expected: { id: SoundId; delayMs: number }[] = [];
+        let state = start(mode);
+        let prev: SessionState | null = null;
+        expected.push(...cuesFor(prev, state));
+        presenter.update(state);
+        prev = state;
+        for (const signal of signals) {
+          state = tick(state, signal);
+          const before = plays.length;
+          presenter.update(state);
+          expected.push(...cuesFor(prev, state));
+          if (state.phase === 'ended') expect(plays.length).toBe(before);
+          prev = state;
+        }
+        expect(plays).toEqual(expected.map((c) => ({ id: c.id, delayMs: c.delayMs })));
+        expect(plays.filter((p) => p.id === 'zone-start')).toHaveLength(4);
+      }),
+    );
+  });
+
+  it('works without a sounds dependency', () => {
+    const { screen } = fakeScreen();
+    const presenter = createSessionPresenter({ screen });
+    expect(() => presenter.update(start('timer-only'))).not.toThrow();
   });
 });
