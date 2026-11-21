@@ -1,0 +1,392 @@
+/* Monster drawings (design section 5.3, req 5). Loaded after styles.css, which keeps the
+   colour classes (`.monster--<id>`) and the base layout. Every size here is a multiple of
+   --u (default 1px), so a Book cell or the cheek can set a smaller or larger --u.
+   Friendly shapes only: round eyes with a highlight, no teeth, fangs, blood or drips.
+   Shape is never carried by colour alone. */
+
+/* The default unit. A Book cell or the cheek sets its own --u on a parent element. */
+:root {
+  --u: 1px;
+}
+
+.monster {
+  --ink: #1c1530;
+  --horn: #f4eefc;
+  --gold: #ffd966;
+  isolation: isolate;
+  width: calc(72 * var(--u));
+  height: calc(64 * var(--u));
+  border-width: calc(3 * var(--u));
+  border-radius: 50% 50% 44% 44%;
+}
+
+/* ---- Body shapes ---- */
+.monster--body-round {
+  width: calc(72 * var(--u));
+  height: calc(64 * var(--u));
+  border-radius: 50% 50% 44% 44%;
+}
+
+.monster--body-tall {
+  width: calc(60 * var(--u));
+  height: calc(78 * var(--u));
+  border-radius: 46% 46% 38% 38% / 40% 40% 30% 30%;
+}
+
+.monster--body-wide {
+  width: calc(88 * var(--u));
+  height: calc(56 * var(--u));
+  border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+}
+
+.monster--body-drop {
+  width: calc(64 * var(--u));
+  height: calc(72 * var(--u));
+  border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%;
+}
+
+/* ---- Eyes: big, round, friendly, with a highlight ---- */
+.monster__eye {
+  top: 30%;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  border-width: calc(3 * var(--u));
+  background: #ffffff;
+}
+
+.monster__eye::before {
+  content: '';
+  position: absolute;
+  left: 22%;
+  top: 22%;
+  width: 56%;
+  height: 56%;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.monster__eye::after {
+  content: '';
+  position: absolute;
+  left: 30%;
+  top: 26%;
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.monster__eye--left {
+  left: 12%;
+}
+
+.monster__eye--right {
+  right: 12%;
+}
+
+.monster--eyes-1 .monster__eye--left {
+  left: 50%;
+  margin-left: calc(-14 * var(--u));
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
+}
+
+.monster--eyes-1 .monster__eye--right {
+  display: none;
+}
+
+.monster--eyes-3 .monster__eye {
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+  top: 38%;
+}
+
+.monster--eyes-3 .monster__eye--left {
+  left: 8%;
+}
+
+.monster--eyes-3 .monster__eye--right {
+  right: 8%;
+}
+
+.monster__eye--middle {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  margin-left: calc(-9 * var(--u));
+  border-radius: 50%;
+  background: #ffffff;
+  border: calc(3 * var(--u)) solid var(--ink);
+}
+
+.monster--eyes-3 .monster__eye--middle {
+  top: 8%;
+}
+
+/* ---- Mouths: none has teeth ---- */
+.monster__mouth {
+  bottom: 14%;
+  height: calc(10 * var(--u));
+  width: calc(22 * var(--u));
+  margin-left: calc(-11 * var(--u));
+  background: var(--ink);
+}
+
+.monster--mouth-smile .monster__mouth {
+  width: calc(24 * var(--u));
+  height: calc(11 * var(--u));
+  margin-left: calc(-12 * var(--u));
+  border-radius: 0 0 calc(14 * var(--u)) calc(14 * var(--u));
+}
+
+.monster--mouth-oh .monster__mouth {
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  margin-left: calc(-7 * var(--u));
+  border-radius: 50%;
+}
+
+.monster--mouth-tongue .monster__mouth {
+  width: calc(24 * var(--u));
+  height: calc(11 * var(--u));
+  margin-left: calc(-12 * var(--u));
+  border-radius: 0 0 calc(14 * var(--u)) calc(14 * var(--u));
+}
+
+.monster--mouth-tongue .monster__mouth::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(-7 * var(--u));
+  width: calc(10 * var(--u));
+  height: calc(10 * var(--u));
+  margin-left: calc(-5 * var(--u));
+  border-radius: 50%;
+  background: #f58fb0;
+  border: calc(2 * var(--u)) solid var(--ink);
+}
+
+.monster--mouth-wavy .monster__mouth {
+  width: calc(28 * var(--u));
+  height: calc(7 * var(--u));
+  margin-left: calc(-14 * var(--u));
+  border-radius: calc(7 * var(--u));
+  transform: rotate(-4deg);
+}
+
+/* ---- Ears ---- */
+.monster--ears-none .monster__ear {
+  display: none;
+}
+
+.monster__ear {
+  top: calc(-12 * var(--u));
+  border-left-width: calc(9 * var(--u));
+  border-right-width: calc(9 * var(--u));
+  border-bottom-width: calc(16 * var(--u));
+}
+
+.monster__ear--left {
+  left: 10%;
+}
+
+.monster__ear--right {
+  right: 10%;
+}
+
+.monster--ears-round .monster__ear {
+  top: calc(-9 * var(--u));
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  z-index: -1;
+}
+
+.monster--ears-horns .monster__ear {
+  top: calc(-14 * var(--u));
+  width: calc(10 * var(--u));
+  height: calc(18 * var(--u));
+  border: calc(2 * var(--u)) solid var(--ink);
+  background: var(--horn);
+  border-radius: 50% 50% 10% 10%;
+}
+
+.monster--ears-horns .monster__ear--left {
+  left: 6%;
+  transform: rotate(-18deg);
+}
+
+.monster--ears-horns .monster__ear--right {
+  right: 6%;
+  transform: rotate(18deg);
+}
+
+/* ---- Extras (::after). Crests use ::before. ---- */
+.monster--extra-none::after,
+.monster--crest-none::before {
+  content: none;
+}
+
+.monster--extra-tail::after,
+.monster--extra-tuft::after,
+.monster--extra-wings::after,
+.monster--extra-bumps::after,
+.monster--extra-wisps::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.monster--extra-tail::after {
+  right: calc(-18 * var(--u));
+  bottom: calc(6 * var(--u));
+  width: calc(22 * var(--u));
+  height: calc(12 * var(--u));
+  border: calc(3 * var(--u)) solid var(--ink);
+  border-radius: 0 100% 100% 0;
+  background: inherit;
+  z-index: -1;
+}
+
+.monster--extra-tuft::after {
+  left: 50%;
+  top: calc(-12 * var(--u));
+  width: calc(8 * var(--u));
+  height: calc(8 * var(--u));
+  margin-left: calc(-4 * var(--u));
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: calc(-10 * var(--u)) calc(2 * var(--u)) 0 0 var(--ink), calc(10 * var(--u)) calc(2 * var(--u)) 0 0 var(--ink);
+}
+
+.monster--extra-wings::after {
+  left: calc(-16 * var(--u));
+  top: 26%;
+  width: calc(100% + 32 * var(--u));
+  height: calc(26 * var(--u));
+  border: calc(3 * var(--u)) solid var(--ink);
+  border-radius: 50%;
+  background: #f4eefc;
+  opacity: 0.85;
+  z-index: -1;
+}
+
+.monster--extra-bumps::after {
+  left: 50%;
+  bottom: calc(-8 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  margin-left: calc(-6 * var(--u));
+  border-radius: 50%;
+  background: #f4eefc;
+  box-shadow: calc(-20 * var(--u)) 0 0 0 #f4eefc, calc(20 * var(--u)) 0 0 0 #f4eefc;
+  z-index: -1;
+}
+
+.monster--extra-wisps::after {
+  left: 50%;
+  bottom: calc(-14 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(14 * var(--u));
+  margin-left: calc(-6 * var(--u));
+  border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+  background: #f4eefc;
+  opacity: 0.85;
+  box-shadow: calc(-16 * var(--u)) calc(-2 * var(--u)) 0 0 #f4eefc, calc(16 * var(--u)) calc(-2 * var(--u)) 0 0 #f4eefc;
+  z-index: -1;
+}
+
+/* ---- Rare marks: the star (top right) and a crest (top centre) ---- */
+.monster__star {
+  top: calc(-20 * var(--u));
+  left: auto;
+  right: calc(-8 * var(--u));
+  margin-left: 0;
+  font-size: calc(20 * var(--u));
+  line-height: 1;
+}
+
+.monster--crest-moon::before,
+.monster--crest-sun::before,
+.monster--crest-halo::before,
+.monster--crest-crown::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  pointer-events: none;
+}
+
+.monster--crest-moon::before {
+  top: calc(-24 * var(--u));
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
+  margin-left: calc(-8 * var(--u));
+  border-radius: 50%;
+  box-shadow: calc(-4 * var(--u)) calc(2 * var(--u)) 0 0 var(--gold);
+}
+
+.monster--crest-sun::before {
+  top: calc(-22 * var(--u));
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  margin-left: calc(-7 * var(--u));
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 calc(3 * var(--u)) rgba(255, 217, 102, 0.45);
+}
+
+.monster--crest-halo::before {
+  top: calc(-20 * var(--u));
+  width: calc(36 * var(--u));
+  height: calc(10 * var(--u));
+  margin-left: calc(-18 * var(--u));
+  border: calc(3 * var(--u)) solid var(--gold);
+  border-radius: 50%;
+}
+
+.monster--crest-crown::before {
+  top: calc(-22 * var(--u));
+  width: calc(28 * var(--u));
+  height: calc(16 * var(--u));
+  margin-left: calc(-14 * var(--u));
+  background: var(--gold);
+  clip-path: polygon(0 100%, 0 20%, 25% 60%, 50% 0, 75% 60%, 100% 20%, 100% 100%);
+}
+
+/* ---- Silhouette: one friendly blob for every monster not met yet ---- */
+.silhouette {
+  position: relative;
+  display: inline-block;
+  width: calc(72 * var(--u));
+  height: calc(64 * var(--u));
+}
+
+.silhouette__blob {
+  position: absolute;
+  inset: 0;
+  border-radius: 50% 50% 44% 44%;
+  background: #3a2f5c;
+  border: calc(3 * var(--u)) dashed #7d6aa8;
+}
+
+.silhouette__crest {
+  position: absolute;
+  left: 50%;
+  top: calc(-22 * var(--u));
+  width: calc(28 * var(--u));
+  height: calc(16 * var(--u));
+  margin-left: calc(-14 * var(--u));
+  background: #b8a6e0;
+  clip-path: polygon(0 100%, 0 20%, 25% 60%, 50% 0, 75% 60%, 100% 20%, 100% 100%);
+}
+
+.silhouette__star {
+  position: absolute;
+  top: calc(-20 * var(--u));
+  right: calc(-8 * var(--u));
+  font-size: calc(20 * var(--u));
+  line-height: 1;
+  color: var(--gold, #ffd966);
+}

@@ -211,11 +211,11 @@ through to the end card.
 
 - [ ] 15. **Monster art styles**
   - Mark: needed for the video (req 5, 11.5).
-  - [ ] 15.1 Create `src/ui/monster-art.css`: big round friendly eyes with a highlight; the four mouth shapes (none with teeth); the four body shapes; the ear, extra and crest shapes; the rare star; the friendly silhouette (same blob for every common, star and crest only for rares, no padlock, cross or number). Every size is a multiple of one variable `--u` (default `1px`), so a Book cell can set a smaller `--u` and the cheek its own. Keep the existing colour classes working. No colour is the only difference between two monsters
-  - [ ] 15.2 Link `monster-art.css` from `index.html`, next to the other `<link>` lines. Do not touch the Content-Security-Policy
-  - [ ] 15.3 The `cssGuards` test of task 12 now also reads `monster-art.css` and still passes
+  - [x] 15.1 Create `src/ui/monster-art.css`: big round friendly eyes with a highlight; the four mouth shapes (none with teeth); the four body shapes; the ear, extra and crest shapes; the rare star; the friendly silhouette (same blob for every common, star and crest only for rares, no padlock, cross or number). Every size is a multiple of one variable `--u` (default `1px`), so a Book cell can set a smaller `--u` and the cheek its own. Keep the existing colour classes working. No colour is the only difference between two monsters
+  - [x] 15.2 Link `monster-art.css` from `index.html`, next to the other `<link>` lines. Do not touch the Content-Security-Policy
+  - [x] 15.3 The `cssGuards` test of task 12 now also reads `monster-art.css` and still passes
   - [ ] 15.4 Check by hand (M9, drawings on the cheek): `npm run dev`, play a session. The four monsters of that session are friendly, with big eyes and no teeth, blood, drips, wounds or angry eyes, and they differ from each other in at least one shape feature (ears, horns, tail, number of eyes), not only in colour. A rare monster, when one appears, has a star and a crest
-  - [ ] 15.5 Run `npm run test:run` and `npm run build`: both pass. The game runs with the new drawings
+  - [x] 15.5 Run `npm run test:run` and `npm run build`: both pass. The game runs with the new drawings
   - _Requirements: 5.2, 5.3, 5.4, 5.5, 11.5, 13.1, 13.2_
   - Test file: none new (`cssGuards` from task 12 and `drawMonsterSignature` from task 14 cover it)
   - Files this task may change: `src/ui/monster-art.css`, `index.html`
