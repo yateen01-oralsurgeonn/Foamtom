@@ -115,3 +115,8 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   mirror, no nagging. Small later fixes: WASM loads twice; models still download when camera refused.
   Next: task 10 (real phone checks, him) and task 11 (README) - he wants to do task 11 in the Kiro IDE
   (Start task link), for the judges' "IDE or CLI" question and the video. Hooks still untested in the IDE.
+- 21 Nov ~17:15: task 11 built by HIM in the Kiro IDE (b25dffb, + tasks.meta.json; checker now allows it).
+  Task 10 on his Motorola Edge 50 Neo: 10.2-10.10 PASS (5fa2f2b). 10.1 speed judged by eye (his choice 3):
+  mirror smooth, monster shrinks with a small noticeable lag (by design: 1-second windows + 1 tick/s).
+  10.1 fps numbers still open (options: USB remote debugging, or a ?speed=1 counter via spec change).
+  hand-tracking spec otherwise COMPLETE. Next: specs mirror-and-screens and parent-screen (not yet written).
