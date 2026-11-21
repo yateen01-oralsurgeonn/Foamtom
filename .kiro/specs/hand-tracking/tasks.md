@@ -197,10 +197,10 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/game-loop.test.ts`
   - Files this task may change: `src/ui/game-loop.ts`, `tests/game-loop.test.ts`
 
-- [ ] 5. **Monster placement on the cheek**
-  - [ ] 5.1 `src/ui/monster-anchor.ts`: pure `monsterAnchor(draw: DrawValue | null, zone): Anchor | null` as design 9.2. `null` in gives `null` out. The cheek direction comes from `rawToChildSide('raw-right') === zone.side`; no other swap. Named constants `CHEEK_OFFSET` 0.45, `LEVEL_LIFT` 0.15, `MONSTER_SIZE` 0.40 at the top of the file. The result is clamped so the monster stays inside the stage
-  - [ ] 5.2 Test `monsterAnchorPlacement` (design test 22): `null` in gives `null` out; left zones sit on the raw side that `rawToChildSide` calls `left`; upper zones are above lower zones; the anchor stays inside the stage; the size scales with `faceWidth`; a tilted face (`roll`) turns the monster
-  - [ ] 5.3 `onlyOneLeftRightSwap` still passes with `monster-anchor.ts` in place
+- [x] 5. **Monster placement on the cheek**
+  - [x] 5.1 `src/ui/monster-anchor.ts`: pure `monsterAnchor(draw: DrawValue | null, zone): Anchor | null` as design 9.2. `null` in gives `null` out. The cheek direction comes from `rawToChildSide('raw-right') === zone.side`; no other swap. Named constants `CHEEK_OFFSET` 0.45, `LEVEL_LIFT` 0.15, `MONSTER_SIZE` 0.40 at the top of the file. The result is clamped so the monster stays inside the stage
+  - [x] 5.2 Test `monsterAnchorPlacement` (design test 22): `null` in gives `null` out; left zones sit on the raw side that `rawToChildSide` calls `left`; upper zones are above lower zones; the anchor stays inside the stage; the size scales with `faceWidth`; a tilted face (`roll`) turns the monster
+  - [x] 5.3 `onlyOneLeftRightSwap` still passes with `monster-anchor.ts` in place
   - _Requirements: 2.2, 8.2, 8.4_
   - Test file: `tests/monster-anchor.test.ts`
   - Files this task may change: `src/ui/monster-anchor.ts`, `tests/monster-anchor.test.ts`
