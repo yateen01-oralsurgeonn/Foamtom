@@ -145,3 +145,19 @@ describe('firstLoadUnder5MB', () => {
     expect(total).toBeLessThan(FIRST_LOAD_LIMIT_BYTES);
   });
 });
+
+describe('noMediapipeTelemetryInDist', () => {
+  it('no built file contains the MediaPipe usage-logging address', () => {
+    const files = listFiles(outDir);
+    expect(files.length).toBeGreaterThan(0);
+    const withEndpoint = files.filter((f) => readFileSync(f).includes('odml.pa.googleapis.com'));
+    expect(withEndpoint).toEqual([]);
+  });
+
+  it('package.json pins @mediapipe/tasks-vision to exactly 1.2.3', () => {
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as {
+      dependencies?: Record<string, string>;
+    };
+    expect(pkg.dependencies?.['@mediapipe/tasks-vision']).toBe('1.2.3');
+  });
+});
