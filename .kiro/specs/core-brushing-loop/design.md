@@ -370,7 +370,8 @@ startSession(input):
 | `UNTRACKED_DRAIN` | 2 | Health lost per second when the signal is `null` (req 7.7); `H_MAX / ZONE_DURATION` |
 | `UNTRACKED_LIMIT` | 10 | A camera-mode zone with more untracked seconds than this is unverified (req 9.3) |
 | `MISS_WINDOW` | 7 | Number of most recent camera-mode sessions used for miss scores (req 14.1) |
-| `REQUIRE_LEVEL_MATCH` | true | When false, level is ignored and only side is checked (req 5.7) |
+| `REQUIRE_LEVEL_MATCH` | false | `false` since 21 Nov 2026 by Dr. Yatin's decision (level check failed). When false, level is ignored (req 5.7) |
+| `REQUIRE_SIDE_MATCH` | false | `false` since 21 Nov 2026 by Dr. Yatin's decision (side check failed). When false, side is ignored (req 5.7) |
 
 > **Design choice:** `H_MAX = 60` and `DAMAGE_PER_SECOND = 3` so that a normal-strength
 > monster is defeated after exactly 20 seconds of matching brushing (`60 / 3 = 20`).
