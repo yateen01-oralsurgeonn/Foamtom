@@ -67,7 +67,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | Date | Brush hand | Zone | Surface | Palm | Wrist | Fingertips | Result | Note |
 |---|---|---|---|---|---|---|---|---|
 | 2026-11-21 | Right | Upper right | Outer | RRR | | | Pass | After NEAR_MOUTH_FACE_WIDTHS 0.7 -> 1.1; handNearMouth true on all 3; moving false in screenshots (hand still); moving read true while brushing, watched live |
-| | Right | Upper right | Chewing | | | | | |
+| 2026-11-21 | Right | Upper right | Chewing | WUW | | | Fail | Read `lower`, `unknown`, `lower`: the brush lies flat at mouth height and the palm hangs below the mouth |
 | | Right | Upper right | Inner | | | | | |
 | | Right | Upper left | Outer | | | | | |
 | | Right | Upper left | Chewing | | | | | |
