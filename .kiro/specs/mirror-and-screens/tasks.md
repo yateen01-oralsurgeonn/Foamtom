@@ -75,12 +75,12 @@ through to the end card.
   - Test file: `tests/effects.test.ts`
   - Files this task may change: `src/ui/effects.ts`, `tests/effects.test.ts`
 
-- [ ] 2. **Frame guidance (pure)**
+- [x] 2. **Frame guidance (pure)**
   - Mark: needed for the video (req 3, 15.1).
-  - [ ] 2.1 Create `src/ui/frame-guidance.ts` with `FrameRegion`, `ZONE_REGION` (upper-left to top-left, upper-right to top-right, lower-left to bottom-left, lower-right to bottom-right), `REGION_ORDER`, `RegionState`, `FrameGuidance` and `frameGuidance(input)` as in design section 5.1. The argument type is `Pick<View, 'phase' | 'zoneId'> | null`, so health, smoke, caption, countdown, monster and mode cannot reach it. Re-export `RegionLevel` and `RegionLook` from `effects.ts`. No swap, negation or inversion of left and right, and no left/right ternary: the side is chosen only through the table
-  - [ ] 2.2 Test `frameGuidanceZones` (design test 1): each zone gives exactly one active region; the four regions are different; the four mappings are as stated; `ended` and `null` give four `off` regions and no active region; `paused` keeps the region lit with `flickering` false; `running` has `flickering` true; two views that differ only in health, smoke, caption, countdown or monster give equal results; the region is the same before and after a defeat
-  - [ ] 2.3 Test: the source of `frame-guidance.ts` contains no `scaleX`, no `rawToChildSide`, no `raw-left` or `raw-right`, and no `? 'left' : 'right'` or `? 'right' : 'left'`
-  - [ ] 2.4 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
+  - [x] 2.1 Create `src/ui/frame-guidance.ts` with `FrameRegion`, `ZONE_REGION` (upper-left to top-left, upper-right to top-right, lower-left to bottom-left, lower-right to bottom-right), `REGION_ORDER`, `RegionState`, `FrameGuidance` and `frameGuidance(input)` as in design section 5.1. The argument type is `Pick<View, 'phase' | 'zoneId'> | null`, so health, smoke, caption, countdown, monster and mode cannot reach it. Re-export `RegionLevel` and `RegionLook` from `effects.ts`. No swap, negation or inversion of left and right, and no left/right ternary: the side is chosen only through the table
+  - [x] 2.2 Test `frameGuidanceZones` (design test 1): each zone gives exactly one active region; the four regions are different; the four mappings are as stated; `ended` and `null` give four `off` regions and no active region; `paused` keeps the region lit with `flickering` false; `running` has `flickering` true; two views that differ only in health, smoke, caption, countdown or monster give equal results; the region is the same before and after a defeat
+  - [x] 2.3 Test: the source of `frame-guidance.ts` contains no `scaleX`, no `rawToChildSide`, no `raw-left` or `raw-right`, and no `? 'left' : 'right'` or `? 'right' : 'left'`
+  - [x] 2.4 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
   - _Requirements: 3.2, 3.3, 3.7, 3.8, 3.9, 15.1, 16.2_
   - Test file: `tests/frame-guidance.test.ts`
   - Files this task may change: `src/ui/frame-guidance.ts`, `tests/frame-guidance.test.ts`
