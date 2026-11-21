@@ -1,7 +1,7 @@
 // Wiring only: the clock, the signal source, the browser's visibility and wake-lock
 // adapters, the game loop and the screens. Past sessions are loaded when a session starts
 // and the result is saved when it ends.
-import { createBrowserSpeaker } from './audio/speaker';
+import { createAudioKit } from './audio/audio-kit';
 import { startSession } from './logic/session';
 import { toSessionResult } from './logic/session-result';
 import { createStorage } from './storage/storage';
@@ -105,7 +105,8 @@ startEffects({
 });
 
 if (app) {
-  const speaker = createBrowserSpeaker();
+  const kit = createAudioKit();
+  const speaker = kit.speaker;
   const storage = createStorage(browserBackend());
   const screen = createSessionScreen(app, { onStart: () => void loop.begin() }, speaker);
   const presenter = createSessionPresenter({ screen });

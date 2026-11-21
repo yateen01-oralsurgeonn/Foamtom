@@ -263,12 +263,12 @@ through to the end card.
   - Test file: `tests/sound-player.test.ts`
   - Files this task may change: `src/audio/sound-player.ts`, `tests/sound-player.test.ts`
 
-- [ ] 20. **Audio kit: one speaker, one player, one unlock, one stop**
+- [x] 20. **Audio kit: one speaker, one player, one unlock, one stop**
   - Mark: needed for the video (req 10.7, 10.8).
-  - [ ] 20.1 Create `src/audio/audio-kit.ts` with `createAudioKit(deps?)` returning `{ speaker, sounds }`. By default it builds `createBrowserSpeaker()` and `createSoundPlayer()`; the optional `deps` lets a test pass fakes. The kit's `speaker.unlock()` also calls the player's `unlock()`, and its `speaker.stop()` also calls the player's `stop()`, so every existing `speaker.stop()` call (pause, session end, drop, back to start) also stops every sound. `say` is passed through unchanged. There is no mute control and no music
-  - [ ] 20.2 In `src/main.ts` build the kit once and pass `kit.speaker` where `createBrowserSpeaker()` is passed now. Keep `kit.sounds` for tasks 21 and 24. No other change
-  - [ ] 20.3 Test `audioKit`, with fake speaker and player: `unlock` reaches both; `stop` reaches both; `say` reaches the speaker only; the kit has no member that mentions mute or volume
-  - [ ] 20.4 Run `npm run test:run` and `npm run build`: both pass. The game runs and sounds exactly as before
+  - [x] 20.1 Create `src/audio/audio-kit.ts` with `createAudioKit(deps?)` returning `{ speaker, sounds }`. By default it builds `createBrowserSpeaker()` and `createSoundPlayer()`; the optional `deps` lets a test pass fakes. The kit's `speaker.unlock()` also calls the player's `unlock()`, and its `speaker.stop()` also calls the player's `stop()`, so every existing `speaker.stop()` call (pause, session end, drop, back to start) also stops every sound. `say` is passed through unchanged. There is no mute control and no music
+  - [x] 20.2 In `src/main.ts` build the kit once and pass `kit.speaker` where `createBrowserSpeaker()` is passed now. Keep `kit.sounds` for tasks 21 and 24. No other change
+  - [x] 20.3 Test `audioKit`, with fake speaker and player: `unlock` reaches both; `stop` reaches both; `say` reaches the speaker only; the kit has no member that mentions mute or volume
+  - [x] 20.4 Run `npm run test:run` and `npm run build`: both pass. The game runs and sounds exactly as before
   - _Requirements: 10.7, 10.8, 10.10, 10.11, 1.7_
   - Test file: `tests/audio-kit.test.ts`
   - Files this task may change: `src/audio/audio-kit.ts`, `src/main.ts`, `tests/audio-kit.test.ts`
