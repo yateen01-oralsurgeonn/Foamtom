@@ -54,7 +54,8 @@ All requirements below comply with the steering files in `.kiro/steering/`.
 `product.md` is strict: cute-spooky, never scary, no gore, no jump scares, no sudden loud
 sounds; a 5-year-old should giggle, not cry; monsters are defeated, not hurt.
 `dental-rules.md` belongs to Dr. Yatin and is not changed by this spec. A requirement
-marked **[TO CONFIRM]** needs his answer before it is built (see "Open questions").
+marked **[TO CONFIRM]** needs his answer before it is built. There are none open: see
+"Decisions, 21 Nov 2026".
 
 ### Priority for the Kiroween video (due 4 Dec 2026)
 
@@ -93,11 +94,13 @@ at a glance that the camera picture stays on the phone, so that we can start wit
 reading or signing up.**
 
 1.1 THE SYSTEM SHALL show a title screen with the game name ("Foamtom: The Haunted Mirror"),
-exactly one large start button, and the privacy line (1.3).
+exactly one large start button, one second, smaller Monster Book button (1.8), and the
+privacy line (1.3).
 
 1.2 THE start button SHALL carry an icon, a short label, the spoken line `start` and its
-caption (core requirement 15.1). Its tap SHALL be the one that unlocks sound. THE
-existing `start` line SHALL NOT change.
+caption (core requirement 15.1). Its tap SHALL unlock sound and start the session (the Monster
+Book button's tap also unlocks sound, requirement 7.9). THE existing `start` line SHALL NOT
+change.
 
 1.3 THE title screen SHALL show the plain line "The camera stays on this phone. Nothing is
 saved or sent." as visible text. It is a parent-facing line: it is shown, not spoken, and
@@ -113,11 +116,17 @@ only after the start tap (core requirement 15.1, hand-tracking requirement 6.3).
 1.5 THE title screen SHALL load no camera code, model file or WASM file
 (hand-tracking requirement 6.3) and SHALL make no network request.
 
-1.6 THE start button and the privacy line SHALL both be visible without scrolling in a
-portrait viewport of 360 x 640 px.
+1.6 THE start button, the Monster Book button and the privacy line SHALL all be visible
+without scrolling in a portrait viewport of 360 x 640 px.
 
 1.7 THE title screen SHALL NOT pressure the child: no countdown, no flashing, no sound
-before the start tap, no message about streaks or earlier sessions.
+before the first tap, no message about streaks or earlier sessions.
+
+1.8 THE Monster Book button SHALL be smaller than the start button in both width and
+height, with a touch target of at least 48 px (requirement 11.4). It SHALL carry an icon, the
+label "Monster Book" and an accessible name, and SHALL NOT be styled as a second primary
+action. Its tap SHALL open the Monster Book (requirement 7.8) through one handler passed in
+by `main.ts`. It SHALL NOT start the camera or a session.
 
 ---
 
@@ -133,9 +142,9 @@ control SHALL call one handler passed in by `main.ts`. The adult gate and everyt
 it belong to the `parent-screen` spec; this spec SHALL NOT build, mock or bypass them.
 
 2.2 THE control SHALL have a touch target of at least 48 px (requirement 11.4), SHALL NOT
-be a second large button, and SHALL be smaller and quieter than the start button, so that a
-child is not drawn to it. Its visible mark SHALL be an icon; its label is an accessible
-name (the line is in "Lines for Dr. Yatin to approve").
+be a large button, and SHALL be smaller and quieter than both the start button and the
+Monster Book button (1.8), so that a child is not drawn to it. Its visible mark SHALL be an
+icon; its label is an accessible name (the line is in "Approved lines (21 Nov 2026)").
 
 2.3 THE control SHALL NOT be shown on the session screen or the end card.
 
@@ -328,8 +337,9 @@ No other rule SHALL decide it.
 
 7.4 WHEN the child taps an owned monster THE SYSTEM SHALL speak its name and show the same
 words as a caption. A new tap SHALL replace the name being said and SHALL NOT queue behind
-it. Where the name lives, and how it passes the wording guard, is an open question
-(Open question 3).
+it. All twelve names SHALL be spoken from the `name` field of the table
+`src/logic/monsters.ts`, each with a caption, and SHALL NOT be added to `src/audio/lines.ts`
+(Decision 3). They are covered by the guard of requirement 14.4.
 
 7.5 A monster that is not owned SHALL be shown as a friendly silhouette with no name. The
 silhouette SHALL NOT show or speak the monster's name, and SHALL NOT use a padlock, a cross,
@@ -345,9 +355,9 @@ message.
 accessible name, and a touch target of at least 48 px. It SHALL go back to the screen the
 Book was opened from.
 
-7.8 THE Book SHALL be opened from the end card (requirement 9.3). **[TO CONFIRM]** whether
-it can also be opened from the title screen (Open question 1). Until he answers, the title
-screen SHALL NOT carry a Book button, so that it keeps one large button (requirement 1.1).
+7.8 THE Book SHALL be opened from the end card (requirement 9.3) and from the title screen,
+by the second, smaller Monster Book button (requirement 1.8; Decision 1). The title screen
+still has exactly one large button, the start button.
 
 7.9 THE tap that opens the Book SHALL unlock sound if it is not unlocked yet, so that names
 are spoken whichever screen the child came from.
@@ -364,10 +374,9 @@ show the frame glow (requirement 3.9).
 **As a child, I want to know the rare monsters exist and how to meet them, without being
 told off, so that I have something to look forward to.**
 
-8.1 THE four rare monsters that are not owned SHALL show one invitation, with the words
-"Brush morning AND night.", as a caption and spoken when a rare silhouette is tapped. **[TO
-CONFIRM]** whether it is one line for the whole rare group or one on each rare silhouette
-(Open question 4).
+8.1 THE rare monsters that are not owned SHALL show one invitation for the rare group, with
+the words "Brush morning AND night.", as a caption. The same line SHALL be spoken when any
+rare silhouette is tapped (Decision 4). It SHALL NOT be repeated on each silhouette.
 
 8.2 THE invitation SHALL be an invitation only: no countdown, no "you missed it", no
 streak, no count of days, no word about what was or was not brushed today, nothing lost.
@@ -391,9 +400,10 @@ feel proud and can stop.**
 into the Monster Book, one drawing each, including trapped and fled ones (core requirement
 10.2). The drawings SHALL use `drawMonster` (requirement 5.6).
 
-9.2 THE end card SHALL speak and caption the closing line "Two minutes. Every corner.". It
-is a new line and is listed in "Lines for Dr. Yatin to approve". The existing `end` line is
-not changed (Open question 2 asks whether the new line replaces it or follows it).
+9.2 THE end card SHALL speak and caption the existing `end` line first, unchanged, and
+then, after it, the new closing line "Two minutes. Every corner." (Decision 2). The new
+line SHALL NOT replace `end` and SHALL NOT be spoken before it. It is listed in "Approved
+lines (21 Nov 2026)". The two lines SHALL NOT overlap.
 
 9.3 THE end card SHALL have two buttons: one to the Monster Book and one back to the
 title screen. Each SHALL have an icon, a label and an accessible name, and a touch target
@@ -445,9 +455,13 @@ speech.
 caption shown.
 
 10.9 EVERY spoken line SHALL have a caption and live in `src/audio/lines.ts` (core
-requirement 4.5), except the one case in Open question 3.
+requirement 4.5), except the twelve monster names, which are spoken from `monsters.ts`
+(requirement 7.4; Decision 3).
 
 10.10 THIS spec SHALL NOT add background music.
+
+10.11 THE game SHALL NOT have its own mute or sound-off control (Decision 5). Parents can
+turn the phone's volume down.
 
 ---
 
@@ -476,7 +490,7 @@ or no transition. WHEN the preference changes while the game is open, THE SYSTEM
 follow it. The choice SHALL be one pure function, `effectsFor(prefersReducedMotion)`.
 
 11.4 EVERY tappable thing SHALL have a touch target of at least 48 px (core requirement
-11.10): the start button, the parent control, each Book cell, the Book's back button and the
+11.10): the start button, the title screen's Monster Book button, the parent control, each Book cell, the Book's back button and the
 end-card buttons.
 
 11.5 THE game SHALL NOT use colour as the only signal (core requirement 11.11): the active
@@ -556,24 +570,28 @@ load only after the start tap. The tests `firstLoadUnder5MB` and `cameraCodeIsLa
 the wording stays within the dental rules.**
 
 14.1 EVERY new child-facing or parent-facing line (spoken, captioned, shown as a label, or
-read by a screen reader) SHALL be listed, one per row, in the final section "Lines for Dr.
-Yatin to approve", with where it is shown. A new line is not final until he approves it.
-WHEN he changes a line, that section and the code SHALL be updated to match.
+read by a screen reader) SHALL be listed, one per row, in the final section "Approved lines
+(21 Nov 2026)", with where it is shown. All 19 lines in it were approved by Dr. Yatin on 21
+Nov 2026. A line added later is not final until he approves it. WHEN he changes a line, that
+section and the code SHALL be updated to match.
 
 14.2 THE seven existing lines in `src/audio/lines.ts` (`start`, the four `zone-` lines,
 `smoke`, `end`) SHALL NOT change. A test SHALL pin their exact text and caption
 (requirement 15.7).
 
-14.3 EVERY new spoken line SHALL have a caption and, with the one exception in Open question
-3, SHALL be added to `src/audio/lines.ts`, so that the existing wording guard (core
-requirement 13.11) covers it without any change to that test.
+14.3 EVERY new spoken line SHALL have a caption and, except the twelve monster names
+(requirement 7.4), SHALL be added to `src/audio/lines.ts`, so that the existing wording
+guard (core requirement 13.11) covers it without any change to that test. The existing
+wording guard in `tests/lines.test.ts` SHALL NOT be changed (Decision 3).
 
-14.4 A NEW guard test SHALL check every line of the second table (requirement 1.3) and every
-new label against the banned list of core requirement 13.11 (without the rule about the
-camera and the light, which this one sentence needs), and SHALL check all new lines against a
-second list of words that urge or scare, matched as whole words: again, tomorrow, "come
-back", streak, hurry, blood, gore, kill, die, dead, hurt, scream. The core test itself SHALL
-NOT be edited.
+14.4 A NEW guard test SHALL check every line of the second table (requirement 1.3), every
+new label, and all twelve monster names (the `name` field of each entry in `monsters.ts`,
+with the caption shown for it) against the banned list of core requirement 13.11 (without
+the rule about the camera and the light, which this one sentence needs). The new guard
+SHALL match banned words as whole words, so that "Twilight" in "Twilight Toffee Wraith" is
+not rejected. It SHALL also check all new lines against a second list of words that urge or
+scare, matched as whole words: again, tomorrow, "come back", streak, hurry, blood, gore,
+kill, die, dead, hurt, scream. The core test itself SHALL NOT be edited.
 
 14.5 NO new line SHALL claim that the game prevents cavities, cures anything, or replaces a
 dental visit, or SHALL carry a clinic name, phone number, address or registration number
@@ -633,8 +651,11 @@ or `setTimeout`, and the privacy guard and tracking guard SHALL keep passing.
 
 15.9 **Screens:** where the existing tests can check the DOM, new tests SHALL check, with a
 fake speaker: tapping an owned monster says its name once and replaces any earlier name;
-tapping a silhouette never says a monster's name; the end card has no urging text; the title
-screen shows the privacy line and one large button.
+tapping a silhouette never says a monster's name; the end card says `end` and then "Two
+minutes. Every corner." in that order; the end card has no urging text; the title screen
+shows the privacy line, one large start button and one smaller Monster Book button, whose
+size is below the start button's and whose touch target is at least 48 px; the title screen
+has no mute control (Decision 5).
 
 15.10 **Nothing broken:** every existing test SHALL pass unchanged, in particular
 `view.test.ts`, `lines.test.ts`, `camera-preview.test.ts`, `monster-anchor.test.ts`,
@@ -662,48 +683,42 @@ pure functions above; the screens only paint.
 
 ---
 
-## Open questions for Dr. Yatin
+## Decisions, 21 Nov 2026
 
-These are not settled by the prompt. Each has the default used in the requirements above.
+Dr. Yatin answered the open questions on 21 Nov 2026. The requirements above agree with
+these decisions.
 
-1. **Monster Book from the title screen.** The brief gives the title screen one large
-   button, a privacy line and a quiet parent entry. As written, the Book can be reached only
-   from the end card, so a child cannot look at it before brushing. Should the title screen
-   get a second, smaller Book button? Default: no (requirement 7.8).
-2. **Closing line on the end card.** The existing `end` line ("Well done! Two minutes of
-   brushing!") cannot be changed. Should "Two minutes. Every corner." replace it on the end
-   card, or be said after it? Default: it is the end card's closing line, and `end` stays in
-   `lines.ts` unchanged (requirement 9.2).
-3. **Where the spoken monster names live.** Rule 4.5 puts every spoken line in `lines.ts`,
-   and the wording guard rejects any line containing "light" as plain text. "Twilight Toffee
-   Wraith" contains it, so that name cannot be added to `lines.ts` as it stands. The options
-   are: (a) change the guard to match whole words (this edits an existing test); (b) say the
-   name from the `monsters.ts` table, with a caption, and cover it with the new guard of
-   requirement 14.4; (c) leave this one name unspoken. Which one? No default is built until
-   he answers; the other eleven names are not affected.
-4. **One invitation or four.** "The four rare ones show one invitation": one line for the
-   rare group, or the same line on each rare silhouette? Default: one line for the group,
-   also spoken when a rare silhouette is tapped (requirement 8.1).
-5. **Mute.** There is no mute button in the brief. Parents can turn the phone's volume
-   down. Should the game have its own sound off control? Default: no.
-
-Assumption: the smallest phone to support is a 360 x 640 px portrait viewport
-(requirements 1.6 and 9.3).
+1. **Monster Book from the title screen.** The title screen gets a second, smaller Monster
+   Book button. It is smaller than the start button and at least 48 px
+   (requirements 1.1, 1.6, 1.8, 7.8, 11.4).
+2. **Closing line on the end card.** "Two minutes. Every corner." is said after the
+   existing `end` line. The `end` line stays unchanged (requirement 9.2).
+3. **Where the spoken monster names live.** Option (b). Names are spoken from the
+   `monsters.ts` table, with a caption, and are covered by the new guard of requirement
+   14.4. The existing wording guard in `tests/lines.test.ts` is not changed. All twelve
+   names are spoken this way, for consistency (requirements 7.4, 10.9, 14.3, 14.4).
+4. **One invitation or four.** One line for the rare group, also spoken when a rare
+   silhouette is tapped (requirement 8.1).
+5. **Mute.** The game has no mute control (requirement 10.11).
+6. **Lines.** All 19 lines in "Approved lines (21 Nov 2026)" are approved (requirement
+   14.1).
+7. **Smallest phone.** The 360 x 640 px portrait viewport assumption stands
+   (requirements 1.6 and 9.3).
 
 ---
 
-## Lines for Dr. Yatin to approve
+## Approved lines (21 Nov 2026)
 
-Every NEW child-facing or parent-facing line of this spec is below, one per row. None is
-final until he approves it. The existing seven lines in `src/audio/lines.ts` are not listed
-because they are approved (19 Nov 2026) and unchanged. "Spoken" means spoken and captioned.
+Every NEW child-facing or parent-facing line of this spec is below, one per row. Dr. Yatin
+approved all 19 on 21 Nov 2026. The existing seven lines in `src/audio/lines.ts` are not
+listed because they were approved (19 Nov 2026) and are unchanged. "Spoken" means spoken and captioned.
 "Shown" means visible text only. "Name only" means read by a screen reader, not seen.
 
 | # | Proposed text | Kind | Where it is shown |
 |---|---------------|------|-------------------|
 | 1 | The camera stays on this phone. Nothing is saved or sent. | Shown (not spoken) | Title screen, under the start button. Kept outside `lines.ts` because the wording guard forbids "camera" there (requirement 1.3). |
-| 2 | Two minutes. Every corner. | Spoken | End card, as the closing line (requirement 9.2; Open question 2). |
-| 3 | Brush morning AND night. | Spoken | Monster Book, for the rare monsters not yet owned (requirement 8.1; Open question 4). |
+| 2 | Two minutes. Every corner. | Spoken | End card, said after the existing `end` line (requirement 9.2; Decision 2). |
+| 3 | Brush morning AND night. | Spoken | Monster Book, one line for the rare group; also spoken when a rare silhouette is tapped (requirement 8.1; Decision 4). |
 | 4 | Plaque Puff | Spoken, and shown | Monster Book, owned cell, on tap. |
 | 5 | Sugar Sprite | Spoken, and shown | Monster Book, owned cell, on tap. |
 | 6 | Gummy Gloop | Spoken, and shown | Monster Book, owned cell, on tap. |
@@ -715,11 +730,12 @@ because they are approved (19 Nov 2026) and unchanged. "Spoken" means spoken and
 | 12 | Midnight Molar Ghoul | Spoken, and shown | Monster Book, owned cell, on tap. |
 | 13 | Dawn Drool Dragon | Spoken, and shown | Monster Book, owned cell, on tap. |
 | 14 | Moonlit Mint Phantom | Spoken, and shown | Monster Book, owned cell, on tap. |
-| 15 | Twilight Toffee Wraith | Spoken, and shown | Monster Book, owned cell, on tap. Contains "light": see Open question 3. |
-| 16 | Monster Book | Shown | Heading of the Monster Book screen; label of the end-card button that opens it. |
+| 15 | Twilight Toffee Wraith | Spoken, and shown | Monster Book, owned cell, on tap. Spoken from `monsters.ts` like the other eleven (requirement 7.4; Decision 3). |
+| 16 | Monster Book | Shown | Heading of the Monster Book screen; label of the end-card button that opens it; label of the smaller button on the title screen (requirement 1.8). |
 | 17 | Back | Shown | Label of the Monster Book's back button. |
 | 18 | Grown-ups | Name only (the control shows an icon) | Title screen, the small parent entry control (requirement 2.2). |
 | 19 | Not met yet | Name only | Monster Book, each silhouette. |
 
 The names in rows 4 to 15 are the names already approved on 14 Nov 2026 in the monster
-table. They are listed because speaking them is new.
+table. They are listed because speaking them is new. Rows 4 to 15 are spoken from
+`monsters.ts`, not from `lines.ts`.
