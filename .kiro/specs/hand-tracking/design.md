@@ -322,7 +322,7 @@ a parent sees.
 
 | Constant | Start | Unit | Meaning |
 |----------|-------|------|---------|
-| `NEAR_MOUTH_FACE_WIDTHS` | 0.7 | face widths | Hand point within this of the mouth centre counts as at the mouth |
+| `NEAR_MOUTH_FACE_WIDTHS` | 1.1 | face widths | Hand point within this of the mouth centre counts as at the mouth (tuned 21 Nov 2026 on the debug page; was 0.7) |
 | `SIDE_DEAD_ZONE` | 0.10 | face widths | Sideways distance from the mouth centre line inside which `side` is `unknown` |
 | `LEVEL_DEAD_ZONE` | 0.10 | face widths | Distance above or below mouth height inside which `level` is `unknown` |
 | `MIN_FRAMES_PER_SECOND` | 5 | frames | Fewer frames in a second gives `null` (req 4.2) |
