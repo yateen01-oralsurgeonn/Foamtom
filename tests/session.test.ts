@@ -6,6 +6,7 @@ import {
   REQUIRE_LEVEL_MATCH,
   REQUIRE_SIDE_MATCH,
   SESSION_DURATION,
+  TIMER_ONLY_DAMAGE,
   UNTRACKED_DRAIN,
   ZONE_DURATION,
   ZONE_ORDER,
@@ -169,7 +170,13 @@ describe('healthChangesOnlyByTheRule', () => {
           const zone = before.zones[before.activeZoneIndex];
           const effective = mode === 'timer-only' ? null : signal;
           const expectedDamage =
-            effective === null ? UNTRACKED_DRAIN : isBrushing(effective, zone) ? DAMAGE_PER_SECOND : 0;
+            mode === 'timer-only'
+              ? TIMER_ONLY_DAMAGE
+              : effective === null
+                ? UNTRACKED_DRAIN
+                : isBrushing(effective, zone)
+                  ? DAMAGE_PER_SECOND
+                  : 0;
           state = tick(before, signal);
           before.monsters.forEach((m, i) => {
             const after = state.monsters[i];
@@ -275,8 +282,8 @@ describe('sessionIsExactly120Ticks', () => {
   });
 });
 
-describe('timerOnlyDefeatsEveryMonsterAt30', () => {
-  it('every monster starts at 60 and is defeated on exactly the 30th tick of its zone', () => {
+describe('timerOnlyDefeatsEveryMonsterAt20', () => {
+  it('every monster starts at 60 and is defeated on exactly the 20th tick of its zone', () => {
     fc.assert(
       fc.property(pastSessionsArb, signalsArb, (past, signals) => {
         let state: SessionState = startSession(input('timer-only', past));
@@ -286,13 +293,13 @@ describe('timerOnlyDefeatsEveryMonsterAt30', () => {
           const tickInZone = (i % ZONE_DURATION) + 1;
           state = tick(state, signal);
           const m = state.monsters[zoneIndex];
-          expect(m.health).toBe(60 - 2 * tickInZone);
-          if (tickInZone < ZONE_DURATION) {
+          expect(m.health).toBe(Math.max(0, 60 - 3 * tickInZone));
+          if (tickInZone < 20) {
             expect(m.outcome).toBe('pending');
             expect(m.defeatedAtElapsed).toBeNull();
           } else {
             expect(m.outcome).toBe('defeated');
-            expect(m.defeatedAtElapsed).toBe(30);
+            expect(m.defeatedAtElapsed).toBe(20);
           }
         });
         expect(state.monsters.every((m) => m.health === 0 && m.outcome === 'defeated')).toBe(true);

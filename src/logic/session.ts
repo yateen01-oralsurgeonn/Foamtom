@@ -5,6 +5,7 @@ import {
   H_MAX,
   REQUIRE_LEVEL_MATCH,
   REQUIRE_SIDE_MATCH,
+  TIMER_ONLY_DAMAGE,
   UNTRACKED_DRAIN,
   ZONE_DURATION,
   ZONE_ORDER,
@@ -101,7 +102,7 @@ export function tick(state: SessionState, signal: BrushingSignal | null): Sessio
   let brushed = state.secondsBrushedPerZone;
   let untracked = state.secondsUntrackedPerZone;
   if (s === null) {
-    damage = UNTRACKED_DRAIN;
+    damage = state.mode === 'timer-only' ? TIMER_ONLY_DAMAGE : UNTRACKED_DRAIN;
     untracked = bump(untracked, zoneIndex);
     progress = true;
   } else if (isBrushing(s, zone)) {

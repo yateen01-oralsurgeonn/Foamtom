@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DAMAGE_PER_SECOND,
   H_MAX,
   KIND_FLOOR,
   RESCUE_THRESHOLD,
   SESSION_DURATION,
+  TIMER_ONLY_DAMAGE,
   UNTRACKED_DRAIN,
   ZONE_COUNT,
   ZONE_DURATION,
@@ -25,6 +27,11 @@ describe('constants', () => {
 
   it('UNTRACKED_DRAIN × ZONE_DURATION == H_MAX', () => {
     expect(UNTRACKED_DRAIN * ZONE_DURATION).toBe(H_MAX);
+  });
+
+  it('TIMER_ONLY_DAMAGE equals DAMAGE_PER_SECOND and defeats a monster in 20 s', () => {
+    expect(TIMER_ONLY_DAMAGE).toBe(DAMAGE_PER_SECOND);
+    expect(H_MAX / TIMER_ONLY_DAMAGE).toBe(20);
   });
 
   it('ZONE_ORDER is upper-right, upper-left, lower-left, lower-right', () => {

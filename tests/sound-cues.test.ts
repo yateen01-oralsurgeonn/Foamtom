@@ -77,18 +77,15 @@ describe('soundCues', () => {
     expect(cuesFor(start, start)).toEqual([]);
   });
 
-  it('puts defeat and the next zone-start on one tick in timer-only mode, a gap apart', () => {
+  it('gives the defeat cue at tick 20 and the next zone-start at tick 30 with no delay in timer-only mode', () => {
     let state = startSession(input('timer-only'));
-    let found: SoundCue[] | null = null;
-    for (let i = 0; i < 120 && found === null; i++) {
+    for (let t = 1; t <= 30; t++) {
       const next = tick(state, null);
       const cues = cuesFor(state, next);
-      if (next.activeZoneIndex > state.activeZoneIndex) found = cues;
+      if (t === 20) expect(cues).toEqual([{ id: 'defeat', delayMs: 0 }]);
+      else if (t === 30) expect(cues).toEqual([{ id: 'zone-start', delayMs: 0 }]);
+      else expect(cues).toEqual([]);
       state = next;
     }
-    expect(found).toEqual([
-      { id: 'defeat', delayMs: 0 },
-      { id: 'zone-start', delayMs: CUE_GAP_MS },
-    ]);
   });
 });

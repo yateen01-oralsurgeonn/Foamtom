@@ -57,7 +57,7 @@ describe('toSessionResult', () => {
     );
   });
 
-  it('timerOnlyDefeatsEveryMonsterAt30: a timer-only result has 30 brushed, 0 untracked, unverified', () => {
+  it('timerOnlyDefeatsEveryMonsterAt20: a timer-only result has 30 brushed, 0 untracked, unverified', () => {
     fc.assert(
       fc.property(signalsArb, (signals) => {
         const result = toSessionResult(play('timer-only', signals));

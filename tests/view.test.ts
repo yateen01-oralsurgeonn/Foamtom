@@ -82,11 +82,21 @@ describe('viewMatchesState', () => {
     expect(toView(state).countdown).toBe(0);
   });
 
-  it('timer-only: the monster is defeated on the 30th tick of its zone, with no smoke line', () => {
+  it('timer-only: the monster is defeated on the 20th tick of its zone, the smoke line shows from tick 20, and smokeFraction falls from 1 to 0 by tick 30', () => {
     let state = startSession(input('timer-only'));
-    for (let i = 0; i < ZONE_DURATION - 1; i += 1) state = tick(state, null);
+    for (let i = 0; i < 19; i += 1) state = tick(state, null);
     expect(toView(state).captionLineId).toBe('zone-upper-right');
     expect(toView(state).healthFraction).toBeGreaterThan(0);
+    expect(toView(state).smokeFraction).toBe(0);
+    state = tick(state, null);
+    expect(toView(state).captionLineId).toBe('smoke');
+    expect(toView(state).healthFraction).toBe(0);
+    expect(toView(state).smokeFraction).toBe(1);
+    for (let i = 20; i < ZONE_DURATION - 1; i += 1) {
+      state = tick(state, null);
+      expect(toView(state).captionLineId).toBe('smoke');
+      expect(toView(state).smokeFraction).toBeLessThan(1);
+    }
     state = tick(state, null);
     expect(toView(state).zoneId).toBe('upper-left');
     expect(toView(state).captionLineId).toBe('zone-upper-left');
