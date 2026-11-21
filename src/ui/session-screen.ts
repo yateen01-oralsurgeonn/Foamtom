@@ -7,6 +7,7 @@
 // Styles are set through classes or element.style only (Content-Security-Policy).
 import { getLine } from '../audio/lines';
 import type { Speaker } from '../audio/speaker';
+import { ZONE_ORDER } from '../logic/constants';
 import { MONSTERS } from '../logic/monsters';
 import type { ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
@@ -15,6 +16,7 @@ import { frameGuidance } from './frame-guidance';
 import { createMirrorFrame } from './mirror-frame';
 import { drawMonster } from './monster-art';
 import { monsterDrawState, monsterScale, smokeLook } from './monster-draw-state';
+import type { ZoneEnd } from './monster-draw-state';
 
 /** Mouth grid in mirror order: the child's right is on the right of the screen. */
 const GRID: readonly { id: ZoneId; label: string }[] = [
@@ -45,8 +47,12 @@ export interface SessionScreenHandlers {
 
 export interface SessionScreen {
   showStart(): void;
-  /** Paints one view. Shows the session panel if it is not showing. */
+  /**
+   * Paints one view. Shows the session panel if it is not showing. With a `zoneEnd`, one
+   * leaving copy of that zone's monster is drawn in the state of its outcome.
+   */
   paint(view: View): void;
+  paint(view: View, zoneEnd: ZoneEnd): void;
   hide(): void;
   /**
    * Shows a camera preview on the session panel and lets it draw the monster (it places the
@@ -132,8 +138,66 @@ export function createSessionScreen(
     return monsterEl;
   }
 
+  // At most one leaving copy exists. It is removed on `animationend`, on the next zone end,
+  // on pause, on ended and in showStart(). No timer.
+  let leavingEl: HTMLElement | null = null;
+
+  function removeLeaving(): void {
+    leavingEl?.remove();
+    leavingEl = null;
+  }
+
+  function drawLeaving(zoneEnd: ZoneEnd, view: View): void {
+    removeLeaving();
+    const def = MONSTERS.find((m) => m.id === zoneEnd.monsterId);
+    if (!def) return;
+    const state = monsterDrawState(view, zoneEnd.outcome);
+    const body = el('div', `leaving__body leaving__body--${state}`);
+    const art = drawMonster(def);
+    if (state === 'trapped') {
+      const index = ZONE_ORDER.indexOf(zoneEnd.zoneId);
+      const bubble = el('div', 'leaving__bubble');
+      bubble.classList.add(index % 2 === 0 ? 'trapped-wave' : 'trapped-sleep');
+      bubble.append(art);
+      body.append(bubble);
+    } else {
+      body.append(art);
+      const puffs = el('div', 'smoke leaving__smoke');
+      const count = state === 'defeated' ? 3 : 1;
+      const names = ['a', 'b', 'c'];
+      for (let i = 0; i < count; i += 1) {
+        puffs.append(el('span', `smoke__puff smoke__puff--${names[state === 'defeated' ? i : 1]}`));
+      }
+      body.append(puffs);
+    }
+    const copy = el('div', `leaving leaving--${state}`);
+    copy.setAttribute('aria-hidden', 'true');
+    copy.append(body);
+    body.addEventListener('animationend', (event) => {
+      if (event.target === body && copy === leavingEl) removeLeaving();
+    });
+
+    // Placement strings only; no tracking value is read.
+    const slot = currentPreview ? currentPreview.monsterSlot : null;
+    if (currentPreview && slot && slot.style.left !== '') {
+      copy.classList.add('leaving--placed');
+      copy.style.left = slot.style.left;
+      copy.style.top = slot.style.top;
+      copy.style.width = slot.style.width;
+      copy.style.transform = slot.style.transform;
+      currentPreview.element.append(copy);
+    } else {
+      const cell = cells.get(zoneEnd.zoneId);
+      if (!cell) return;
+      copy.classList.add('leaving--cell');
+      cell.append(copy);
+    }
+    leavingEl = copy;
+  }
+
   return {
     showStart(): void {
+      removeLeaving();
       startButton.disabled = false;
       spokenLineId = null;
       frame.paint(frameGuidance(null)); // a new session never starts with a lit region
@@ -143,8 +207,12 @@ export function createSessionScreen(
       screen.hidden = false;
     },
 
-    paint(view: View): void {
-      if (view.phase === 'ended') return; // the end card takes over
+    paint(view: View, zoneEnd?: ZoneEnd): void {
+      if (view.phase === 'ended') {
+        removeLeaving();
+        return; // the end card takes over
+      }
+      if (view.phase === 'paused') removeLeaving();
       screen.hidden = false;
       startPanel.hidden = true;
       sessionPanel.hidden = false;
@@ -160,6 +228,8 @@ export function createSessionScreen(
         speaker.say(view.captionLineId); // every captioned line is also spoken, once
       }
 
+      // The leaving copy is drawn where the monster was, before the stage moves on.
+      if (zoneEnd) drawLeaving(zoneEnd, view);
       for (const [id, cell] of cells) cell.classList.toggle('zone--active', id === view.zoneId);
       const activeCell = cells.get(view.zoneId);
       const monster = showMonster(view.monsterId);

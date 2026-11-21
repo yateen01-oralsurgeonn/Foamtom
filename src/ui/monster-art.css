@@ -419,3 +419,149 @@
   line-height: 1;
   color: var(--gold, #ffd966);
 }
+
+/* ---- Leaving copy: one monster leaves at the end of its zone (one-shot, 1400 ms) ---- */
+.leaving {
+  position: absolute;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+.leaving--cell {
+  left: 0;
+  right: 0;
+  top: 18px;
+}
+
+.leaving--placed {
+  align-items: center;
+}
+
+.leaving__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.leaving__smoke {
+  opacity: 0;
+  animation: leaving-puff 1400ms ease-out forwards;
+}
+
+.leaving__body--defeated {
+  animation: leaving-defeated 1400ms ease-in forwards;
+}
+
+.leaving__body--fled {
+  animation: leaving-fled 1400ms ease-in forwards;
+}
+
+.leaving__body--trapped {
+  animation: leaving-trapped 1400ms ease-in forwards;
+}
+
+.leaving__bubble {
+  position: relative;
+  padding: calc(8 * var(--u)) calc(10 * var(--u));
+  border: calc(3 * var(--u)) solid #bfe6ff;
+  border-radius: 50%;
+  background: rgba(191, 230, 255, 0.25);
+}
+
+.trapped-wave {
+  animation: leaving-wave 700ms ease-in-out 2;
+}
+
+.trapped-sleep {
+  animation: leaving-sleep 1400ms ease-in-out 1;
+}
+
+@keyframes leaving-defeated {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4) translate(0, -6px);
+  }
+}
+
+@keyframes leaving-fled {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(40px, 0);
+  }
+}
+
+@keyframes leaving-trapped {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes leaving-puff {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes leaving-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes leaving-sleep {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0, 3px);
+  }
+}
+
+@keyframes leaving-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: a leaving copy only fades, so its state still shows. */
+.fx-no-leaving .leaving__body {
+  animation: leaving-fade 1400ms ease-in forwards;
+}
+
+.fx-no-leaving .leaving__smoke,
+.fx-no-leaving .trapped-wave,
+.fx-no-leaving .trapped-sleep {
+  animation: none;
+}
+
+.fx-no-leaving .leaving__smoke {
+  opacity: 1;
+}
