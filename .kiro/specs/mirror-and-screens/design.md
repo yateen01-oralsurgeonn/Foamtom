@@ -509,7 +509,7 @@ smokeLook(f)     = f <= 0 ? { puffs: 0, scale: 0, opacity: 0 }
 
 `MIN_MONSTER_SCALE` is 0.35, the value `session-screen.ts` has now. The smoke thins in the number of
 puffs (3, 2, 1), in their size and in their opacity (req 6.5). It carries no text, score,
-colour change or sound (req 6.6): nothing outside `smokeLook` reads `smokeFraction`.
+colour change or sound (req 6.6): only `smokeLook` and `monsterDrawState` read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone`.
 
 **Zone end (req 6.1, 6.3).** `toView` describes the active zone only, so the outcome of a zone
 that just ended is not in the view. A pure helper compares two states:
@@ -1055,7 +1055,7 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 6.3 | needed for the video | Leaving copy shown once at the old zone; next monster at once; no effect on state (5.4) | `zoneEndEvents`; manual M1 |
 | 6.4 | needed for the video | `trapped-wave` and `trapped-sleep`, happy face (5.4) | `zoneEndEvents`; manual M9, M2 |
 | 6.5 | needed for the video | `smokeLook`: puffs, scale and opacity (5.4) | `scaleAndSmokeLook` |
-| 6.6 | needed for the video | Only `smokeLook` reads `smokeFraction`; no text or sound by smoke (5.4) | `scaleAndSmokeLook`, `soundCues` |
+| 6.6 | needed for the video | Only `smokeLook` and `monsterDrawState` read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone`; no text or sound by smoke (5.4) | `scaleAndSmokeLook`, `soundCues` |
 | 6.7 | needed for the video | Pure, deterministic functions (5.4) | `monsterDrawStateProperties`, `pureFilesAreClean` |
 | 6.8 | needed for the video | Every cue has a matching picture; picture is complete without sound (5.8) | `soundCues`; manual M5 with sound off: all states still show |
 | 7.1 | needed for the video | `monsterBookView` in table order, 8 then 4 (5.7) | `monsterBookView` |
