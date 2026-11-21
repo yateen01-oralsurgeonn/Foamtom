@@ -119,6 +119,27 @@ describe('isBrushingTruthTable', () => {
     }
   });
 
+  it('requires level when REQUIRE_LEVEL_MATCH is true', async () => {
+    vi.resetModules();
+    vi.doMock('../src/logic/constants', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../src/logic/constants')>()),
+      REQUIRE_LEVEL_MATCH: true,
+    }));
+    const mod = await import('../src/logic/session');
+    const zs = mod.startSession(input('camera')).zones;
+    for (const zone of zs) {
+      expect(mod.isBrushing(null, zone)).toBe(false);
+      for (const sig of everySignal()) {
+        const expected =
+          sig.handNearMouth &&
+          sig.moving &&
+          (!REQUIRE_SIDE_MATCH || sig.side === zone.side) &&
+          sig.level === zone.level;
+        expect(mod.isBrushing(sig, zone)).toBe(expected);
+      }
+    }
+  });
+
   it('ignores level when REQUIRE_LEVEL_MATCH is false', async () => {
     vi.resetModules();
     vi.doMock('../src/logic/constants', async (importOriginal) => ({
@@ -181,12 +202,18 @@ describe('healthChangesOnlyByTheRule', () => {
     expect(state.secondsUntrackedPerZone[0]).toBe(0);
   });
 
-  it('a wrong-level signal never damages the monster while level is checked', () => {
+  it('a wrong-level signal damages the monster only when REQUIRE_LEVEL_MATCH is false', () => {
+    // Zone 0 is upper right; this signal is the right side, wrong level.
     const wrongLevel: BrushingSignal = { handNearMouth: true, side: 'right', level: 'lower', moving: true };
     let state = startSession(input('camera'));
     for (let i = 0; i < 10; i++) state = tick(state, wrongLevel);
-    expect(state.monsters[0].health).toBe(H_MAX);
-    expect(state.secondsBrushedPerZone[0]).toBe(0);
+    if (REQUIRE_LEVEL_MATCH) {
+      expect(state.monsters[0].health).toBe(H_MAX);
+      expect(state.secondsBrushedPerZone[0]).toBe(0);
+    } else {
+      expect(state.monsters[0].health).toBe(H_MAX - 10 * DAMAGE_PER_SECOND);
+      expect(state.secondsBrushedPerZone[0]).toBe(10);
+    }
     expect(state.secondsUntrackedPerZone[0]).toBe(0);
   });
 });

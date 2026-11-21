@@ -23,8 +23,8 @@ export const UNTRACKED_DRAIN = 2;
 export const UNTRACKED_LIMIT = 10;
 /** Number of most recent camera-mode sessions used for miss scores (req 14.1). */
 export const MISS_WINDOW = 7;
-/** When false, level is ignored and only side is checked (req 5.7). */
-export const REQUIRE_LEVEL_MATCH = true;
+/** When false, level is ignored (req 5.7; Dr. Yatin's decision of 21 Nov 2026: level check failed on the chewing surface). */
+export const REQUIRE_LEVEL_MATCH = false;
 /** When false, side is ignored (req 5.7; Dr. Yatin's decision of 21 Nov 2026: side check failed across the face). */
 export const REQUIRE_SIDE_MATCH = false;
 
