@@ -129,3 +129,8 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   two Molar monsters / fangs on Fuzzlefang). Task 41 must not start without his answer in the prompt.
 - Build loop: b00 with SPEC=mirror-and-screens, one task per run, check-task.sh, commit, push.
 - Manual checks (browser/phone) stay unticked until Dr. Yatin does them; 32.5 phone speed is his.
+- 21 Nov ~20:30: mirror-and-screens tasks 1-31 BUILT by Kiro CLI and pushed (434 tests, 62 files); task 32.1 done.
+  Tooth shapes = option 1 (no tooth motif; f11, task 41 closed); smoke wording f11b. Open: hand checks
+  13.5, 13.6, 15.4, 16.4, 18.4, 21.4, 24.5, 28.7, 29.2, 30.3, 32.2-32.11 (32.5 phone fps row is his).
+  Later tasks 33-40 not started. Build loop script tolerates "Check by hand" boxes; note Kiro once
+  wrote "[x]31." with no space (fixed by hand).

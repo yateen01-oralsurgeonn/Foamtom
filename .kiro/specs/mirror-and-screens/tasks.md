@@ -398,7 +398,7 @@ through to the end card.
 
 - [ ] 32. **Final checks for the video**
   - Mark: needed for the video (req 1.6, 1.7, 3.1, 3.6, 4.2, 4.7, 5.3, 6.3, 6.4, 7.5, 9.3, 10, 11, 13.5, 13.6, 14).
-  - [ ] 32.1 Run `npm run test:run` and `npm run build` and report both results. Confirm that the built `dist/` title screen still loads no model or WASM file (`cameraCodeIsLazy` and `firstLoadUnder5MB` pass)
+  - [x] 32.1 Run `npm run test:run` and `npm run build` and report both results. Confirm that the built `dist/` title screen still loads no model or WASM file (`cameraCodeIsLazy` and `firstLoadUnder5MB` pass)
   - [ ] 32.2 Check by hand (M1, whole): play one timer-only and one camera session end to end. In each zone the lit corner, the lit candle, the spoken line, its caption and the monster agree; covering the face changes nothing about the glow
   - [ ] 32.3 Check by hand (M2, mood): watch a full session on a phone. Nothing appears suddenly or flashes; the cracks read as a pattern and not as a broken screen; there is no face in the fog; no screen shake; nothing looks scary to a 5-year-old
   - [ ] 32.4 Check by hand (M3, layout at 360 x 640): title screen (start, Monster Book, privacy line), end card (both buttons) and Book (all twelve cells) fit without scrolling; the phone is usable one-handed in portrait
