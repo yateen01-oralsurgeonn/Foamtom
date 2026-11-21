@@ -115,11 +115,11 @@ through to the end card.
   - Test file: `tests/sounds.test.ts`
   - Files this task may change: `src/audio/sounds.ts`, `tests/sounds.test.ts`
 
-- [ ] 6. **Sound cues (pure)**
+- [x] 6. **Sound cues (pure)**
   - Mark: needed for the video (req 10.4, 10.6).
-  - [ ] 6.1 Create `src/ui/sound-cues.ts` with `SoundCue` and `cuesFor(prev, next)` as in design section 5.8: a `defeat`, `flee` or `trapped` cue (delay 0) for each monster whose outcome changed; a `zone-start` cue at the first state and whenever the active zone index rose, with delay `CUE_GAP_MS` when it shares a tick with an outcome cue, else 0; no cue at all when `next.phase` is `ended`. It never reads the signal or the brushing speed
-  - [ ] 6.2 Test `soundCues` (design test 7): over any 120 signals-or-null in either mode, for every tick except the one that ends the session the cues hold exactly one outcome cue for each monster whose outcome changed on that tick and no other, and `zone-start` exactly when the zone changed or at the first state; a `zone-start` that shares a tick with an outcome cue has `delayMs` `CUE_GAP_MS`, otherwise 0; outcome cues have `delayMs` 0; over the session there are four `zone-start` cues; the tick that ends the session gives no cue; no outcome cue appears twice for one monster
-  - [ ] 6.3 Run `npm run test:run` and `npm run build`: both pass. Nothing plays yet, so the game is unchanged
+  - [x] 6.1 Create `src/ui/sound-cues.ts` with `SoundCue` and `cuesFor(prev, next)` as in design section 5.8: a `defeat`, `flee` or `trapped` cue (delay 0) for each monster whose outcome changed; a `zone-start` cue at the first state and whenever the active zone index rose, with delay `CUE_GAP_MS` when it shares a tick with an outcome cue, else 0; no cue at all when `next.phase` is `ended`. It never reads the signal or the brushing speed
+  - [x] 6.2 Test `soundCues` (design test 7): over any 120 signals-or-null in either mode, for every tick except the one that ends the session the cues hold exactly one outcome cue for each monster whose outcome changed on that tick and no other, and `zone-start` exactly when the zone changed or at the first state; a `zone-start` that shares a tick with an outcome cue has `delayMs` `CUE_GAP_MS`, otherwise 0; outcome cues have `delayMs` 0; over the session there are four `zone-start` cues; the tick that ends the session gives no cue; no outcome cue appears twice for one monster
+  - [x] 6.3 Run `npm run test:run` and `npm run build`: both pass. Nothing plays yet, so the game is unchanged
   - _Requirements: 10.4, 10.6, 16.2_
   - Test file: `tests/sound-cues.test.ts`
   - Files this task may change: `src/ui/sound-cues.ts`, `tests/sound-cues.test.ts`
