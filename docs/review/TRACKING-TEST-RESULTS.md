@@ -97,11 +97,11 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 |---|---|---|---|---|
 | 2026-11-21 | Mirror flip signal | Signal says `left` when the child's own left hand is raised | Pass | Left hand at left lower teeth read `left` |
 | 2026-11-21 | Mirror flip hand | Hand appears on the left of the mirrored preview | Pass | |
-| | Hand resting on sink edge | The signal follows the hand at the mouth | | |
-| | Hand touching cheek | The signal follows the hand at the mouth | | |
-| | Both hands near the mouth | Pass is `side` reading `unknown` | | |
-| | Second person behind the child | The signal does not change | | |
-| | Lights dimmed until the face is lost | Pass is `null` | | |
+| 2026-11-21 | Hand resting on sink edge | The signal follows the hand at the mouth | Pass | Other hand resting on the table |
+| 2026-11-21 | Hand touching cheek | The signal follows the hand at the mouth | Pass | No change in the reading |
+| 2026-11-21 | Both hands near the mouth | Pass is `side` reading `unknown` | Pass | Side and level both `unknown` |
+| 2026-11-21 | Second person behind the child | The signal does not change | Fail | Reported: everything looked stopped, side and level `unknown`; screenshot asked for to see handNearMouth and moving |
+| 2026-11-21 | Lights dimmed until the face is lost | Pass is `null` | Pass | Screen said null |
 
 ## 6. Counts and decision
 
