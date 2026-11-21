@@ -16,6 +16,7 @@ import type { CameraSignalSource } from './tracking/camera-source';
 import type { CameraPreview } from './ui/camera-preview';
 import type { monsterAnchor as MonsterAnchorFn } from './ui/monster-anchor';
 import { createEndCard } from './ui/end-card';
+import { startEffects } from './ui/effects-host';
 import { createGameLoop } from './ui/game-loop';
 import type { Scheduler, VisibilitySource, WakeLockHelper } from './ui/game-loop';
 import { createSessionScreen } from './ui/session-screen';
@@ -89,6 +90,19 @@ function browserBackend(): StorageBackend {
     return blocked;
   }
 }
+
+startEffects({
+  root: document.documentElement,
+  matchMedia: typeof window.matchMedia === 'function' ? (q) => window.matchMedia(q) : undefined,
+  visibility: {
+    isHidden: () => document.hidden,
+    subscribe(listener) {
+      const handler = (): void => listener(document.hidden);
+      document.addEventListener('visibilitychange', handler);
+      return () => document.removeEventListener('visibilitychange', handler);
+    },
+  },
+});
 
 if (app) {
   const speaker = createBrowserSpeaker();

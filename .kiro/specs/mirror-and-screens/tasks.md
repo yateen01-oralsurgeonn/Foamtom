@@ -155,12 +155,12 @@ through to the end card.
   - Test file: `tests/tap-targets.test.ts`, `tests/title-model.test.ts`
   - Files this task may change: `src/ui/tap-targets.ts`, `src/ui/title-model.ts`, `tests/tap-targets.test.ts`, `tests/title-model.test.ts`
 
-- [ ] 10. **Effects host: reduced motion, tab hidden, cycle variables**
+- [x] 10. **Effects host: reduced motion, tab hidden, cycle variables**
   - Mark: needed for the video (req 11.2, 11.3, 13.3).
-  - [ ] 10.1 Create `src/ui/effects-host.ts` with `startEffects({ root, matchMedia, visibility })` as in design section 5.9: write one `--cycle-<id>` variable per `LoopId` (for example `--cycle-flame-active: 1700ms`) with `setProperty`; put the classes of `effectClasses(effectsFor(...))` on the root; follow the `change` event of `(prefers-reduced-motion: reduce)`; put `fx-paused` on the root while the document is hidden and take it off when visible. `matchMedia` and the visibility source are optional; if `matchMedia` is missing or throws it uses `effectsFor(false)`. Event listeners only, no timer
-  - [ ] 10.2 In `src/main.ts` call `startEffects` once at start-up with the real `document.documentElement`, `window.matchMedia` and a small visibility adapter built from `document`. No other change to `main.ts`
-  - [ ] 10.3 Test `effectsHostFollowsPreference` (design test 13) with a fake root (`classList`-like add, remove, contains; `style.setProperty`), a fake media query that can fire `change`, and a fake visibility source: classes match the preference at start and after a change; `fx-paused` is set while hidden and cleared when visible; a missing `matchMedia` gives no classes and no error; one `--cycle-` variable is written per `LoopId` with the table's value
-  - [ ] 10.4 Run `npm run test:run` and `npm run build`: both pass. The game looks the same (no CSS uses the variables yet)
+  - [x] 10.1 Create `src/ui/effects-host.ts` with `startEffects({ root, matchMedia, visibility })` as in design section 5.9: write one `--cycle-<id>` variable per `LoopId` (for example `--cycle-flame-active: 1700ms`) with `setProperty`; put the classes of `effectClasses(effectsFor(...))` on the root; follow the `change` event of `(prefers-reduced-motion: reduce)`; put `fx-paused` on the root while the document is hidden and take it off when visible. `matchMedia` and the visibility source are optional; if `matchMedia` is missing or throws it uses `effectsFor(false)`. Event listeners only, no timer
+  - [x] 10.2 In `src/main.ts` call `startEffects` once at start-up with the real `document.documentElement`, `window.matchMedia` and a small visibility adapter built from `document`. No other change to `main.ts`
+  - [x] 10.3 Test `effectsHostFollowsPreference` (design test 13) with a fake root (`classList`-like add, remove, contains; `style.setProperty`), a fake media query that can fire `change`, and a fake visibility source: classes match the preference at start and after a change; `fx-paused` is set while hidden and cleared when visible; a missing `matchMedia` gives no classes and no error; one `--cycle-` variable is written per `LoopId` with the table's value
+  - [x] 10.4 Run `npm run test:run` and `npm run build`: both pass. The game looks the same (no CSS uses the variables yet)
   - _Requirements: 11.2, 11.3, 13.3, 15.4_
   - Test file: `tests/effects-host.test.ts`
   - Files this task may change: `src/ui/effects-host.ts`, `src/main.ts`, `tests/effects-host.test.ts`
