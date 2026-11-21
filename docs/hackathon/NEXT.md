@@ -120,3 +120,12 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   mirror smooth, monster shrinks with a small noticeable lag (by design: 1-second windows + 1 tick/s).
   10.1 fps numbers still open (options: USB remote debugging, or a ?speed=1 counter via spec change).
   hand-tracking spec otherwise COMPLETE. Next: specs mirror-and-screens and parent-screen (not yet written).
+
+## Update 21 Nov, evening (~20:00)
+
+- mirror-and-screens: requirements + decisions (b21e53b), design.md by Kiro (81193e8; context note
+  n90b), tasks.md by Kiro: 41 tasks / 242 boxes. Tasks 1-32 = needed for the video, 33-40 = later,
+  41 = tooth shapes, WAITING for Dr. Yatin (design section 10: no tooth motif / cartoon tooth on the
+  two Molar monsters / fangs on Fuzzlefang). Task 41 must not start without his answer in the prompt.
+- Build loop: b00 with SPEC=mirror-and-screens, one task per run, check-task.sh, commit, push.
+- Manual checks (browser/phone) stay unticked until Dr. Yatin does them; 32.5 phone speed is his.
