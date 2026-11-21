@@ -205,11 +205,11 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: `tests/monster-anchor.test.ts`
   - Files this task may change: `src/ui/monster-anchor.ts`, `tests/monster-anchor.test.ts`
 
-- [ ] 6. **Mirrored preview**
-  - [ ] 6.1 `src/ui/camera-preview.ts`: builds a stage `div` holding a `<video>` (`playsinline`, `muted`) and a monster layer above it. The stage is mirrored for display with one CSS class (`transform: scaleX(-1)`); the monster element carries a second `scaleX(-1)` so its art is not back to front. Exposes `attach(source)`, `placeMonster(anchor | null)` and `destroy()`. A `null` anchor puts the monster back at the plain session screen position and shows no message. It has no screenshot, recording or share control, and no export calls
-  - [ ] 6.2 `src/ui/styles.css`: add the classes for the stage, the mirror and the monster layer, with a CSS `transition` on position. Portrait first, usable in landscape and on desktop. Any control keeps a touch target of at least 48 px. Styles stay in the stylesheet or in `element.style`, so the Content-Security-Policy stays same-origin
-  - [ ] 6.3 Test (source scan, since the preview is browser code): `camera-preview.ts` contains no `toDataURL`, `toBlob`, `MediaRecorder`, `captureStream`, `console.`, `setInterval` or `setTimeout`, no `<button` that offers capture or share, and applies the mirror only through the CSS class
-  - [ ] 6.4 Nothing imports `camera-preview.ts` yet, so the game is unchanged
+- [x] 6. **Mirrored preview**
+  - [x] 6.1 `src/ui/camera-preview.ts`: builds a stage `div` holding a `<video>` (`playsinline`, `muted`) and a monster layer above it. The stage is mirrored for display with one CSS class (`transform: scaleX(-1)`); the monster element carries a second `scaleX(-1)` so its art is not back to front. Exposes `attach(source)`, `placeMonster(anchor | null)` and `destroy()`. A `null` anchor puts the monster back at the plain session screen position and shows no message. It has no screenshot, recording or share control, and no export calls
+  - [x] 6.2 `src/ui/styles.css`: add the classes for the stage, the mirror and the monster layer, with a CSS `transition` on position. Portrait first, usable in landscape and on desktop. Any control keeps a touch target of at least 48 px. Styles stay in the stylesheet or in `element.style`, so the Content-Security-Policy stays same-origin
+  - [x] 6.3 Test (source scan, since the preview is browser code): `camera-preview.ts` contains no `toDataURL`, `toBlob`, `MediaRecorder`, `captureStream`, `console.`, `setInterval` or `setTimeout`, no `<button` that offers capture or share, and applies the mirror only through the CSS class
+  - [x] 6.4 Nothing imports `camera-preview.ts` yet, so the game is unchanged
   - _Requirements: 2.3, 8.1, 8.4, 8.5, 8.7_
   - Test file: `tests/camera-preview.test.ts`
   - Files this task may change: `src/ui/camera-preview.ts`, `src/ui/styles.css`, `tests/camera-preview.test.ts`
