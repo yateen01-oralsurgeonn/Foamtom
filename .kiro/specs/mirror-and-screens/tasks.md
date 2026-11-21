@@ -306,12 +306,12 @@ through to the end card.
 
 - [ ] 24. **End card styles and wiring**
   - Mark: needed for the video (req 9, 11.3).
-  - [ ] 24.1 Create `src/ui/screens.css` with the end-card styles: both buttons visible at 360 x 640; the four monsters in a row or a 2 x 2 grid; a one-shot "into the Book" movement of `ONE_SHOT_MS.intoBook` (1200 ms) that `.fx-no-book` turns into a plain fade; the fled and trapped items use their small leaving style and look friendly; a fade-in. No colour is the only signal
-  - [ ] 24.2 Link `screens.css` from `index.html`, after the other `<link>` lines. Do not touch the Content-Security-Policy
-  - [ ] 24.3 In `src/main.ts` pass `state.monsters.map((m) => m.outcome)` as the second argument of `endCard.show`, and pass `kit.sounds` when the end card is created. No other change
-  - [ ] 24.4 The `cssGuards` test of task 12 now also reads `screens.css` and still passes
+  - [x] 24.1 Create `src/ui/screens.css` with the end-card styles: both buttons visible at 360 x 640; the four monsters in a row or a 2 x 2 grid; a one-shot "into the Book" movement of `ONE_SHOT_MS.intoBook` (1200 ms) that `.fx-no-book` turns into a plain fade; the fled and trapped items use their small leaving style and look friendly; a fade-in. No colour is the only signal
+  - [x] 24.2 Link `screens.css` from `index.html`, after the other `<link>` lines. Do not touch the Content-Security-Policy
+  - [x] 24.3 In `src/main.ts` pass `state.monsters.map((m) => m.outcome)` as the second argument of `endCard.show`, and pass `kit.sounds` when the end card is created. No other change
+  - [x] 24.4 The `cssGuards` test of task 12 now also reads `screens.css` and still passes
   - [ ] 24.5 Check by hand (M3 end-card part, M2 mood): `npm run dev`, play a full session. The end card shows the four monsters going into the Book, says "Well done! Two minutes of brushing!" and then "Two minutes. Every corner.", with both captions visible, and plays a soft closing sound. At 360 x 640 in the browser dev tools the Done button is visible without scrolling. Nothing urges another game. Tap Done: the title screen shows and nothing glows
-  - [ ] 24.6 Run `npm run test:run` and `npm run build`: both pass. The game runs through to the new end card
+  - [x] 24.6 Run `npm run test:run` and `npm run build`: both pass. The game runs through to the new end card
   - _Requirements: 9.1, 9.3, 9.4, 10.4, 11.1, 11.3, 11.5, 13.2_
   - Test file: none new (`cssGuards` and `endCardNoUrging` cover it)
   - Files this task may change: `src/ui/screens.css`, `index.html`, `src/main.ts`

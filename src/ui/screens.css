@@ -1,0 +1,139 @@
+/* Screen styles for this spec: the end card now; the title panel and the Monster Book later.
+   Loads after styles.css. Looks only. Every infinite animation takes its time from a
+   --cycle- variable; this file has none. */
+
+/* ---- End card ---- */
+.end-card {
+  gap: 14px;
+  animation: screen-fade-in 600ms ease-out both;
+}
+
+.end-card__monsters {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 10px;
+  padding-top: 20px;
+}
+
+.end-card__item {
+  --u: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  /* The monster settles into the Book: a one-shot of ONE_SHOT_MS.intoBook (1200 ms). */
+  animation: end-into-book 1200ms ease-out both;
+}
+
+.end-card__item:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.end-card__item:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.end-card__item:nth-child(4) {
+  animation-delay: 450ms;
+}
+
+.end-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Fled: a little smaller, leaning away, as if slipping off to the side. A shape cue, not a colour. */
+.end-card__item--fled .monster {
+  transform: translate(8px, 0) scale(0.85) rotate(6deg);
+}
+
+/* Trapped: sits in a small round glass bubble, with a happy face. A ring, not a colour. */
+.end-card__item--trapped .monster {
+  box-shadow: 0 0 0 6px rgba(244, 238, 252, 0.18), 0 0 0 9px rgba(244, 238, 252, 0.55);
+  transform: scale(0.85);
+}
+
+.end-card__item--defeated .monster {
+  transform: none;
+}
+
+/* The buttons: both visible at 360 x 640. */
+.end-card .small-button {
+  min-width: 128px;
+  min-height: 56px;
+  padding: 8px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 3px solid #f4eefc;
+  border-radius: 999px;
+  background: #3b2d66;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.end-card .small-button:focus-visible {
+  outline: 4px solid #ffd966;
+  outline-offset: 4px;
+}
+
+.end-card .small-button__icon {
+  font-size: 1.4rem;
+}
+
+@keyframes screen-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes end-into-book {
+  0% {
+    opacity: 0;
+    transform: translate(0, -24px);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(0, 4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes end-plain-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion: the movement into the Book becomes a plain fade. */
+.fx-no-book .end-card__item {
+  animation: end-plain-fade 1200ms ease-out both;
+}
+
+.fx-no-book .end-card {
+  animation: end-plain-fade 600ms ease-out both;
+}
+
+@media (max-height: 640px) {
+  .end-card__monsters {
+    gap: 12px 10px;
+    padding-top: 12px;
+  }
+
+  .end-card__item {
+    --u: 0.85px;
+  }
+}

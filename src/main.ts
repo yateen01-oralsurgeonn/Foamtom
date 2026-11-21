@@ -119,6 +119,7 @@ if (app) {
       },
     },
     speaker,
+    kit.sounds,
   );
 
   // The camera for the current session, loaded lazily after the start tap. Null in timer-only
@@ -234,7 +235,10 @@ if (app) {
       storage.saveSession(toSessionResult(state));
       screen.hide();
       speaker.stop();
-      endCard.show(state.monsters.map((m) => m.def));
+      endCard.show(
+        state.monsters.map((m) => m.def),
+        state.monsters.map((m) => m.outcome),
+      );
     },
     onDropped: () => {
       presenter.reset();
