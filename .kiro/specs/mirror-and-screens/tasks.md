@@ -9,7 +9,7 @@ on 4 Dec 2026 (2 pm PT).
 |-------|------|------|
 | 1 to 32 | **needed for the video** | Pure functions and their tests (1 to 9), effects host (10), the frame as guidance (11 to 13), the twelve monsters, their states and smoke (14 to 18), sounds (19 to 21), the end card (22 to 24), the Monster Book and the title screen (25 to 29), caption contrast (30), whole-spec guards (31), final checks for the video (32) |
 | 33 to 40 | **later** | The rare-monster invitation, requirement 8 (33 to 35); the parent entry point, requirement 2 (36 to 38); landscape, desktop and focus marks, requirement 12 (39); final checks for the later items (40) |
-| 41 | **waiting for Dr. Yatin** | The tooth-shape drawing work (design section 10). Nothing else waits on it |
+| 41 | **closed, 21 Nov 2026** | The tooth-shape question (design section 10). Dr. Yatin chose option 1: no drawing work |
 
 Every "needed for the video" task comes before every "later" task. Each task carries a
 `Mark:` line, and a sub-task that belongs to a different mark says so. The three "later"
@@ -505,19 +505,17 @@ through to the end card.
 
 ---
 
-## Group 3: waiting for Dr. Yatin
+## Group 3: decided by Dr. Yatin
 
-- [ ] 41. **Tooth shapes in the drawings (design section 10): waiting for Dr. Yatin**
-  - Mark: waiting for Dr. Yatin. No other task waits on this one. Until he answers, the drawings carry no tooth motif, and `fuzzlefang` is drawn with a silly tongue and no fangs, exactly as built in tasks 4, 14 and 15.
-  - [ ] 41.1 Do not start until Dr. Yatin has answered the two questions of design section 10, and the person who starts the run gives his answers in the run prompt: (a) is a friendly cartoon tooth motif wanted, for example on the two "Molar" monsters? (b) is the name "Fuzzlefang" with a fang-free drawing acceptable? If the answers are not in the prompt, stop and report. Do not guess
-  - [ ] 41.2 If (a) is no and (b) is yes, change nothing, tick this task and report that no drawing work was needed
-  - [ ] 41.3 If (a) is yes: add the motif exactly as he describes it, as a new optional shape field in `src/ui/monster-looks.ts` (shape only, no colour), drawn by `src/ui/monster-art.ts` and styled in `src/ui/monster-art.css`. It must stay a small, rounded, friendly cartoon shape: no sharp points, nothing large, nothing realistic, no wound, decay or drip, and it never claims to show individual teeth (requirement 5.3, `dental-rules.md`). It must read at the size of a Book cell and on the cheek. If (b) is no, change the drawing of `fuzzlefang` as he describes, and do not rename it: the name is approved and is not changed here
-  - [ ] 41.4 Extend `tests/monster-looks.test.ts`: the new field is in its allowed set; the twelve `shapeKey` values are still pairwise different; every rare still has a star and a crest and no common has either; the `mouth` set still has no tooth-like value
-  - [ ] 41.5 Check by hand (M9, tooth part): view the changed monsters in the Book and on the cheek. They are friendly and not scary, and nothing in them looks like decay, damage or a real tooth
-  - [ ] 41.6 Run `npm run test:run` and `npm run build`: both pass. The game runs with the changed drawings
+- [x] 41. **Tooth shapes in the drawings (design section 10): closed by Dr. Yatin's decision of 21 Nov 2026, no drawing work**
+  - Mark: closed. Dr. Yatin chose option 1 on 21 Nov 2026. No monster drawing has a tooth-like shape, including `molar-mumbler` and `midnight-molar-ghoul`. `fuzzlefang` keeps its name and is drawn with a silly tongue and no fangs. No monster name changes. This is what tasks 4, 14 and 15 already built, so nothing is changed.
+  - [x] 41.1 Dr. Yatin's answers are recorded in design section 10 (a: no tooth motif; b: the name stays, the drawing has no fangs)
+  - [x] 41.2 No drawing work needed: no file is changed for this task
+  - [x] 41.3 Not applicable: the motif is not wanted and the `fuzzlefang` drawing is not changed
+  - [x] 41.4 Not applicable: no new field, so `tests/monster-looks.test.ts` is not extended
+  - [x] 41.5 Not applicable: no drawing changed
+  - [x] 41.6 Not applicable: no code changed
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
-  - Test file: `tests/monster-looks.test.ts` (extended)
-  - Files this task may change: `src/ui/monster-looks.ts`, `src/ui/monster-art.ts`, `src/ui/monster-art.css`, `tests/monster-looks.test.ts`
 
 ---
 

@@ -474,7 +474,7 @@ shapes. Starting values (shapes only; colours stay in CSS and are not a feature)
   "by colour alone".
 - **Cute (req 5.3).** Eyes are large round circles with a small highlight. `mouth` has four
   values and none is a tooth shape. There is no value for blood, wounds, drips, fangs or
-  bulging eyes. `fuzzlefang` has a tongue, no fangs. See "Dr. Yatin to confirm".
+  bulging eyes. `fuzzlefang` has a tongue, no fangs. See section 10.
 - **Rare marks (req 5.4).** Every rare monster has the star and a crest (a different
   silhouette detail). No common monster has either.
 - **Made in code (req 5.5, 13.1).** `drawMonster(def)` builds the element from the look: class
@@ -950,7 +950,7 @@ Tests 5 to 7 reuse the session helpers of `core-brushing-loop` (`startSession`, 
 | 2 | `frameRegionLooksDiffer` | 3.4, 3.5 | `REGION_LOOKS` | `active` differs from `dim` in `glowOpacity` (higher), `glowSizePx` (larger) and `flame` (true against false), and has the larger `flickerAmplitude`; `off` has opacity 0 |
 | 3 | `glowMatchesLineAndMonster` | 3.6, 3.7, 3.8 | Any 120 signals-or-null, either mode | At every tick the active region equals `ZONE_REGION` of `toView(state).zoneId`; when the caption id is `zone-X`, X is that zone; the region does not change between a defeat and the zone end; modes give the same regions for the same zone |
 | 4 | `monsterDrawStateProperties` | 6.1, 6.2, 6.7, 15.2 | Generated `View`s and outcomes | One state for every input; `healthFraction` 1 gives `sitting`; in (0, 1) gives `shrinking`; 0 with smoke above 0 gives `defeated`; 0 with no smoke gives `gone`; `fled` and `trapped` and `defeated` outcomes give those states; the same input gives the same state |
-| 5 | `scaleAndSmokeLook` | 6.2, 6.5, 6.6, 15.2 | Generated fractions | `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1, and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff; above 0 gives at least one; `smokeLook` is the only export of its file that takes `smokeFraction` |
+| 5 | `scaleAndSmokeLook` | 6.2, 6.5, 6.6, 15.2 | Generated fractions | `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1, and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff; above 0 gives at least one; only `smokeLook` and `monsterDrawState` in its file read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone` |
 | 6 | `zoneEndEvents` | 6.1, 6.3, 6.4 | Any 120 signals-or-null, either mode | Exactly four events per session, in zone order, none `pending`; each equals the final `monsters[i].outcome`; no event on pause or resume; the number of events is the same for every signal sequence |
 | 7 | `soundCues` | 10.4, 10.6 | Any 120 signals-or-null, either mode | For every tick except the one that ends the session: the cues hold `defeat`, `flee` or `trapped` once for each monster whose outcome changed on that tick (and for no other), and `zone-start` exactly when the zone changed or at the first state; a `zone-start` that shares a tick with an outcome cue has `delayMs` equal to `CUE_GAP_MS`, otherwise 0; outcome cues have `delayMs` 0. Over the session there are four `zone-start` cues. The tick that ends the session gives no cue. Each outcome cue is the monster's final outcome, so no outcome cue appears twice |
 | 8 | `monsterLooks` | 5.1 to 5.4 | `MONSTER_LOOKS`, `MONSTERS` | Keys equal the twelve ids in order; `shapeKey` values are pairwise different; every field is in its allowed set; no `mouth` value names teeth; every rare has `star` and a crest, the four crests are different; no common has either |
@@ -1126,17 +1126,16 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 
 ---
 
-## 10. Dr. Yatin to confirm
+## 10. Decisions, 21 Nov 2026
 
-These are the only open choices. Nothing here is built on until he answers.
+Dr. Yatin answered the one open question on 21 Nov 2026 (option 1). Nothing is open.
 
-1. **Tooth shapes in the drawings (req 5.3).** `dental-rules.md` says the game never claims it
-   can see individual teeth, and req 5.3 forbids realistic or large teeth. This design draws
-   **no tooth-like shape at all**: not on `molar-mumbler`, `midnight-molar-ghoul`, or any
-   other monster, and `fuzzlefang` is drawn with a silly tongue and no fangs even though its
-   name has "fang". Dr. Yatin to confirm whether a friendly cartoon tooth motif (for example
-   on the two "Molar" monsters) is wanted, and whether the name "Fuzzlefang" with a
-   fang-free drawing is acceptable. Until he answers, the drawings carry no tooth motif.
+1. **Tooth shapes in the drawings (req 5.3).** No monster drawing has a tooth-like shape,
+   including `molar-mumbler` and `midnight-molar-ghoul`. `fuzzlefang` keeps its name and is
+   drawn with a silly tongue and no fangs. No monster name changes. His reason: the monsters
+   are plaque and leftover food, and the tooth is what the child protects, so the villain
+   never looks like a tooth. Also, there is no biting imagery for ages 5 to 9 at bedtime.
+   This is what the drawings already do, so no drawing work follows from it.
 
 No new word, number or dental rule is introduced by this design. The 19 lines approved on 21
 Nov 2026 are the complete list, and the sizes, cycle times, loudness values and look values
