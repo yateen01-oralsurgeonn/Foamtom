@@ -219,3 +219,45 @@ button.book-cell {
 .book__caption {
   min-height: 2.6rem;
 }
+
+/* ---- Title panel (task 28): portrait single column; the controls sit in the lower half. ---- */
+.panel--start {
+  min-height: min(560px, 80dvh);
+  justify-content: center;
+  gap: 18px;
+  animation: screen-fade-in 600ms ease-out both;
+}
+
+.panel--start .small-button {
+  min-width: 128px;
+  min-height: 52px;
+  padding: 8px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 3px solid #f4eefc;
+  border-radius: 999px;
+  background: #3b2d66;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.panel--start .small-button:focus-visible {
+  outline: 4px solid #ffd966;
+  outline-offset: 4px;
+}
+
+.panel--start .small-button__icon {
+  font-size: 1.3rem;
+}
+
+.title-privacy {
+  margin: 0;
+  max-width: 28ch;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: #e6dcf7;
+}

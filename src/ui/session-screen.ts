@@ -17,6 +17,7 @@ import { createMirrorFrame } from './mirror-frame';
 import { drawMonster } from './monster-art';
 import { monsterDrawState, monsterScale, smokeLook } from './monster-draw-state';
 import type { ZoneEnd } from './monster-draw-state';
+import { createTitlePanel } from './title-panel';
 
 /** Mouth grid in mirror order: the child's right is on the right of the screen. */
 const GRID: readonly { id: ZoneId; label: string }[] = [
@@ -43,6 +44,8 @@ export { drawMonster } from './monster-art';
 export interface SessionScreenHandlers {
   /** The big start button was tapped. */
   onStart: () => void;
+  /** The smaller Monster Book button on the start panel. Not shown when this is missing. */
+  onOpenBook?: () => void;
 }
 
 export interface SessionScreen {
@@ -69,15 +72,12 @@ export function createSessionScreen(
 ): SessionScreen {
   const screen = el('section', 'screen');
 
-  // Start panel
-  const startPanel = el('div', 'panel panel--start');
-  const title = el('h1', 'title', 'Foamtom: The Haunted Mirror');
-  const startButton = el('button', 'big-button');
-  startButton.type = 'button';
-  startButton.setAttribute('aria-label', 'Start brushing');
-  startButton.append(el('span', 'big-button__icon', '\u25B6'), el('span', 'big-button__label', 'Brush!'));
-  const startCaption = el('p', 'caption', getLine('start')?.caption ?? '');
-  startPanel.append(title, startButton, startCaption);
+  // Start panel (built by title-panel.ts)
+  const titlePanel = createTitlePanel(
+    { onStart: () => handlers.onStart(), onOpenBook: handlers.onOpenBook },
+    speaker,
+  );
+  const startPanel = titlePanel.element;
 
   // Session panel
   const sessionPanel = el('div', 'panel panel--session');
@@ -118,13 +118,6 @@ export function createSessionScreen(
   let monsterEl: HTMLElement | null = null;
   let spokenLineId: string | null = null;
   let currentPreview: CameraPreview | null = null;
-
-  startButton.addEventListener('click', () => {
-    startButton.disabled = true; // one tap starts one session
-    speaker.unlock(); // this tap unlocks sound
-    speaker.say('start');
-    handlers.onStart();
-  });
 
   function showMonster(monsterId: string): HTMLElement | null {
     if (drawnMonsterId === monsterId && monsterEl) return monsterEl;
@@ -198,7 +191,7 @@ export function createSessionScreen(
   return {
     showStart(): void {
       removeLeaving();
-      startButton.disabled = false;
+      titlePanel.enableStart();
       spokenLineId = null;
       frame.paint(frameGuidance(null)); // a new session never starts with a lit region
       speaker.stop();
