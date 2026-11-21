@@ -19,15 +19,15 @@ U and N both count as not right. A surface passes when at least 2 of its 3 codes
 
 | Date | Device | Browser | Face model used (detector or mesh) | HAND_POINT | Note |
 |---|---|---|---|---|---|
-| 2026-11-21 | Laptop webcam | Edge | detector | palm | Debug page, preview mirrored by CSS |
+| 2026-11-21 | Laptop webcam | Edge | detector | palm | Debug page, preview mirrored by CSS. CSP check in Chrome: no CSP errors (workers, blob:, unsafe-eval, media-src) with only wasm-unsafe-eval added; MediaPipe graphs started; one 404 (favicon) |
 
 ## 2. Hand-point comparison
 
 | Date | Hand point | Surfaces passing the side check (out of 12) | Surfaces passing the level check (out of 12) | Note |
 |---|---|---|---|---|
-| | Palm | | | |
-| | Wrist | | | |
-| | Fingertips | | | |
+| 2026-11-21 | Palm | 0 of 1 tested | 1 of 2 tested | Test stopped by Dr. Yatin's decisions of 21 Nov; side and level are no longer checked |
+| 2026-11-21 | Wrist | not tested | not tested | Stopped by decision; the camera sees the hand, not the brush head, so wrist would fail the same way |
+| 2026-11-21 | Fingertips | not tested | not tested | As above |
 
 ## 3. Side check (24 rows)
 
@@ -107,17 +107,17 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 
 | Date | Count | Side check | Level check | Note |
 |---|---|---|---|---|
-| | Surfaces passing, out of 24 | | | |
-| | Surfaces passing, right hand, out of 12 | | | |
-| | Surfaces passing, left hand, out of 12 | | | |
+| 2026-11-21 | Surfaces passing, out of 24 | 0 of 1 tested | 1 of 2 tested | Stopped by decision |
+| 2026-11-21 | Surfaces passing, right hand, out of 12 | 0 of 1 tested | 1 of 2 tested | Right hand, lower left fails side; upper right outer passes level, chewing fails |
+| 2026-11-21 | Surfaces passing, left hand, out of 12 | not tested to 3 tries | not tested to 3 tries | One try each read correctly |
 
 Verdicts, in Dr. Yatin's own words, with initials and date:
 
 Side check:
-"I have taken the two screenshots with the right hand, but the side should be shown on the left. It is showing on the right." Decision 21 Nov 2026, chosen in chat: option 1, the camera checks that the child is brushing, not which side (side is not checked; the game still tells the child which zone). Initials: 
+"I have taken the two screenshots with the right hand, but the side should be shown on the left. It is showing on the right." Decision 21 Nov 2026, chosen in chat: option 1, the camera checks that the child is brushing, not which side (side is not checked; the game still tells the child which zone). Initials: YGS, 2026-11-21.
 
 Level check:
-Failed for the chewing surface of the upper right teeth (WUW; the palm hangs below the mouth). Decision 21 Nov 2026, chosen in chat: option 1, stop the test and set `REQUIRE_LEVEL_MATCH` to `false`; the camera checks brushing at the mouth and moving, the game guides the zone. Initials: 
+Failed for the chewing surface of the upper right teeth (WUW; the palm hangs below the mouth). Decision 21 Nov 2026, chosen in chat: option 1, stop the test and set `REQUIRE_LEVEL_MATCH` to `false`; the camera checks brushing at the mouth and moving, the game guides the zone. Initials: YGS, 2026-11-21.
 
 ## 7. Speed
 
