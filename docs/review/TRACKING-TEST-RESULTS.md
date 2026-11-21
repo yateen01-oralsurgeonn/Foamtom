@@ -130,7 +130,7 @@ Failed for the chewing surface of the upper right teeth (WUW; the palm hangs bel
 
 | Date | Device model | Android version | Chrome version | Note |
 |---|---|---|---|---|
-| 2026-11-21 | Motorola Edge 50 Neo | not read yet | not read yet | Live site in Chrome, portrait and landscape |
+| 2026-11-21 | Motorola Edge 50 Neo | not read yet | not read yet | Live site in Chrome, portrait and landscape. Judged by eye (his choice): mirror smooth; monster starts shrinking with a small noticeable lag, more than a second or two. Frames per second NOT measured; 10.1 stays open |
 
 | Date | Line | Frames per second | Pass or Fail | Note |
 |---|---|---|---|---|
