@@ -18,7 +18,10 @@ browser or camera.
 - Tick granularity is 1 second.
 - `H_MAX = 60`, `DAMAGE_PER_SECOND = 3`: a normal monster is defeated after 20 s of
   matching brushing.
-- One tick rule for both modes: a `null` signal drains 2 per second.
+- One tick rule for both modes, with one difference: a `null` signal drains 2 per second in
+  camera mode, and every guided-timer second costs the monster `TIMER_ONLY_DAMAGE` (3), so a
+  guided-timer monster is defeated at 20 s and its smoke shows for the last 10 s
+  (changed 21 Nov 2026, Dr. Yatin).
 - Linear kind-proximity scaling from 100% to 60% of `H_MAX`, from the last 7 camera
   sessions.
 - Rare eligibility is decided at session start and counts the session that is starting.
@@ -276,7 +279,8 @@ tick(state, signal):
   zone, monster = the active zone and its monster
   elapsed = ZONE_DURATION - state.zoneTimeRemaining + 1
 
-  if s == null:                 damage = UNTRACKED_DRAIN (2); untracked[zone] += 1; progress = true
+  if state.mode == 'timer-only': damage = TIMER_ONLY_DAMAGE (3); untracked[zone] += 1; progress = true
+  else if s == null:            damage = UNTRACKED_DRAIN (2); untracked[zone] += 1; progress = true
   else if isBrushing(s, zone):  damage = DAMAGE_PER_SECOND (3); brushed[zone] += 1; progress = true
   else:                         damage = 0; progress = false
 
@@ -367,7 +371,8 @@ startSession(input):
 | `KIND_FLOOR_RATIO` | 0.6 | Kind-proximity floor: starting health ≥ 60% of `H_MAX` (req 14.2) |
 | `KIND_FLOOR` | 36 | `KIND_FLOOR_RATIO × H_MAX` |
 | `RESCUE_THRESHOLD` | 9 | 15% of `H_MAX`; monster at ≤ 9 health at zone end is rescued (req 14.3) |
-| `UNTRACKED_DRAIN` | 2 | Health lost per second when the signal is `null` (req 7.7); `H_MAX / ZONE_DURATION` |
+| `UNTRACKED_DRAIN` | 2 | Health lost per second when the signal is `null` in a camera-mode session (req 7.7); `H_MAX / ZONE_DURATION` |
+| `TIMER_ONLY_DAMAGE` | 3 | Health lost per second in guided-timer mode (req 8.5, 8.6); equal to `DAMAGE_PER_SECOND`; a guided-timer monster is defeated after `H_MAX / TIMER_ONLY_DAMAGE = 20` s (added 21 Nov 2026) |
 | `UNTRACKED_LIMIT` | 10 | A camera-mode zone with more untracked seconds than this is unverified (req 9.3) |
 | `MISS_WINDOW` | 7 | Number of most recent camera-mode sessions used for miss scores (req 14.1) |
 | `REQUIRE_LEVEL_MATCH` | false | `false` since 21 Nov 2026 by Dr. Yatin's decision (level check failed). When false, level is ignored (req 5.7) |
@@ -399,10 +404,12 @@ When `isBrushing(signal, activeZone)` is true, the active monster loses
 
 ### Untracked drain (req 7.7, 8.5)
 
-- When the signal is `null`, in either mode, the active monster loses
+- When the signal is `null` in a camera-mode session, the active monster loses
   `UNTRACKED_DRAIN = 2` per second. It is subtracted each tick, like camera damage.
-- Timer-only mode: every signal is `null` and every monster starts at 60, so health is
-  `60 − 2 × elapsed` and reaches 0 exactly at 30 s.
+- Timer-only mode: every signal is `null` and every monster starts at 60. Each second costs
+  `TIMER_ONLY_DAMAGE = 3`, so health is `60 − 3 × elapsed` and reaches 0 at 20 s. The smoke
+  then shows for the last 10 s of the zone (req 7.8, 8.5). Changed 21 Nov 2026 by Dr. Yatin;
+  before that the drain was 2 per second and defeat came at exactly 30 s.
 - Camera mode: a second the tracker cannot see costs the monster 2 instead of 3. Mixed
   example: 12 untracked seconds (−24) and 12 matched seconds (−36) defeat a normal
   monster.
@@ -454,7 +461,7 @@ At zone end (`zoneTimeRemaining == 0`), if the monster is still `'pending'`:
 - `health ≤ RESCUE_THRESHOLD (9)` → **fled** ('flees into smoke'; counts as beaten).
 - `health > RESCUE_THRESHOLD` → **trapped**.
 
-In timer-only mode health is 0 at zone end, so the monster is already defeated and the
+In timer-only mode health is 0 at zone end (the monster is defeated at 20 s), so the
 rescue never applies.
 
 With kind proximity (starting health = 36), a child needs to brush only
@@ -470,6 +477,9 @@ win.
   clamped to [0, 1]. It is worked out for drawing only.
 - The line "Keep brushing! Brush the smoke away!" is spoken and captioned once.
 - Nothing is won or lost: no outcome, stored value or message depends on the smoke.
+- In timer-only mode `defeatedAtElapsed` is 20, so the smoke runs for `max(1, 30 − 20) = 10`
+  seconds. Every timer second counts as progress (the tick pseudocode), so `smokeFraction`
+  falls from 1 to 0 over those 10 seconds.
 
 ---
 
@@ -619,9 +629,9 @@ use fakes or read source files. No browser or camera is needed.
 | # | Test name | Req | Input | Assertion |
 |---|---|---|---|---|
 | 1 | `isBrushingTruthTable` | 5.4–5.7 | Every signal (2 × 3 × 3 × 2 = 36) × every zone (4), plus `null` | True only when hand near, moving, side matches and level matches. With `REQUIRE_LEVEL_MATCH` false, level is ignored. `null` is never brushing. |
-| 2 | `healthChangesOnlyByTheRule` | 13.1 | 120 signals-or-null, either mode, any past sessions | Each tick: active monster changes by −3 (match), −2 (`null`), or 0 (stopping at 0 if less than that is left), never below 0; no other monster changes; health is a whole number; never increases. |
+| 2 | `healthChangesOnlyByTheRule` | 13.1 | 120 signals-or-null, either mode, any past sessions | Each tick: active monster changes by −3 (match, or any timer-only second), −2 (`null` in camera mode), or 0 (stopping at 0 if less than that is left), never below 0; no other monster changes; health is a whole number; never increases. |
 | 3 | `sessionIsExactly120Ticks` | 13.2, 13.7 | 120 signals-or-null, either mode, any past sessions | Running after each of ticks 1–119 with `activeZoneIndex == floor(ticksDone / 30)`; ended after tick 120; tick 121 returns an equal state; `durationSeconds == 120`. Ticks sent while paused change nothing. |
-| 4 | `timerOnlyDefeatsEveryMonsterAt30` | 7.7, 8.5 | Timer-only session, any past sessions | Every monster starts at 60 and is defeated on exactly the 30th tick of its zone; result has 30 brushed, 0 untracked, unverified for every zone. |
+| 4 | `timerOnlyDefeatsEveryMonsterAt20` | 8.5, 8.6, 7.8 | Timer-only session, any past sessions | Every monster starts at 60 and loses 3 per tick; it is defeated on exactly the 20th tick of its zone (`defeatedAtElapsed` 20) and not before; it stays defeated to the zone end; the smoke is showing from tick 20 to tick 30 and `smokeFraction` reaches 0 at tick 30; `TIMER_ONLY_DAMAGE` equals `DAMAGE_PER_SECOND`; result has 30 brushed, 0 untracked, unverified for every zone. (Was `timerOnlyDefeatsEveryMonsterAt30`, changed by Dr. Yatin 21 Nov 2026.) |
 | 5 | `rescueAtOrBelow9` | 13.8 | Monster with any whole health 1–60 at zone end | ≤ 9 → `fled`; > 9 → `trapped`. |
 | 6 | `resultInvariants` | 9.1–9.3, 10.1, 10.2 | 120 signals-or-null, camera mode | Per zone: brushed + untracked ≤ 30; verified exactly when untracked ≤ 10; `monstersEarned` holds all four ids. |
 | 7 | `smokeChangesNothingThatCounts` | 7.8 | Two signal sequences that differ only after a monster is defeated in its zone | Same outcome and same `monstersEarned`; `smokeFraction` stays within [0, 1]. |
@@ -638,8 +648,8 @@ use fakes or read source files. No browser or camera is needed.
 | 18 | `viewMatchesState` | 11.3–11.5 | Any state reached by ticking | `toView` countdown equals `zoneTimeRemaining`; `zoneId` is the active zone; `healthFraction` in [0, 1]. |
 | 19 | `rampGainIsGentle` | 4.4 | Times 0–5000 ms | Starts at 0; never rises faster than the set step; never exceeds the set level. |
 
-> Test 3 counts ticks; it never reads a constant back. Test 4 pins the timer-only drain:
-> 60 − 2 × 30 = 0.
+> Test 3 counts ticks; it never reads a constant back. Test 4 pins the timer-only rule:
+> 60 − 3 × 20 = 0.
 
 ### Test helpers
 

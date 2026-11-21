@@ -2,7 +2,7 @@
 
 ## Implementation plan
 
-Forty-one small tasks, in three groups. The group matters because the Kiroween video is due
+Forty-seven small tasks, in four groups. The group matters because the Kiroween video is due
 on 4 Dec 2026 (2 pm PT).
 
 | Tasks | Mark | What |
@@ -10,16 +10,23 @@ on 4 Dec 2026 (2 pm PT).
 | 1 to 32 | **needed for the video** | Pure functions and their tests (1 to 9), effects host (10), the frame as guidance (11 to 13), the twelve monsters, their states and smoke (14 to 18), sounds (19 to 21), the end card (22 to 24), the Monster Book and the title screen (25 to 29), caption contrast (30), whole-spec guards (31), final checks for the video (32) |
 | 33 to 40 | **later** | The rare-monster invitation, requirement 8 (33 to 35); the parent entry point, requirement 2 (36 to 38); landscape, desktop and focus marks, requirement 12 (39); final checks for the later items (40) |
 | 41 | **closed, 21 Nov 2026** | The tooth-shape question (design section 10). Dr. Yatin chose option 1: no drawing work |
+| 42 to 47 | **needed for the video** | Fixes after Dr. Yatin's camera session of 21 Nov 2026 (requirements Decision 8): timer-only smoke (42), no overlap of monsters (43), clearer shrink (44), hit feedback (45), smoke readability (46), and a check by hand in camera mode (47) |
 
-Every "needed for the video" task comes before every "later" task. Each task carries a
-`Mark:` line, and a sub-task that belongs to a different mark says so. The three "later"
-requirements are additive: none of tasks 1 to 32 depends on them (design section 1.1).
+Every task of group 1 comes before every task of group 2. Tasks 42 to 47 were added on 21 Nov
+2026, after the others were written. They are **needed for the video**, so they are built
+**before** tasks 33 to 40, in the order 42, 43, 44, 45, 46, 47. They need the code sub-tasks
+of tasks 13 to 18 (the frame, the monster states, the leaving copy and the presenter) to be
+done. Each task carries a `Mark:` line, and a sub-task that belongs to a different mark says
+so. The three "later" requirements are additive: none of tasks 1 to 32 or 42 to 47 depends on
+them (design section 1.1).
 
 This spec changes how things look and sound. It never changes a game rule, a number, a stored
 value, `toView`, its output type, `SignalSource`, the signal, `game-loop.ts`, or anything
-under `src/logic/`, `src/tracking/` or `src/storage/` (requirement 16.1). Between task 1 and
-task 41 the game runs after every task: the title screen opens and a timer-only session plays
-through to the end card.
+under `src/logic/`, `src/tracking/` or `src/storage/` (requirement 16.1). The one exception is
+task 42: Dr. Yatin's rule change of 21 Nov 2026 to core requirement 8.5 (requirement 16.4),
+which touches `src/logic/constants.ts` and `src/logic/session.ts` and the tests that pinned
+the old rule. Between task 1 and task 47 the game runs after every task: the title screen
+opens and a timer-only session plays through to the end card.
 
 ### Rules for every task
 
@@ -30,7 +37,9 @@ through to the end card.
 - A task changes only the files named under "Files this task may change". It never edits
   anything in `.kiro/`. It never edits `requirements.md` or `design.md`.
 - "Pre-spec tests" are the test files that exist before task 1 of this spec. No task edits
-  them. A test file that this spec creates may be extended by a later task that names it.
+  them, except task 42, which updates the pre-spec test files it names to Dr. Yatin's new
+  timer-only rule (requirement 16.4). A test file that this spec creates may be extended by a later
+  task that names it.
 - Tests are written in the same task as the code they test. Test names follow design section
   8. Test helpers (arbitraries, fakes) are written inside the test file that uses them. Where a
   test needs the session helpers of `core-brushing-loop` (`startSession`, `tick`, `pause`,
@@ -516,6 +525,86 @@ through to the end card.
   - [x] 41.5 Not applicable: no drawing changed
   - [x] 41.6 Not applicable: no code changed
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+
+---
+
+## Group 4: needed for the video, added 21 Nov 2026 (fixes after Dr. Yatin's camera session)
+
+Dr. Yatin played a camera session at the laptop while brushing (requirements Decision 8). The
+screen values recorded once a second showed the monster did shrink (72 px to 29 px wide over
+24 s), was defeated, smoke showed 23 s over the session, and the leaving copy stayed about
+1.5 s at each zone change. What he saw: "the monster is not reducing in size", and two
+monsters overlapping. Build these in the order 42, 43, 44, 45, 46, 47, before tasks 33 to 40.
+Tick nothing in tasks 1 to 41 again; they stay as they are.
+
+- [ ] 42. **Timer-only smoke: `TIMER_ONLY_DAMAGE` (core 8.5, 8.6)**
+  - Mark: needed for the video (core 7.7, 7.8, 8.5, 8.6, 13.1; requirement 16.4).
+  - [ ] 42.1 In `src/logic/constants.ts` add `export const TIMER_ONLY_DAMAGE = DAMAGE_PER_SECOND;` (value 3), with a comment naming Dr. Yatin's decision of 21 Nov 2026. `UNTRACKED_DRAIN` stays 2
+  - [ ] 42.2 In `src/logic/session.ts` change `tick` as in the core design (section 5): in timer-only mode `damage = TIMER_ONLY_DAMAGE`, the untracked count and `progress` are as before; in camera mode a `null` signal still gives `UNTRACKED_DRAIN`. No other change under `src/logic/`, and no change to `toView`, its type, `toSessionResult` or any result field (timer-only results still record 30 brushed, 0 untracked, unverified)
+  - [ ] 42.3 Update the existing tests that pinned the old rule, to the new rule, in this same task. This is a rule change by Dr. Yatin, not a weakening of a test: every assertion keeps its strength and only the numbers change. The files are:
+    - `tests/session.test.ts`: in `healthChangesOnlyByTheRule` the expected damage is `TIMER_ONLY_DAMAGE` for every timer-only tick, `UNTRACKED_DRAIN` for a `null` signal in camera mode, `DAMAGE_PER_SECOND` for a match, 0 otherwise; the describe `timerOnlyDefeatsEveryMonsterAt30` becomes `timerOnlyDefeatsEveryMonsterAt20`: health is `60 - 3 * tickInZone`, the outcome is `pending` with `defeatedAtElapsed` null before tick 20 and `defeated` with `defeatedAtElapsed` 20 from tick 20 to the zone end, and every monster is `defeated` at health 0 at the end
+    - `tests/view.test.ts`: the test 'timer-only: the monster is defeated on the 30th tick of its zone, with no smoke line' becomes 'timer-only: the monster is defeated on the 20th tick of its zone, the smoke line shows from tick 20, and `smokeFraction` falls from 1 to 0 by tick 30', with the zone line still shown up to tick 19 and the next zone's line right after tick 30
+    - `tests/sound-cues.test.ts`: the test 'puts defeat and the next zone-start on one tick in timer-only mode, a gap apart' becomes: in timer-only mode the `defeat` cue is given at tick 20 of a zone with no `zone-start`, and the next `zone-start` at tick 30 has `delayMs` 0 (no outcome cue shares that tick); the camera-mode case where a `fled` or `trapped` cue shares a tick with `zone-start` and gets `CUE_GAP_MS` stays covered by the generated-session property of `soundCues`
+    - `tests/constants.test.ts`: keep `UNTRACKED_DRAIN * ZONE_DURATION === H_MAX`; add `TIMER_ONLY_DAMAGE === DAMAGE_PER_SECOND` and `H_MAX / TIMER_ONLY_DAMAGE === 20`
+    - `tests/session-result.test.ts`: only the test label `timerOnlyDefeatsEveryMonsterAt30: ...` is renamed `timerOnlyDefeatsEveryMonsterAt20: ...`; its assertions (30 brushed, 0 untracked, unverified, outcome `defeated`) stay as they are
+    - `tests/lines.test.ts` is not edited. It still passes (the smoke line is now also produced in timer-only mode); its comment 'monster defeated at 30 s only, so no smoke' is stale and is left alone by the mirror spec's rule that this file is not changed. Say so in the report
+  - [ ] 42.4 Run `npm run test:run`. If any other test fails because it asserted the old timer-only rule (defeat at 30 s, drain 2 in timer-only mode), list it by name in the report and update it the same way. If any test fails for another reason, stop and report. Do not weaken any test
+  - [ ] 42.5 Check by hand: `npm run dev`, a timer-only session. In the first zone the monster is full size at the start and turns to smoke at 20 s, the line 'Keep brushing! Brush the smoke away!' is spoken and captioned once, the smoke thins over the last 10 s, the zone still ends at 30 s, and the end card still shows four monsters. The frame glow stays on the zone all the time
+  - [ ] 42.6 Run `npm run test:run` and `npm run build`: both pass
+  - _Requirements: core 7.7, 7.8, 8.5, 8.6, 13.1; 16.4_
+  - Test files: `tests/session.test.ts`, `tests/view.test.ts`, `tests/sound-cues.test.ts`, `tests/constants.test.ts`, `tests/session-result.test.ts` (label only)
+  - Files this task may change: `src/logic/constants.ts`, `src/logic/session.ts`, the five test files above (and any other test that fails only because it asserted the old rule, named in the report)
+
+- [ ] 43. **No overlap: the next monster waits for the leaving copy**
+  - Mark: needed for the video (req 6.3, 6.13, 3.6, 15.12).
+  - [ ] 43.1 Create `src/ui/leaving-gate.ts` (pure) as in design section 5.12: `LeavingGate`, `MAX_LEAVING_PAINTS` (2), `GATE_OPEN`, `gateOnPaint(gate, { zoneEnd, phase })`, `gateOnAnimationEnd(gate)`, `nextMonsterVisible(gate)`. No DOM, no clock, no timer, no randomness
+  - [ ] 43.2 In `src/ui/session-screen.ts` keep one gate. In each `paint(view, zoneEnd?)` apply `gateOnPaint`, hide the live monster element with the `hidden` attribute while `!nextMonsterVisible(gate)` (so its name is not read either), and show it again from the last painted view when the gate opens. The copy's `animationend` handler removes the copy, calls `gateOnAnimationEnd` and re-shows the monster. The glow, caption, spoken line and sound cues still change at the zone end exactly as before, and the timer is not touched. Removing the copy on pause, on `ended`, on a new zone end and in `showStart()` also resets the gate. Both modes and reduced motion use the same code. No `setTimeout`, `setInterval` or `requestAnimationFrame`
+  - [ ] 43.3 Test `nextMonsterWaitsForLeavingCopy` (design test 36), in both modes: at the paint that carries a zone end the next monster is not visible; it stays hidden until `gateOnAnimationEnd`; with no `animationend` it is visible at the second paint after the zone end at the latest (never hidden at a third paint); pause, `ended` and reset open the gate at once; a second zone end replaces the first. Drive it from generated sessions (zone ends from `zoneEndEvent`). Add a source scan: `session-screen.ts` uses `gateOnPaint`, `gateOnAnimationEnd` and `nextMonsterVisible`, sets `hidden` on the live monster, and has no timer call
+  - [ ] 43.4 Extend `tests/leaving-copy.test.ts` only if it asserts that the next monster shows at once (update that line to the gate rule); otherwise leave it
+  - [ ] 43.5 Run `npm run test:run` and `npm run build`: both pass. The game runs
+  - _Requirements: 3.6, 6.3, 6.13, 15.12_
+  - Test file: `tests/leaving-gate.test.ts`
+  - Files this task may change: `src/ui/leaving-gate.ts`, `src/ui/session-screen.ts`, `tests/leaving-gate.test.ts`, `tests/leaving-copy.test.ts` (the one line, only if needed)
+
+- [ ] 44. **Clearer shrink: `MIN_MONSTER_SCALE` 0.2**
+  - Mark: needed for the video (req 6.2, 6.11).
+  - [ ] 44.1 In `src/ui/monster-draw-state.ts` change `MIN_MONSTER_SCALE` from 0.35 to 0.2. The monster is still never at zero before it is defeated
+  - [ ] 44.2 Extend `tests/monster-draw-state.test.ts` (`scaleAndSmokeLook`, design test 5): `MIN_MONSTER_SCALE` is 0.2; `monsterScale(0)` is 0.2 and `monsterScale(1)` is 1; the existing never-below-floor, never-above-1 and never-rises properties stay. Update any assertion in that file that still reads the number 0.35 (it was this spec's own value, not a core or hand-tracking rule)
+  - [ ] 44.3 Run `npm run test:run` and `npm run build`: both pass. The monster now shrinks to a fifth of its size
+  - _Requirements: 6.2, 6.11, 15.2_
+  - Test file: `tests/monster-draw-state.test.ts` (extended)
+  - Files this task may change: `src/ui/monster-draw-state.ts`, `tests/monster-draw-state.test.ts`
+
+- [ ] 45. **Hit feedback: a short flinch on every tick that lowers health**
+  - Mark: needed for the video (req 6.9, 6.10, 11.3, 11.9, 15.11).
+  - [ ] 45.1 Create `src/ui/hit-feedback.ts` (pure) as in design section 5.11: `isHit(prevView, view)` (true only when both views exist, `zoneId` and `monsterId` are equal and `healthFraction` is lower) and `hitClassFor(hit, effects, flip)` (`null` when not a hit or when `effects.hitMotion` is false, else `monster--hit-a` or `monster--hit-b` by `flip`). No DOM, no clock, no timer, no randomness
+  - [ ] 45.2 In `src/ui/effects.ts` add `ONE_SHOT_MS.hit = 300`, and add the field `hitMotion` to `Effects` (`!reduced`), with the class `fx-no-hit` in `effectClasses`. Update `tests/effects.test.ts` for the new field: `effectsFor(true)` now has six moving fields false and four state fields true, `effectsFor(false)` all ten true, `effectClasses` lists the extra class. This extends the test of task 1 by one field; every old assertion stays
+  - [ ] 45.3 In `src/ui/session-screen.ts` keep the last painted view (cleared in `showStart()`, on `ended` and on reset) and a boolean `flip`. In `paint`, when the monster is shown (the leaving gate of task 43 is open and the draw state is `sitting` or `shrinking`), put the class from `hitClassFor(isHit(lastView, view), effects, flip)` on the live monster element's inner drawing (not on the slot the anchor positions), toggle `flip` on each hit, and remove both classes when there is no hit. No timer, no forced reflow. The painter gets `effects` from the same `effectsFor` value that `effects-host.ts` uses, passed in by `main.ts`
+  - [ ] 45.4 In `src/ui/monster-art.css` add the one-shot hit animation: two identical keyframe sets with different names (`hit-squash-a`, `hit-squash-b`), 300 ms taken from `ONE_SHOT_MS.hit`, a quick squash (about 1.12 wide by 0.9 tall) and a small wobble of a few degrees on `transform` only, never `infinite`, no colour or brightness change, no text; `.fx-no-hit` sets `animation: none` for both classes. In `src/ui/effects-host.ts` nothing changes beyond what `effectClasses` already returns
+  - [ ] 45.5 Test `hitOnlyWhenHealthDrops` (design test 33): `isHit` is true exactly when both views exist, the zone and monster are equal and `healthFraction` is lower; false when equal, higher or either view is `null`; over generated sessions in both modes, at most one hit per tick
+  - [ ] 45.6 Test `noHitOnZoneChange` (design test 34): false whenever `zoneId` or `monsterId` differs; over generated sessions in both modes no tick on which the zone changes is a hit
+  - [ ] 45.7 Test `noHitWhenReducedMotion` (design test 35): `hitClassFor` is `null` for every input when `effectsFor(true)`; with `effectsFor(false)` hits alternate `monster--hit-a` and `monster--hit-b`; `ONE_SHOT_MS.hit` is at most 300; the hit rules in `monster-art.css` have no `infinite`, use only `transform` in their keyframes, and `.fx-no-hit` sets `animation: none`. Extend `tests/css-guards.test.ts` only if its flash-rate part needs the new `ONE_SHOT_MS` entry (it should not)
+  - [ ] 45.8 Run `npm run test:run` and `npm run build`: both pass. In a session each brushing tick now flinches the monster
+  - _Requirements: 6.9, 6.10, 11.2, 11.3, 11.9, 15.4, 15.11_
+  - Test file: `tests/hit-feedback.test.ts`
+  - Files this task may change: `src/ui/hit-feedback.ts`, `src/ui/effects.ts`, `src/ui/session-screen.ts`, `src/ui/monster-art.css`, `src/main.ts` (only to pass the effects value), `tests/hit-feedback.test.ts`, `tests/effects.test.ts` (the one new field), `tests/css-guards.test.ts` (only if needed)
+
+- [ ] 46. **Smoke readable over the camera picture (small change only)**
+  - Mark: needed for the video (req 6.12).
+  - [ ] 46.1 In `src/ui/monster-art.css` make the smoke puffs about 20 % larger (the puff size is multiplied by 1.2) and replace the near-white puff border with a mid-lilac one (starting value `#8a6fc4`, about 4:1 against white; adjust only if the test below fails). The smoke's colour family, puff counts, thinning rule, drift and opacity rules do not change, and `smokeLook` in `monster-draw-state.ts` is not touched
+  - [ ] 46.2 Test `smokeOutlineReadable` (design test 37): the puff outline is a 6-digit hex whose contrast ratio against white is at least 3 to 1 and that is not near-white; the puff rule holds the new 1.2 size multiplier; `scaleAndSmokeLook` still passes unchanged (puff counts and thinning)
+  - [ ] 46.3 Run `npm run test:run` and `npm run build`: both pass
+  - _Requirements: 6.5, 6.6, 6.12_
+  - Test file: `tests/smoke-outline.test.ts`
+  - Files this task may change: `src/ui/monster-art.css`, `tests/smoke-outline.test.ts`
+
+- [ ] 47. **Check by hand (camera)**
+  - Mark: needed for the video (req 6.9, 6.11, 6.12, 6.13, 11.9; design M11).
+  - [ ] 47.1 Check by hand: `npm run dev`, a camera session on the laptop, brush one zone. Each brushing second the monster visibly flinches once, and it shrinks clearly, down to about a fifth of its size. The smoke is easy to see over the camera picture. At a zone change no two monsters are on screen at once: the old one leaves, then the new one appears within about 2 s, while the glow, caption and voice change at the zone end. Do the same with "reduce motion" on: no flinch, the size change and smoke still show, and the new monster still appears. Do the same in a timer-only session: the monster turns to smoke at 20 s
+  - [ ] 47.2 Run `npm run test:run` and `npm run build` and report both results
+  - _Requirements: 6.9, 6.11, 6.12, 6.13, 11.9_
+  - Test file: none new
+  - Files this task may change: none
 
 ---
 

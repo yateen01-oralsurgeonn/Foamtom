@@ -192,9 +192,10 @@ or the signal is `null`.
 
 6.3 IF the signal is present and does not fully match the active zone (per 5.4),
 including when a field that requirement 5.7 requires is `unknown`, THE SYSTEM SHALL NOT reduce the active monster's
-health. IF the signal is `null`, in either mode, THE SYSTEM SHALL reduce the active
-monster's health by the untracked drain (requirement 7.7) and SHALL count that second as
-an untracked second for the zone.
+health. IF the signal is `null`, in either mode, THE SYSTEM SHALL count that second as
+an untracked second for the zone. In a camera-mode session THE SYSTEM SHALL also reduce
+the active monster's health by the untracked drain (requirement 7.7). In guided-timer
+mode THE SYSTEM SHALL instead reduce it by `TIMER_ONLY_DAMAGE` (requirement 8.5).
 
 ---
 
@@ -220,17 +221,18 @@ monster as **trapped** (not defeated).
 7.6 Every monster SHALL live in one table (`src/logic/monsters.ts`) with the fields: id,
 name, rarity, and unlock rule.
 
-7.7 WHILE the signal is `null` (guided-timer mode, or camera mode when the tracker cannot
-see the child) THE SYSTEM SHALL reduce the active monster's health by 2 per second (the
-untracked drain), so that a normal-strength monster reaches zero at exactly 30 seconds of
-untracked time. Health SHALL never increase.
+7.7 WHILE the signal is `null` in a camera-mode session (the tracker cannot see the
+child) THE SYSTEM SHALL reduce the active monster's health by 2 per second (the untracked
+drain), so that a normal-strength monster reaches zero after 30 seconds of untracked time.
+Health SHALL never increase. (Guided-timer mode is covered by requirement 8.5.)
 
 7.8 WHEN a monster is defeated before its zone's 30 seconds end THE SYSTEM SHALL keep
 that monster's smoke over the zone until the zone ends, and SHALL speak and caption,
 once, the line 'Keep brushing! Brush the smoke away!'. WHILE the smoke is shown, each
 brushed second and each untracked second SHALL thin the smoke. The smoke SHALL carry no
 win or lose: no outcome, reward, stored value or message SHALL depend on how much smoke
-is left, and the zone SHALL still end at 30 seconds.
+is left, and the zone SHALL still end at 30 seconds. In guided-timer mode every second
+SHALL thin the smoke (requirement 8.5), because every second is a timer second.
 
 ---
 
@@ -255,8 +257,16 @@ any prompt or nag for camera permission.
 announcement, every Monster Book unlock rule works identically to camera mode.
 
 8.5 WHILE in guided-timer mode every monster SHALL start at normal health (kind proximity
-is not applied) and SHALL lose 2 health per second (per 7.7), so that it is defeated
-exactly at the end of its 30 seconds.
+is not applied) and SHALL lose `DAMAGE_PER_SECOND` (3) health per second, so that it is
+defeated after 20 seconds of its zone. Its smoke SHALL then show for the last 10 seconds
+of the zone, with the line of requirement 7.8 ('Keep brushing! Brush the smoke away!').
+This rule changed on 21 Nov 2026 by Dr. Yatin's decision (it was 2 per second and
+defeat at 30 seconds), so that the smoke can be seen in a guided-timer session. It is a
+rule change, not a weakening of a test.
+
+8.6 THE SYSTEM SHALL hold a constant `TIMER_ONLY_DAMAGE`, equal to `DAMAGE_PER_SECOND`
+(3), as the health lost per second in guided-timer mode (requirement 8.5). It is a
+separate name so that the two rules can be read and tested apart.
 
 ---
 
@@ -441,7 +451,8 @@ any arbitrary input sequence.
 13.1 **Monster health:** For any sequence of 120 signals, in either mode, and for any
 history of past sessions: on every second the active monster's health SHALL change by
 exactly −3 when the signal matches the active zone (per 5.4), by exactly −2 when the
-signal is `null`, and by 0 otherwise, never going below zero. Only the active zone's
+signal is `null` in camera mode, by exactly −3 (`TIMER_ONLY_DAMAGE`) on every second of
+guided-timer mode, and by 0 otherwise, never going below zero. Only the active zone's
 monster SHALL change. Health SHALL always be a whole number and SHALL never increase.
 
 13.2 **Session duration:** For any sequence of signals, in either mode: after each of
@@ -602,7 +613,8 @@ reflected in the requirements above.
 
 3. **Timer-only monster health:** in guided-timer mode the active monster's health drains
    with the zone timer so it is always defeated by the end of its 30 seconds (requirements
-   7.7 and 8.5).
+   7.7 and 8.5). *Changed on 21 Nov 2026: see "Decisions (2026-11-21)" below. It is now
+   defeated at 20 seconds.*
 
 4. **Timer-only session recording:** timer-only sessions are flagged and their seconds per
    zone are marked unverified, not counted as verified brushing (requirement 9.3).
@@ -632,3 +644,17 @@ Confirmed with Dr. Yatin Shinde on 15 November 2026 after the spec review
    parent-screen).
 7. If the hand-tracking test shows upper and lower cannot be told apart: side-only
    checking, and parents are told (requirement 5.7).
+
+
+## Decisions (2026-11-21)
+
+Dr. Yatin Shinde decided this on 21 November 2026, after he played a camera session at the
+laptop while brushing (needed for the video).
+
+1. **Timer-only smoke.** In guided-timer mode the monster loses `DAMAGE_PER_SECOND` (3) per
+   second, so it is defeated at 20 seconds and its smoke shows for the last 10 seconds, with
+   the existing line 'Keep brushing! Brush the smoke away!' (requirements 7.8, 8.5, 8.6).
+   Reason: the smoke was never seen in a guided-timer session, because the monster was
+   defeated on the last second. A second, camera-mode second with no tracking keeps the
+   untracked drain of 2 (requirement 7.7). The old test rule 'defeated exactly at 30
+   seconds' is replaced by this one; the tests that pinned it are updated in the same task.

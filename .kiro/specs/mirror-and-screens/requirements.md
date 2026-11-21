@@ -14,8 +14,10 @@ can do so. That is what makes this a Costume Contest entry: the haunting interfa
 the app work.
 
 This spec changes **how things look and sound**. It does not change any game rule, number,
-stored value or test of `core-brushing-loop` or `hand-tracking`. The title screen, camera
-preview (`src/ui/camera-preview.ts`), monster anchor (`src/ui/monster-anchor.ts`), session
+stored value or test of `core-brushing-loop` or `hand-tracking`, with one exception: the
+timer-only monster rule of core requirement 8.5, changed by Dr. Yatin on 21 Nov 2026
+(requirement 16.4). The title screen, camera preview (`src/ui/camera-preview.ts`), monster
+anchor (`src/ui/monster-anchor.ts`), session
 screen (`src/ui/session-screen.ts`) and end card (`src/ui/end-card.ts`) already exist. This
 spec restyles and extends them; it does not replace their behaviour or change their tests.
 
@@ -184,8 +186,9 @@ size of the glow, and a lit-candle ornament (or an equally clear shape) that is 
 active region only.
 
 3.6 WHEN a zone becomes active THE SYSTEM SHALL move the glow to the new region at the same
-moment the zone's line is spoken and captioned and the zone's monster appears, so that the
-three agree.
+moment the zone's line is spoken and captioned, so that the two agree. The zone's monster
+appears at that moment too, except that it waits for the previous zone's leaving copy to
+go (requirement 6.13).
 
 3.7 WHILE a zone is active, including after its monster is defeated and its smoke is
 showing (core requirement 7.8), THE glow SHALL stay on that zone's region until the zone
@@ -297,8 +300,9 @@ the monster's outcome. The design SHALL get the outcome to the function without 
 
 6.3 WHEN a zone ends THE monster of that zone SHALL be shown once, briefly, in the state
 for its outcome (defeated: dissolves into smoke; fled: slips away as smoke; trapped: caught
-by the mirror), and the next zone's monster SHALL appear at once. This animation SHALL NOT
-delay, pause or shorten the timer or the next zone (core requirement 2.5).
+by the mirror), and the next zone's monster SHALL appear as soon as that leaving copy is
+gone (requirement 6.13). This animation SHALL NOT delay, pause or shorten the timer or the
+next zone (core requirement 2.5).
 
 6.4 THE trapped state SHALL be friendly: the monster waves, or sleeps, inside the glass. It
 SHALL NOT look sad, hurt or punished, and nothing SHALL say or show that the child failed.
@@ -316,6 +320,40 @@ same state. `monsterDrawState` SHALL have no DOM, no clock and no randomness.
 
 6.8 THE sound that goes with a monster leaving is covered by requirement 10. The picture
 SHALL be complete without the sound.
+
+6.9 (Hit feedback.) WHEN a tick makes the active monster's health go down THE monster SHALL
+play one short "hit" flinch: a quick squash and wobble, a one-shot CSS animation of at
+most 300 ms. The flinch SHALL carry no text, no score, no colour change and no new sound
+(the existing cues of requirement 10.4 only). Its purpose is to make each brushing second
+visible, because the size change alone is small and the anchor's size jitter hides it
+(Decision 8).
+
+6.10 THE decision to flinch SHALL be one pure function, `isHit(prevView, view)`. It SHALL be
+true only when both views exist, `zoneId` is the same, `monsterId` is the same and
+`healthFraction` is lower in `view` than in `prevView`; otherwise false. A zone change is
+therefore never a hit. THE painter SHALL restart the animation by a class swap on the next
+paint, with no timer and no forced reflow. A flinch SHALL be applied only to a monster that
+is shown (requirement 6.13).
+
+6.11 `MIN_MONSTER_SCALE` SHALL be 0.2 (it was 0.35), so that the shrink is clearly visible
+(Decision 8). It remains above zero: the monster SHALL NOT vanish before it is defeated
+(requirement 6.2).
+
+6.12 THE smoke puffs SHALL be about 20 % larger than before and SHALL have a darker outline,
+so that they read over a bright camera picture: a mid-lilac border instead of the near-white
+one. THE smoke's colour family, puff counts (requirement 6.5) and thinning rule SHALL NOT
+change, and requirement 6.6 still holds.
+
+6.13 WHILE a leaving copy of a zone's monster exists (requirement 6.3), THE SYSTEM SHALL NOT
+show the next zone's monster, nor its name (the monster element stays hidden, so a screen
+reader does not read it either). THE next monster SHALL appear when the leaving copy is
+removed: on the copy's `animationend`, or at the latest on the second paint after the paint
+that carried the zone end (so after at most about 2 s, counting one paint per second). No
+timer SHALL be used. This holds in camera mode and in timer-only mode, and with reduced
+motion (where `animationend` may never arrive). The frame glow, the caption and the spoken
+line SHALL still change at the zone end, as before (requirement 3.6), and the zone timer is
+not touched (core requirement 2.5). When the leaving copy is removed for another reason
+(pause, session end, a new zone end, back to the title screen), the gate opens at once.
 
 ---
 
@@ -483,7 +521,7 @@ change in brightness, never a switch between light and dark.
 
 11.3 WHEN the device asks for reduced motion (`prefers-reduced-motion: reduce`) THE SYSTEM
 SHALL turn off the candle flicker, the fog drift, the smoke drift, the monster leaving
-animations and the end-card "going into the Book" movement. THE game SHALL still show every
+animations, the hit flinch (requirements 6.9 and 11.9) and the end-card "going into the Book" movement. THE game SHALL still show every
 state: the active region stays lit with its ornament (requirement 3.5), the monster still
 changes size with its health, and the smoke still thins. A state change MAY use a plain fade
 or no transition. WHEN the preference changes while the game is open, THE SYSTEM SHALL
@@ -504,6 +542,13 @@ over the fog and the frame.
 
 11.8 THE frame, fog and cracks SHALL be hidden from screen readers (decorative). The
 caption of the active zone is what a screen reader reads.
+
+11.9 THE hit flinch (requirement 6.9) SHALL be a one-shot of at most 300 ms and SHALL happen
+at most once per tick, so at most one hit a second by construction; it is therefore never
+faster than the three-a-second limit of requirement 11.2, and it is a change of size and
+position, never of light and dark. WHEN the device asks for reduced motion THE SYSTEM SHALL
+NOT play the flinch (requirement 11.3 lists it among the moving effects that are turned
+off); the monster's size change still shows.
 
 ---
 
@@ -659,7 +704,23 @@ has no mute control (Decision 5).
 
 15.10 **Nothing broken:** every existing test SHALL pass unchanged, in particular
 `view.test.ts`, `lines.test.ts`, `camera-preview.test.ts`, `monster-anchor.test.ts`,
-`privacy-guard.test.ts`, `tracking-guards.test.ts` and `csp.test.ts`.
+`privacy-guard.test.ts`, `tracking-guards.test.ts` and `csp.test.ts`. (The exception of
+requirement 16.4 changes the tests it names, and only those.)
+
+15.11 **Hit feedback:** `isHit` SHALL be tested with generated views. `hitOnlyWhenHealthDrops`:
+true exactly when both views exist, the zone and the monster are the same and
+`healthFraction` is lower; false when equal or higher. `noHitOnZoneChange`: false whenever
+`zoneId` or `monsterId` differs, and over a whole session (either mode) no zone-change tick
+is a hit. `noHitWhenReducedMotion`: with reduced motion the flinch is never played, whatever
+the views. Over a whole session at most one hit happens per tick, and the flinch time is at
+most 300 ms (requirement 11.9).
+
+15.12 **Next monster waits:** `nextMonsterWaitsForLeavingCopy` SHALL test the pure leaving
+gate (requirement 6.13), in both modes: at the paint that carries a zone end the next
+monster is not visible; it stays hidden until the copy's `animationend`; if no `animationend`
+comes (reduced motion) it is visible at the second paint after the zone end at the latest;
+it is visible at once on pause, session end and reset; no zone end ever leaves the gate shut
+for a third paint.
 
 ---
 
@@ -672,7 +733,8 @@ and the game numbers stay as I set them.**
 
 16.1 THIS spec SHALL NOT change any game rule, constant, number, stored value, storage
 schema, or test of `core-brushing-loop` or `hand-tracking`, and SHALL NOT change
-`toView`, its output type, `SignalSource`, or the signal.
+`toView`, its output type, `SignalSource`, or the signal. The one exception is
+requirement 16.4.
 
 16.2 THE new pure functions (`frameGuidance`, `monsterDrawState`, `monsterBookView`,
 `effectsFor`) SHALL have no DOM, no clock and no randomness. They MAY import from
@@ -680,6 +742,15 @@ schema, or test of `core-brushing-loop` or `hand-tracking`, and SHALL NOT change
 
 16.3 THE screens SHALL NOT make their own game decisions. What is drawn comes from the
 pure functions above; the screens only paint.
+
+16.4 THE one game-rule change made through this spec is core requirement 8.5 (timer-only
+monsters lose `DAMAGE_PER_SECOND` per second, are defeated at 20 s, and show smoke for the
+last 10 s), with the new constant `TIMER_ONLY_DAMAGE` (core requirement 8.6). Dr. Yatin
+decided it on 21 Nov 2026 (Decision 8). It SHALL be built in the one task that names the
+core files and the core tests that pinned the old rule (task 42). Those tests are changed to
+the new rule; that is a rule change by Dr. Yatin, not a weakening of a test. Nothing else
+under `src/logic/` changes, and `toView`, its output type, `SignalSource` and the signal
+stay as they are.
 
 ---
 
@@ -704,6 +775,18 @@ these decisions.
    14.1).
 7. **Smallest phone.** The 360 x 640 px portrait viewport assumption stands
    (requirements 1.6 and 9.3).
+
+8. **Fixes after the camera session of 21 Nov 2026 (all needed for the video).** Dr. Yatin
+   played a camera session at the laptop while brushing. The screen values recorded once a
+   second showed that the monster did shrink (72 px to 29 px wide over 24 s) and was
+   defeated, but he saw that "the monster is not reducing in size" and that two monsters
+   overlapped. The shrink is small per second and the anchor's size jitter hides it; in
+   camera mode the leaving copy and the next monster sit on the same cheek. He decided:
+   (1) a short hit flinch on every tick that lowers the monster's health (requirements 6.9,
+   6.10, 11.9, 15.11); (2) `MIN_MONSTER_SCALE` 0.35 to 0.2 (6.11); (3) a small smoke change
+   only: puffs about 20 % larger and a mid-lilac outline (6.12); (4) no overlap: the next
+   monster waits for the leaving copy (3.6, 6.3, 6.13, 15.12); (5) timer-only smoke: the
+   timer-only monster loses 3 per second and is defeated at 20 s (core 8.5, 8.6; 16.4).
 
 ---
 

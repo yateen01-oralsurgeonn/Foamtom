@@ -17,8 +17,10 @@ things from `core-brushing-loop` and `hand-tracking`: `BrushingSignal`, `SignalS
 `SessionResult`, `SessionState`, `View` and `toView`, the tick rule, every constant in
 `src/logic/constants.ts`, the storage schema `foamtom:v1`, `GAIN_LEVEL`, `GAIN_STEP_PER_MS` and
 `rampGain` (`src/audio/speaker.ts`), `drawMonster`'s signature, `monsterAnchor`, the 8-second
-start limit, and the CSP in `index.html`. Nothing under `src/logic/` changes. `game-loop.ts`
-does not change.
+start limit, and the CSP in `index.html`. Nothing under `src/logic/` changes, with one
+exception: the timer-only monster rule of core requirement 8.5 (task 42, requirement 16.4,
+Decision 8 of 21 Nov 2026), which touches `src/logic/constants.ts` and `src/logic/session.ts`
+only. `game-loop.ts` does not change.
 
 Everything decided by data is a pure function with a named test (req 15, 16.2). The screens
 only paint what those functions return (req 16.3). Nothing drawn or played reads the camera
@@ -45,6 +47,11 @@ only paint what those functions return (req 16.3). Nothing drawn or played reads
   `camera-preview.ts` today.
 - No new words. Every text the child or parent sees or hears is one of the 19 approved lines
   (req 14.1).
+- **Fixes of 21 Nov 2026 (section 5.11, 5.12; Decision 8):** two new pure files, `isHit` in
+  `src/ui/hit-feedback.ts` and the leaving gate in `src/ui/leaving-gate.ts`; the flinch is a
+  CSS class swap, the gate is a two-field state moved by paints and by `animationend`, and
+  neither uses a timer. `MIN_MONSTER_SCALE` becomes 0.2. The smoke changes in CSS only.
+  Timer-only monsters are defeated at 20 s (core 8.5).
 - Every design element carries its requirement's mark, **needed for the video** or **later**
   (section 1.1), so the task list can build everything the video needs first (deadline 4 Dec
   2026).
@@ -197,8 +204,10 @@ Every row has a mark (section 1.1). "Mark" is the mark of the requirements in th
 | Module | Status | Mark | Responsibility | Req |
 |--------|--------|------|----------------|-----|
 | `src/ui/frame-guidance.ts` | new, pure | needed for the video | `frameGuidance(input)`, `ZONE_REGION` table, `REGION_ORDER`. | 3.2, 3.3, 3.4, 3.5, 3.7 to 3.9, 15.1 |
-| `src/ui/effects.ts` | new, pure | needed for the video | `effectsFor(prefersReducedMotion)`, `effectClasses(effects)`, `LOOP_CYCLES_MS`, `MIN_CYCLE_MS`, `REGION_LOOKS`, `ONE_SHOT_MS`, `FRAME_METRICS`. (`FRAME_METRICS.ringLandscapePx` is later, req 12.1.) | 11.2, 11.3, 15.4, 15.5 |
-| `src/ui/monster-draw-state.ts` | new, pure | needed for the video | `monsterDrawState(view, endOutcome)`, `monsterScale`, `smokeLook`, `MIN_MONSTER_SCALE` (moved from `session-screen.ts`), `zoneEndEvent(prev, next)`. | 6.1 to 6.7, 15.2 |
+| `src/ui/effects.ts` | new, pure | needed for the video | `effectsFor(prefersReducedMotion)`, `effectClasses(effects)`, `LOOP_CYCLES_MS`, `MIN_CYCLE_MS`, `REGION_LOOKS`, `ONE_SHOT_MS`, `FRAME_METRICS`. (`FRAME_METRICS.ringLandscapePx` is later, req 12.1.) Task 45 adds `ONE_SHOT_MS.hit` (300) and the effect `hitMotion` (off under reduced motion, class `fx-no-hit`). | 11.2, 11.3, 11.9, 15.4, 15.5 |
+| `src/ui/hit-feedback.ts` | new (task 45), pure | needed for the video | `isHit(prevView, view)`, `hitClassFor(hit, effects, parity)`: the two class names that are swapped. | 6.9, 6.10, 11.9, 15.11 |
+| `src/ui/leaving-gate.ts` | new (task 43), pure | needed for the video | `LeavingGate`, `GATE_OPEN`, `MAX_LEAVING_PAINTS` (2), `gateOnPaint`, `gateOnAnimationEnd`, `gateOpen`, `nextMonsterVisible`. | 6.13, 15.12 |
+| `src/ui/monster-draw-state.ts` | new, pure | needed for the video | `monsterDrawState(view, endOutcome)`, `monsterScale`, `smokeLook`, `MIN_MONSTER_SCALE` (moved from `session-screen.ts`; 0.2 since task 44), `zoneEndEvent(prev, next)`. | 6.1 to 6.7, 6.11, 15.2 |
 | `src/ui/sound-cues.ts` | new, pure | needed for the video | `cuesFor(prev, next)`: which sounds a state change calls for, each with a start delay. | 10.4, 10.6 |
 | `src/ui/monster-looks.ts` | new, pure | needed for the video | `MONSTER_LOOKS`: one row per monster, shape features only. `shapeKey(look)`. | 5.1 to 5.4 |
 | `src/ui/book-model.ts` | new, pure | needed for the video; `invite` flag and `say-line` action are later (req 8) | `monsterBookView(sessions)`, `bookViewFromLoader(load)`, `bookTapAction(entry)`. | 7.2 to 7.6, 8, 15.3 |
@@ -224,7 +233,8 @@ Every row has a mark (section 1.1). "Mark" is the mark of the requirements in th
 | `src/ui/end-card.ts` | changed | needed for the video | Two lines, two buttons, outcome classes, `unhide()`. | 9 |
 | `src/main.ts` | changed | needed for the video; the optional parent handler is later (req 2) | Wiring only: effects host, audio kit, presenter, Book routing, optional parent handler. Its scheduler adapter is not touched. | 7.8, 2.1 |
 | `src/ui/styles.css`, `index.html` | changed | needed for the video | `styles.css` is only added to (rules that `camera-preview.test.ts` reads stay as they are). `index.html` gets three `<link>` lines in the same form as the existing one. The CSP is not touched. | 13.2 |
-| `src/ui/camera-preview.ts`, `monster-anchor.ts`, `game-loop.ts`, everything under `src/logic/`, `src/tracking/`, `src/storage/` | unchanged | needed for the video | | 16.1 |
+| `src/ui/camera-preview.ts`, `monster-anchor.ts`, `game-loop.ts`, everything else under `src/logic/`, `src/tracking/`, `src/storage/` | unchanged | needed for the video | | 16.1 |
+| `src/logic/constants.ts`, `src/logic/session.ts` | changed once (task 42) | needed for the video | Core 8.5 and 8.6 only: adds `TIMER_ONLY_DAMAGE` and uses it in `tick` for timer-only mode. Nothing else under `src/logic/` changes. | 16.4 |
 
 > **Design choice (`drawMonster` moves, its export stays):** `monster-art.ts` holds the code;
 > `session-screen.ts` keeps `export { drawMonster } from './monster-art'`, so `end-card.ts` and
@@ -270,10 +280,20 @@ interface Effects {
   readonly flicker: boolean; readonly fogDrift: boolean; readonly smokeDrift: boolean;
   readonly leavingMotion: boolean;   // false: a monster that leaves only fades
   readonly bookMotion: boolean;      // the end-card "going into the Book" movement
+  readonly hitMotion: boolean;       // the hit flinch (task 45, req 6.9, 11.9); class fx-no-hit
   // states: always on (req 11.3)
   readonly glow: true; readonly ornament: true; readonly sizeChange: true; readonly smokeThinning: true;
 }
 type LoopId = 'flameActive' | 'glowActive' | 'glowDim' | 'fogDrift' | 'smokeDrift';
+
+// ── src/ui/hit-feedback.ts (task 45) ──
+// isHit is true only when both views exist, zoneId and monsterId are equal and
+// healthFraction is lower in `view` than in `prevView`.
+type HitView = Pick<View, 'zoneId' | 'monsterId' | 'healthFraction'>;
+type HitClass = 'monster--hit-a' | 'monster--hit-b';   // two identical animations with different names
+
+// ── src/ui/leaving-gate.ts (task 43) ──
+interface LeavingGate { readonly leaving: boolean; readonly paintsSinceEnd: number }
 
 // ── src/ui/monster-looks.ts ──
 type BodyShape = 'round' | 'tall' | 'wide' | 'drop';
@@ -420,9 +440,12 @@ frame as `off` (`frameGuidance(null)`), so a new session never starts with a lit
 
 **Same moment (req 3.6).** `SessionScreen.paint(view, zoneEnd?)` is one synchronous function.
 In it, in this order: `frame.paint(frameGuidance(view))`, the caption and `speaker.say(...)`,
-`showMonster(...)`. All three change in the same task of the event loop, so the glow, the line
-and the monster move together. The only thing that differs is the CSS fade of the glow
-(0.4 s, `ONE_SHOT_MS.glowMove`), which is a transition and not a timer.
+`showMonster(...)`. The glow and the spoken line change in the same task of the event loop,
+so they move together. The monster moves with them, except that after a zone end it waits
+for the leaving copy to go (section 5.12, req 6.13): then it appears on the `animationend`
+of the copy or at the second paint after the zone end, whichever comes first. The only thing
+that differs for the glow is the CSS fade (0.4 s, `ONE_SHOT_MS.glowMove`), which is a
+transition and not a timer.
 
 **When no region glows (req 3.9).** The frame exists only inside the session panel. The title
 screen, end card and Book never show it. `frameGuidance(null)` and the `ended` phase give four
@@ -502,12 +525,14 @@ Total and deterministic: every `(view, endOutcome)` gives exactly one state. No 
 no randomness.
 
 ```
-monsterScale(h)  = MIN_MONSTER_SCALE + (1 - MIN_MONSTER_SCALE) * clamp01(h)       # 0.35 to 1; never below the floor
+monsterScale(h)  = MIN_MONSTER_SCALE + (1 - MIN_MONSTER_SCALE) * clamp01(h)       # 0.2 to 1; never below the floor
 smokeLook(f)     = f <= 0 ? { puffs: 0, scale: 0, opacity: 0 }
                          : { puffs: ceil(3 * f), scale: 0.6 + 0.4 * f, opacity: 0.35 + 0.65 * f }
 ```
 
-`MIN_MONSTER_SCALE` is 0.35, the value `session-screen.ts` has now. The smoke thins in the number of
+`MIN_MONSTER_SCALE` is 0.2 since 21 Nov 2026 (task 44; it was 0.35, the value `session-screen.ts`
+had at first). The monster is still never below the floor, so it does not vanish before it is
+defeated. The smoke thins in the number of
 puffs (3, 2, 1), in their size and in their opacity (req 6.5). It carries no text, score,
 colour change or sound (req 6.6): only `smokeLook` and `monsterDrawState` read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone`.
 
@@ -527,8 +552,9 @@ zoneEndEvent(prev, next):
 ```
 
 `session-presenter.ts` passes the event to `screen.paint(view, zoneEnd)`. The screen then
-draws a **leaving copy** of that monster and, in the same call, shows the next zone's monster
-at once (req 6.3). The copy is a one-shot CSS animation (`ONE_SHOT_MS.leave` = 1400 ms) on an extra element that is
+draws a **leaving copy** of that monster and, in the same call, moves the glow, caption and
+stage to the next zone, but does not yet show the next zone's monster (section 5.12, req
+6.3, 6.13). The copy is a one-shot CSS animation (`ONE_SHOT_MS.leave` = 1400 ms) on an extra element that is
 removed by its `animationend` event. It is not a timer, and it changes nothing in
 `SessionState`, so it cannot delay, pause or shorten the zone (core req 2.5).
 
@@ -562,8 +588,10 @@ still drawn, so the state shows (req 11.3).
 > tests count four), and the presenter does not paint it.
 
 **Cleanup without a timer.** At most one leaving copy exists. It is removed when its animation
-ends, when the next zone-end event arrives, on `pause`, on `ended`, and in `showStart()`. A
-copy cannot be stuck on screen if `animationend` never arrives (hidden tab, reduced motion).
+ends, on the second paint after the zone end (section 5.12), when the next zone-end event
+arrives, on `pause`, on `ended`, and in `showStart()`. A copy cannot be stuck on screen if
+`animationend` never arrives (hidden tab, reduced motion). Removing the copy opens the leaving
+gate, and the next zone's monster appears.
 
 ### 5.5 Title screen and parent entry (req 1, 2) — req 1 needed for the video; req 2 (the parent control) later
 
@@ -752,9 +780,11 @@ cuesFor(prev, next):                                     # returns SoundCue[]
 ```
 
 A monster defeated mid-zone gives `defeat` once, when it is defeated, and nothing again at zone
-end, because its outcome does not change then. Fled and trapped sounds come at zone end. In
-timer-only mode every monster is defeated on the last second of its zone, so `defeat` and the
-next `zone-start` fall on one tick. `zone-start` then starts `CUE_GAP_MS` later, on the audio
+end, because its outcome does not change then. Fled and trapped sounds come at zone end. Since
+21 Nov 2026 a timer-only monster is defeated at 20 s (core 8.5), so its `defeat` cue comes
+ten seconds before the next `zone-start`, and the two no longer share a tick. A fled or
+trapped outcome (camera mode) still changes on the zone-end tick together with the next
+`zone-start`, so that `zone-start` starts `CUE_GAP_MS` later, on the audio
 clock, so the two never overlap and no timer is used. Cues depend only on outcomes and the zone
 index, never on the signal or on brushing speed. Every cue is paired with a change on screen
 (req 10.6): `defeat` with the smoke or the leaving copy, `flee` and `trapped` with the leaving
@@ -802,7 +832,7 @@ const LOOP_CYCLES_MS: Record<LoopId, number> = {
 from `var(--cycle-…)`, never from a literal, so the table and the CSS cannot drift apart. The
 flicker is a change of `opacity` between about 0.75 and 1 on keyframes of uneven spacing, never
 between light and dark (req 11.2). One-shot durations (`ONE_SHOT_MS`: `fadeIn` 600, `glowMove`
-400, `leave` 1400, `intoBook` 1200) are not loops and may be below the limit only if they do
+400, `leave` 1400, `intoBook` 1200, and from task 45 `hit` 300) are not loops and may be below the limit only if they do
 not repeat; none is.
 
 **Reduced motion (req 11.3).**
@@ -810,10 +840,12 @@ not repeat; none is.
 ```typescript
 effectsFor(reduced) = {
   flicker: !reduced, fogDrift: !reduced, smokeDrift: !reduced, leavingMotion: !reduced, bookMotion: !reduced,
+  hitMotion: !reduced,                      // added by task 45 (req 6.9, 11.9)
   glow: true, ornament: true, sizeChange: true, smokeThinning: true,
 }
 effectClasses(e) = [ !e.flicker && 'fx-no-flicker', !e.fogDrift && 'fx-no-fog', !e.smokeDrift && 'fx-no-smoke-drift',
-                     !e.leavingMotion && 'fx-no-leaving', !e.bookMotion && 'fx-no-book' ].filter(Boolean)
+                     !e.leavingMotion && 'fx-no-leaving', !e.bookMotion && 'fx-no-book',
+                     !e.hitMotion && 'fx-no-hit' ].filter(Boolean)
 ```
 
 `startEffects({ root, matchMedia, visibility })` reads `matchMedia('(prefers-reduced-motion:
@@ -877,6 +909,105 @@ every interactive class has a `:focus-visible` rule.
   and tracking guard scan every new file because they scan `src/` as a whole.
 - **Size (req 13.6).** The additions are source and CSS only, and nothing is lazy-loaded that was
   not before. `firstLoadUnder5MB` and `cameraCodeIsLazy` stay as they are.
+
+### 5.11 Hit feedback, clearer shrink, smoke change (req 6.9 to 6.12, 11.9) — needed for the video
+
+Dr. Yatin's camera session of 21 Nov 2026 (Decision 8) showed the shrink is small per second
+and is hidden by the size jitter of the anchor as the face moves. The fix is a short flinch on
+each tick that lowers the monster's health, a lower size floor, and a small smoke change.
+
+**`isHit(prevView, view)` (pure, `src/ui/hit-feedback.ts`).**
+
+```
+isHit(prev, view):
+  if prev == null or view == null: return false
+  if prev.zoneId != view.zoneId or prev.monsterId != view.monsterId: return false
+  return view.healthFraction < prev.healthFraction
+```
+
+It takes the three `View` fields it needs and nothing else. A zone change is never a hit,
+because the zone id differs. Equal or higher health is not a hit. Because a tick lowers
+health at most once, at most one hit happens per tick, so at most one a second (req 11.9).
+
+**Painting the flinch.** `session-screen.ts` keeps the last view it painted (cleared in
+`showStart()`, on `ended` and on reset). In each `paint(view, zoneEnd?)` it calls
+`isHit(lastView, view)` and, when the monster is shown (the gate of section 5.12 is open and
+the draw state is `sitting` or `shrinking`) and `effects.hitMotion` is true, swaps the class
+on the live monster element:
+
+```
+hitClassFor(hit, effects, flip):   # flip alternates on every hit
+  if not hit or not effects.hitMotion: return null
+  return flip ? 'monster--hit-b' : 'monster--hit-a'
+```
+
+The two classes name two identical CSS animations (`hit-squash-a`, `hit-squash-b`) with
+different names, so putting the other one on the element restarts the animation on the next
+paint with no timer and no forced reflow. The painter removes both classes when there is no
+hit. `flip` is a boolean kept by the painter, toggled on each hit, so there is no randomness.
+When the monster is not shown (a leaving copy exists, or the state is `defeated` or `gone`)
+no class is set. The flinch is a one-shot of `ONE_SHOT_MS.hit` = 300 ms: a quick squash
+(`scale` about 1.12 by 0.9, then back) and a small wobble (`rotate` of a few degrees), on
+`transform` only, so it never changes colour or brightness and carries no text. It composes
+with the size from `monsterScale` and with the anchor's placement because it lives on the
+inner drawing element, not on the slot that the anchor positions. Under `fx-no-hit`
+(reduced motion) the animation is `none`; the size change still shows (req 11.3).
+
+**Clearer shrink (req 6.11).** `MIN_MONSTER_SCALE` is 0.2 (it was 0.35), so the whole shrink
+runs from 1 to 0.2 instead of 1 to 0.35. The monster is still never at zero before it is
+defeated.
+
+**Smoke, small change only (req 6.12).** CSS only, in `monster-art.css`: the puff size is
+multiplied by 1.2 and the near-white border is replaced by a mid-lilac one (starting value
+`#8a6fc4`, about 4:1 against white). `smokeLook`, the puff counts, the thinning rule and the
+colour family are not touched. The smoke still carries no text, colour change or sound (req
+6.6).
+
+### 5.12 The next monster waits for the leaving copy (req 6.13) — needed for the video
+
+In camera mode the leaving copy and the next zone's monster both sit on the same cheek, so
+Dr. Yatin saw two monsters at once. The rule: while a leaving copy exists, the next monster
+is not shown.
+
+**The gate (pure, `src/ui/leaving-gate.ts`).**
+
+```typescript
+const MAX_LEAVING_PAINTS = 2;              // the second paint after the zone end opens the gate
+const GATE_OPEN: LeavingGate = { leaving: false, paintsSinceEnd: 0 };
+
+gateOnPaint(gate, { zoneEnd, phase }):
+  if phase != 'running':        return GATE_OPEN                       # paused, ended: the copy is removed
+  if zoneEnd:                   return { leaving: true, paintsSinceEnd: 0 }   # a new zone end replaces an old copy
+  if not gate.leaving:          return gate
+  n = gate.paintsSinceEnd + 1
+  return n >= MAX_LEAVING_PAINTS ? GATE_OPEN : { leaving: true, paintsSinceEnd: n }
+gateOnAnimationEnd(gate): return GATE_OPEN
+nextMonsterVisible(gate): return not gate.leaving
+```
+
+The paint that carries the zone end is paint 0. The copy is removed on its `animationend`
+(1.4 s, normally before the next-but-one paint) or at paint 2 (2 s after the zone end), so
+the next monster appears after at most about 2 s. The count is paints, one per tick, never a
+timer. With reduced motion the leaving copy still fades, and if `animation: none` is applied
+and `animationend` never comes, paint 2 still opens the gate. Both modes use the same gate.
+
+**Painting.** `paint` applies `gateOnPaint`, hides the live monster element (`hidden`, so its
+accessible name is not read either) while `!nextMonsterVisible(gate)`, and shows it again
+from the last view when the gate opens. The copy's `animationend` handler removes the copy,
+calls `gateOnAnimationEnd`, and re-shows the monster from the last painted view. The frame
+glow, caption, spoken line and sound cues are painted at the zone end exactly as before
+(`paint` does not wait for the gate), and the timer is untouched. Removing the copy for any
+other reason (pause, `ended`, `showStart()`, a new zone end) also resets the gate.
+
+> **Design choice:** counting paints (not milliseconds) keeps the single-timer rule and
+> works for every phase the same way. The cost is that, if a paint is late, the monster waits
+> a little longer; the 1.4 s animation normally ends first.
+
+**Timer-only mode now shows smoke (core 8.5).** In a timer-only zone the monster is defeated
+at 20 s, so `monsterDrawState` is `defeated` for the last 10 s (smoke thins from 3 puffs to
+none) and the line 'Keep brushing! Brush the smoke away!' shows. The leaving copy at the zone
+end then dissolves again once ("puffs into smoke"); this is acceptable because the zone-end
+copy is a separate drawing of the outcome (req 6.3).
 
 ---
 
@@ -950,16 +1081,16 @@ Tests 5 to 7 reuse the session helpers of `core-brushing-loop` (`startSession`, 
 | 2 | `frameRegionLooksDiffer` | 3.4, 3.5 | `REGION_LOOKS` | `active` differs from `dim` in `glowOpacity` (higher), `glowSizePx` (larger) and `flame` (true against false), and has the larger `flickerAmplitude`; `off` has opacity 0 |
 | 3 | `glowMatchesLineAndMonster` | 3.6, 3.7, 3.8 | Any 120 signals-or-null, either mode | At every tick the active region equals `ZONE_REGION` of `toView(state).zoneId`; when the caption id is `zone-X`, X is that zone; the region does not change between a defeat and the zone end; modes give the same regions for the same zone |
 | 4 | `monsterDrawStateProperties` | 6.1, 6.2, 6.7, 15.2 | Generated `View`s and outcomes | One state for every input; `healthFraction` 1 gives `sitting`; in (0, 1) gives `shrinking`; 0 with smoke above 0 gives `defeated`; 0 with no smoke gives `gone`; `fled` and `trapped` and `defeated` outcomes give those states; the same input gives the same state |
-| 5 | `scaleAndSmokeLook` | 6.2, 6.5, 6.6, 15.2 | Generated fractions | `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1, and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff; above 0 gives at least one; only `smokeLook` and `monsterDrawState` in its file read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone` |
+| 5 | `scaleAndSmokeLook` | 6.2, 6.5, 6.6, 6.11, 15.2 | Generated fractions | `MIN_MONSTER_SCALE` is 0.2; `monsterScale(0)` is 0.2 and `monsterScale(1)` is 1; `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1, and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff; above 0 gives at least one; only `smokeLook` and `monsterDrawState` in its file read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone` |
 | 6 | `zoneEndEvents` | 6.1, 6.3, 6.4 | Any 120 signals-or-null, either mode | Exactly four events per session, in zone order, none `pending`; each equals the final `monsters[i].outcome`; no event on pause or resume; the number of events is the same for every signal sequence |
 | 7 | `soundCues` | 10.4, 10.6 | Any 120 signals-or-null, either mode | For every tick except the one that ends the session: the cues hold `defeat`, `flee` or `trapped` once for each monster whose outcome changed on that tick (and for no other), and `zone-start` exactly when the zone changed or at the first state; a `zone-start` that shares a tick with an outcome cue has `delayMs` equal to `CUE_GAP_MS`, otherwise 0; outcome cues have `delayMs` 0. Over the session there are four `zone-start` cues. The tick that ends the session gives no cue. Each outcome cue is the monster's final outcome, so no outcome cue appears twice |
 | 8 | `monsterLooks` | 5.1 to 5.4 | `MONSTER_LOOKS`, `MONSTERS` | Keys equal the twelve ids in order; `shapeKey` values are pairwise different; every field is in its allowed set; no `mouth` value names teeth; every rare has `star` and a crest, the four crests are different; no common has either |
 | 9 | `monsterBookView` | 7.1, 7.2, 7.5, 8.1, 8.3, 15.3 | Any sessions | Twelve entries in table order (8 common then 4 rare); `owned` exactly when the id is in `computeMonsterBook(sessions).unlockedIds`; not-owned entries have `name` null; `rare` flag is true for rares owned or not; `invite` exactly for rares not owned; `showRareInvitation` is true exactly when some rare is not owned; same result for any order of sessions and any dates and times of day with the same earned monsters; empty sessions give twelve silhouettes |
 | 10 | `bookFromLoader` | 7.6 | A loader that returns sessions and one that throws | The first gives the same as `monsterBookView`; the throwing one gives twelve silhouettes and does not throw |
 | 11 | `bookSpeech` | 7.4, 7.5, 8.1, 15.9 | A fake speaker that records calls; taps on any entries | An owned tap calls `stop` then `sayText(name)` once; a second tap replaces (a `stop` before each); a not-owned tap never calls `sayText`; a rare silhouette says `rare-invite`; a common silhouette says nothing |
-| 12 | `effectsForReducedMotion` | 11.3, 15.4 | `true` and `false` | `true`: all five moving fields false, four state fields true; `false`: all nine true; `effectClasses` lists exactly the off effects |
+| 12 | `effectsForReducedMotion` | 11.3, 15.4 | `true` and `false` | `true`: all six moving fields (including `hitMotion`) false, four state fields true; `false`: all ten true; `effectClasses` lists exactly the off effects (task 45 extends the five-field version of this test) |
 | 13 | `effectsHostFollowsPreference` | 11.3, 13.3 | Fake root, fake `matchMedia` with a `change` event, fake visibility | Classes on the root match the preference at start and after a change; `fx-paused` is set while hidden and cleared when visible again; missing `matchMedia` gives no classes and no error |
-| 14 | `flashRate` | 11.2, 15.5 | `LOOP_CYCLES_MS`, `REGION_LOOKS`, the three CSS files | Every cycle is at least `MIN_CYCLE_MS` (334); every `LoopId` has a cycle; every CSS rule containing `infinite` takes its time from a `var(--cycle-…)` and contains no literal time; `effects-host.ts` writes one `--cycle-` variable per `LoopId`; no flicker amplitude is above 0.25 |
+| 14 | `flashRate` | 11.2, 15.5 | `LOOP_CYCLES_MS`, `REGION_LOOKS`, the three CSS files | Every cycle is at least `MIN_CYCLE_MS` (334); every `LoopId` has a cycle; every CSS rule containing `infinite` takes its time from a `var(--cycle-…)` and contains no literal time; `effects-host.ts` writes one `--cycle-` variable per `LoopId`; no flicker amplitude is above 0.25; `ONE_SHOT_MS.hit` is at most 300 and the hit animation has no `infinite` |
 | 15 | `soundData` | 10.2, 10.3, 10.5, 15.6 | `SOUNDS`, sampled every 1 ms | Five sounds, one per `SoundId`; gain at 0 ms is 0; no 1 ms step rises by more than `GAIN_STEP_PER_MS`; no gain is above `GAIN_LEVEL` or above `EFFECT_PEAK_GAIN`; `EFFECT_PEAK_GAIN` is below `GAIN_LEVEL`; voice levels add to at most 1; pitches are within 200 to 1000 Hz; total length at most 1500 ms; gain is 0 again at the end |
 | 16 | `displayTextPinned` | 1.3, 14.1 | `DISPLAY_TEXT`, `LINES`, `MONSTERS` | `DISPLAY_TEXT` equals the approved strings of rows 1, 16, 17, 18 and 19 exactly; `lines.ts` has `end-close` = "Two minutes. Every corner." and `rare-invite` = "Brush morning AND night."; monster names are the twelve approved ones |
 | 17 | `newTextGuard` | 14.4, 14.5 | `DISPLAY_TEXT`, monster names, `end-close`, `rare-invite` | None contains a core banned word or an urging or scary word, matched as whole words; the matcher passes "Twilight Toffee Wraith" and "Midnight Molar Ghoul" and flags "die" in "Do not die" but not in "Diet" |
@@ -976,8 +1107,13 @@ Tests 5 to 7 reuse the session helpers of `core-brushing-loop` (`startSession`, 
 | 28 | `drawValueStaysInPreview` | 13.4 | Every file under `src/` | `DrawValue` and `draw-value` appear only in `src/tracking/`, `camera-preview.ts`, `monster-anchor.ts` and `main.ts` |
 | 29 | `noExternalAssets` | 13.1, 13.2, 10.1 | New CSS and TS files, `public/assets/` | No `@font-face`, no `url(` to a host, no `<style`, no `style=` attribute strings, no `innerHTML`, no `<img`; each audio file under `public/assets/`, if any, is named in `public/assets/NOTICE.txt` |
 | 30 | `bookScreenIsReadOnly` | 1.4, 7.6, 7.10 | Source of `monster-book-screen.ts` and `title-panel.ts` | Neither has `saveSession`, `setItem`, `localStorage`, `import(`, `getUserMedia`, `beforeinstallprompt` or an import from `src/tracking/`; the Book screen has no import of `mirror-frame` or `frame-guidance` and calls `bookViewFromLoader` |
-| 31 | `existingSuite` | 15.10, 13.2, 13.5, 13.6, 16.1 | Every existing test | All pass unchanged, in particular `view`, `lines`, `camera-preview`, `monster-anchor`, `privacy-guard`, `tracking-guards`, `csp`, `build-output` |
+| 31 | `existingSuite` | 15.10, 13.2, 13.5, 13.6, 16.1, 16.4 | Every existing test | All pass unchanged, in particular `view`, `lines`, `camera-preview`, `monster-anchor`, `privacy-guard`, `tracking-guards`, `csp`, `build-output`. The exception is task 42 (req 16.4): `tests/session.test.ts`, `tests/view.test.ts`, `tests/sound-cues.test.ts` and `tests/constants.test.ts` are updated to the timer-only rule of core 8.5, by Dr. Yatin's decision |
 | 32 | `drawMonsterSignature` | 5.6 | Source of `monster-art.ts` and `session-screen.ts` | `monster-art.ts` exports `drawMonster(def: MonsterDef): HTMLElement`, sets `role="img"` and an `aria-label` from `def.name`; `session-screen.ts` re-exports `drawMonster` |
+| 33 | `hitOnlyWhenHealthDrops` | 6.9, 6.10, 15.11 | Generated pairs of views; whole sessions in both modes | `isHit(prev, view)` is true exactly when both exist, `zoneId` and `monsterId` are equal and `healthFraction` is lower; false when equal or higher and when either view is `null`; over a session, at most one hit per tick |
+| 34 | `noHitOnZoneChange` | 6.10, 15.11 | Generated views with a different `zoneId` or `monsterId`; whole sessions in both modes | `isHit` is false whenever the zone or the monster differs, whatever the health; no tick on which the zone changes is a hit |
+| 35 | `noHitWhenReducedMotion` | 6.9, 11.3, 11.9, 15.11 | `effectsFor(true)`, `effectsFor(false)`, any hit | `hitClassFor` is `null` when `hitMotion` is false (reduced motion) and for any non-hit; with motion on, hits give `monster--hit-a` or `-b` alternately; `ONE_SHOT_MS.hit` is at most 300; the CSS hit rule has no `infinite`, only `transform` in its keyframes, and `.fx-no-hit` sets `animation: none` |
+| 36 | `nextMonsterWaitsForLeavingCopy` | 6.3, 6.13, 15.12 | The pure gate (`leaving-gate.ts`), whole sessions in both modes (zone-end events from `zoneEndEvent`), with and without `animationend` | At the paint that carries a zone end `nextMonsterVisible` is false; it stays false until `gateOnAnimationEnd`; with no `animationend` it is true at the second paint after the zone end at the latest (never a third); pause, `ended` and reset open it at once; a second zone end replaces the first; `session-screen.ts` uses `gateOnPaint`, `gateOnAnimationEnd` and `nextMonsterVisible`, hides the live monster with the `hidden` attribute and has no `setTimeout` |
+| 37 | `smokeOutlineReadable` | 6.12 | `monster-art.css` | The puff outline colour is a 6-digit hex that is not near-white (contrast against white at least 3 to 1); the puff size is about 20 % larger than before (the rule holds the new multiplier); `smokeLook` and its puff counts are unchanged (the pre-existing `scaleAndSmokeLook` still passes) |
 
 **Marks of the tests.** A test has the mark of the requirements in its Req column (section 1.1).
 Every test is needed for the video except these parts: test 25 `focusVisible` (req 12.3,
@@ -1007,6 +1143,7 @@ list, used by test 13.
 | M8 | Landscape and desktop | Rotate the phone and open on a laptop: no rotate message, nothing clipped |
 | M9 | Monster drawings | View all twelve in the Book and on the cheek: easy to tell apart, none scary, rare ones carry star and crest, silhouettes show no name |
 | M10 | Network panel | Title screen, Book and end card make no request beyond the same-origin page files; no model, no font, no image |
+| M11 | Hit, shrink, smoke, no overlap (camera) | Camera session, brush one zone: each brushing second the monster visibly flinches once, it shrinks clearly (down to 0.2 of its size), the smoke is readable over the picture, and at a zone change no two monsters are on screen at once (needed for the video; task 47) |
 
 ---
 
@@ -1032,7 +1169,7 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 3.3 | needed for the video | One table, no swap; the frame has no transform and is never inside the mirrored stage (5.1) | `frameGuidanceZones`, `decorativeFrame`; the existing `onlyOneLeftRightSwap` test inside `existingSuite` |
 | 3.4 | needed for the video | `REGION_LOOKS`: brighter and larger glow, larger flicker amplitude (5.1) | `frameRegionLooksDiffer` |
 | 3.5 | needed for the video | Brightness, glow size and flame differ; no hue needed (5.1) | `frameRegionLooksDiffer` |
-| 3.6 | needed for the video | One synchronous `paint` changes glow, line and monster (5.1) | `glowMatchesLineAndMonster`; manual M1 |
+| 3.6 | needed for the video | One synchronous `paint` changes glow, line and caption; the monster joins when the leaving copy is gone (5.1, 5.12) | `glowMatchesLineAndMonster`, `nextMonsterWaitsForLeavingCopy`; manual M1 |
 | 3.7 | needed for the video | Region follows `zoneId`, which does not change after a defeat (5.1) | `frameGuidanceZones`, `glowMatchesLineAndMonster` |
 | 3.8 | needed for the video | Argument type is `Pick<View, 'phase' \| 'zoneId'>` (5.1) | `frameGuidanceZones`, `glowMatchesLineAndMonster`; manual M1 (cover the face) |
 | 3.9 | needed for the video | `paused` lit and still; `ended` and `null` give `off`; `showStart()` paints `off` (5.1) | `frameGuidanceZones` |
@@ -1052,12 +1189,17 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 5.6 | needed for the video | `drawMonster(def: MonsterDef): HTMLElement` kept, re-exported (3, 5.3) | `drawMonsterSignature`, `existingSuite` |
 | 6.1 | needed for the video | `monsterDrawState(view, endOutcome)`, `zoneEndEvent` (5.4) | `monsterDrawStateProperties`, `zoneEndEvents` |
 | 6.2 | needed for the video | Six states and their pictures (5.4) | `monsterDrawStateProperties`, `scaleAndSmokeLook` |
-| 6.3 | needed for the video | Leaving copy shown once at the old zone; next monster at once; no effect on state (5.4) | `zoneEndEvents`; manual M1 |
+| 6.3 | needed for the video | Leaving copy shown once at the old zone; next monster appears when the copy is gone (5.4, 5.12); no effect on state | `zoneEndEvents`, `nextMonsterWaitsForLeavingCopy`; manual M1, M11 |
 | 6.4 | needed for the video | `trapped-wave` and `trapped-sleep`, happy face (5.4) | `zoneEndEvents`; manual M9, M2 |
 | 6.5 | needed for the video | `smokeLook`: puffs, scale and opacity (5.4) | `scaleAndSmokeLook` |
 | 6.6 | needed for the video | Only `smokeLook` and `monsterDrawState` read `smokeFraction`, and `monsterDrawState` reads it only to tell `defeated` from `gone`; no text or sound by smoke (5.4) | `scaleAndSmokeLook`, `soundCues` |
 | 6.7 | needed for the video | Pure, deterministic functions (5.4) | `monsterDrawStateProperties`, `pureFilesAreClean` |
 | 6.8 | needed for the video | Every cue has a matching picture; picture is complete without sound (5.8) | `soundCues`; manual M5 with sound off: all states still show |
+| 6.9 | needed for the video | One-shot hit flinch on each health drop, no text, colour or sound (5.11) | `hitOnlyWhenHealthDrops`, `noHitWhenReducedMotion`; manual M11 |
+| 6.10 | needed for the video | `isHit(prevView, view)` and the class swap (5.11) | `hitOnlyWhenHealthDrops`, `noHitOnZoneChange`, `noHitWhenReducedMotion` |
+| 6.11 | needed for the video | `MIN_MONSTER_SCALE` 0.2 (5.4, 5.11) | `scaleAndSmokeLook`; manual M11 |
+| 6.12 | needed for the video | Puffs 20 % larger, mid-lilac outline, CSS only (5.11) | `smokeOutlineReadable`, `scaleAndSmokeLook`; manual M11 |
+| 6.13 | needed for the video | The leaving gate: next monster waits for the copy (5.12) | `nextMonsterWaitsForLeavingCopy`; manual M1, M11 |
 | 7.1 | needed for the video | `monsterBookView` in table order, 8 then 4 (5.7) | `monsterBookView` |
 | 7.2 | needed for the video | `owned` = `computeMonsterBook` union (5.7) | `monsterBookView` |
 | 7.3 | needed for the video | Owned cell: drawing and visible name (5.7) | `monsterBookView`; manual M9 |
@@ -1090,7 +1232,8 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 10.11 | needed for the video | No mute control (5.5) | `titleModel` |
 | 11.1 | needed for the video | Ease-in on every effect, sound and monster (5.2, 5.8, 5.9) | `flashRate`, `soundData`; manual M2, M5 |
 | 11.2 | needed for the video | `LOOP_CYCLES_MS` at least 334 ms, set from the table (5.9) | `flashRate` |
-| 11.3 | needed for the video | `effectsFor`, `effectClasses`, `startEffects` (5.9) | `effectsForReducedMotion`, `effectsHostFollowsPreference`; manual M6 |
+| 11.3 | needed for the video | `effectsFor`, `effectClasses`, `startEffects` (5.9); `hitMotion` and `fx-no-hit` (5.11) | `effectsForReducedMotion`, `effectsHostFollowsPreference`, `noHitWhenReducedMotion`; manual M6 |
+| 11.9 | needed for the video | The flinch is a one-shot of at most 300 ms, one per tick, off under reduced motion (5.11) | `noHitWhenReducedMotion`, `flashRate`, `hitOnlyWhenHealthDrops`; manual M6, M11 |
 | 11.4 | needed for the video | `TAP_TARGETS` all at least 48 px (5.5, 5.9) | `tapTargets` |
 | 11.5 | needed for the video | Three non-hue signals for zones; star and crest; silhouette; puff count (5.1, 5.3, 5.4, 5.7) | `frameRegionLooksDiffer`, `monsterLooks`, `scaleAndSmokeLook`, `monsterBookView` |
 | 11.6 | needed for the video | Single column, controls in thumb reach (5.9) | manual M3: one-handed in portrait |
@@ -1120,15 +1263,19 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 15.8 | needed for the video | No new timers (8) | `noNewTimers`, `existingSuite` |
 | 15.9 | needed for the video | Screen behaviour through pure models and a fake speaker (8) | `bookSpeech`, `endLines`, `endCardNoUrging`, `titleModel`, `tapTargets` |
 | 15.10 | needed for the video | Existing files kept; additions only (3) | `existingSuite` |
-| 16.1 | needed for the video | No logic, constant, storage or signal change (1, 3) | `existingSuite` |
+| 15.11 | needed for the video | `isHit`, `hitClassFor` (5.11) | `hitOnlyWhenHealthDrops`, `noHitOnZoneChange`, `noHitWhenReducedMotion` |
+| 15.12 | needed for the video | The leaving gate (5.12) | `nextMonsterWaitsForLeavingCopy` |
+| 16.1 | needed for the video | No logic, constant, storage or signal change (1, 3), except req 16.4 | `existingSuite` |
 | 16.2 | needed for the video | New pure functions in `src/ui/`; nothing in `src/logic/` imports them (2, 3) | `pureFilesAreClean`, `existingSuite` (`privacy-guard`) |
 | 16.3 | needed for the video | Painters only paint; decisions are the pure functions (2, 5) | `pureFilesAreClean`, `bookScreenIsReadOnly`; manual M1 |
+| 16.4 | needed for the video | The one rule change, core 8.5 and 8.6, in task 42 (1, 3) | core test `timerOnlyDefeatsEveryMonsterAt20` (in `tests/session.test.ts`), updated `view`, `sound-cues` and `constants` tests; `existingSuite` for the rest |
 
 ---
 
 ## 10. Decisions, 21 Nov 2026
 
-Dr. Yatin answered the one open question on 21 Nov 2026 (option 1). Nothing is open.
+Dr. Yatin answered the open questions on 21 Nov 2026 (option 1 for tooth shapes, and the five
+fixes after his camera session). Nothing is open.
 
 1. **Tooth shapes in the drawings (req 5.3).** No monster drawing has a tooth-like shape,
    including `molar-mumbler` and `midnight-molar-ghoul`. `fuzzlefang` keeps its name and is
@@ -1137,6 +1284,15 @@ Dr. Yatin answered the one open question on 21 Nov 2026 (option 1). Nothing is o
    never looks like a tooth. Also, there is no biting imagery for ages 5 to 9 at bedtime.
    This is what the drawings already do, so no drawing work follows from it.
 
-No new word, number or dental rule is introduced by this design. The 19 lines approved on 21
+2. **Fixes after the camera session (Decision 8 of the requirements; all needed for the
+   video).** (a) Timer-only smoke: timer-only monsters lose 3 per second, defeated at 20 s,
+   smoke for the last 10 s (core 8.5; sections 5.12 end and 5.8). (b) No overlap: the next
+   monster waits for the leaving copy, at most about 2 s, no timer (5.12). (c) `MIN_MONSTER_SCALE`
+   0.35 to 0.2 (5.11). (d) Hit feedback: a flinch of at most 300 ms on every tick whose health
+   dropped, off under reduced motion (5.11). (e) Smoke: puffs about 20 % larger and a
+   mid-lilac outline, nothing else (5.11). Built in tasks 42 to 46 and checked by hand in task 47.
+
+No new word or dental rule is introduced by this design. The one game number that changes is
+the timer-only rule decided by Dr. Yatin above (core 8.5). The 19 lines approved on 21
 Nov 2026 are the complete list, and the sizes, cycle times, loudness values and look values
 above are drawing and sound choices, not dental rules and not numbers a parent will see.
