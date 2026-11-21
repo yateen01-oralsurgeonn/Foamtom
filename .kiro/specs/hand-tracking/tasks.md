@@ -243,15 +243,15 @@ starts in camera mode. Guided-timer mode is never changed.
 
 - [ ] 10. **Manual checks on a real phone and the final run** (requirements 7, 8, 9, 10; done by Dr. Yatin or the developer, written in `docs/review/TRACKING-TEST-RESULTS.md`)
   - [ ] 10.1 Speed (requirement 10.4): on a real mid-range 2022 Android phone in Chrome, with the camera on, record the device model, Android and Chrome versions, and two separate lines: (a) frames per second of the picture and the drawing (20 or more passes); (b) frames per second the tracker handles (at least 5 in a normal second). If (a) fails, raise `TRACK_MIN_INTERVAL_MS` only with Dr. Yatin's say and repeat (requirement 10.5)
-  - [ ] 10.2 Look at, on the phone in portrait, one-handed: the preview is a mirror image; in the upper-right zone the monster sits on your right cheek, which is on the right of the screen; in the lower-left zone it sits low on the left; it follows when you tilt your head
-  - [ ] 10.3 Cover the face: the monster returns to its plain position and no message is shown or spoken. Dim the lights during a session: nothing is shown or said (requirement 7.5)
-  - [ ] 10.4 Switch to another tab and come back inside a minute: the preview returns, Chrome does not ask again where it can avoid it, and the session carries on in the same mode
-  - [ ] 10.5 When a session ends, the camera light goes off. Hiding the tab turns it off too
-  - [ ] 10.6 Refuse the camera: the plain screen shows with no preview and no repeat prompt
-  - [ ] 10.7 Rotate to landscape and open on a desktop browser: the preview is usable. Measure every touch target in the browser's developer tools: at least 48 px. The preview has no screenshot, record or share button
-  - [ ] 10.8 Network panel during a camera session: only same-origin requests; nothing is sent while brushing
-  - [ ] 10.9 Record the asset sizes and the first load size from the final build (`npm run build`, then `npm run measure-assets`) in the results file, in bytes, with the date
-  - [ ] 10.10 Run `npm run test:run` and `npm run build`; the full suite passes, including `resultsFileIsWordsOnly`, `privacyGuard`, `trackingPrivacyGuard`, `distHasNoDebugPage`, `cameraCodeIsLazy` and `firstLoadUnder5MB`
+  - [x] 10.2 Look at, on the phone in portrait, one-handed: the preview is a mirror image; in the upper-right zone the monster sits on your right cheek, which is on the right of the screen; in the lower-left zone it sits low on the left; it follows when you tilt your head
+  - [x] 10.3 Cover the face: the monster returns to its plain position and no message is shown or spoken. Dim the lights during a session: nothing is shown or said (requirement 7.5)
+  - [x] 10.4 Switch to another tab and come back inside a minute: the preview returns, Chrome does not ask again where it can avoid it, and the session carries on in the same mode
+  - [x] 10.5 When a session ends, the camera light goes off. Hiding the tab turns it off too
+  - [x] 10.6 Refuse the camera: the plain screen shows with no preview and no repeat prompt
+  - [x] 10.7 Rotate to landscape and open on a desktop browser: the preview is usable. Measure every touch target in the browser's developer tools: at least 48 px. The preview has no screenshot, record or share button
+  - [x] 10.8 Network panel during a camera session: only same-origin requests; nothing is sent while brushing
+  - [x] 10.9 Record the asset sizes and the first load size from the final build (`npm run build`, then `npm run measure-assets`) in the results file, in bytes, with the date
+  - [x] 10.10 Run `npm run test:run` and `npm run build`; the full suite passes, including `resultsFileIsWordsOnly`, `privacyGuard`, `trackingPrivacyGuard`, `distHasNoDebugPage`, `cameraCodeIsLazy` and `firstLoadUnder5MB`
   - _Requirements: 6.3, 7.2, 7.3, 7.5, 8.1, 8.2, 8.4, 8.5, 8.6, 8.7, 9.1, 9.3, 10.1, 10.3, 10.4, 10.5_
   - Test file: `tests/test-results.test.ts` (existing)
   - Files this task may change: `docs/review/TRACKING-TEST-RESULTS.md`, `src/tracking/thresholds.ts` (only `TRACK_MIN_INTERVAL_MS`, and only with Dr. Yatin's say)

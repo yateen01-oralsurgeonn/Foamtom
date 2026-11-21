@@ -102,6 +102,13 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | 2026-11-21 | Both hands near the mouth | Pass is `side` reading `unknown` | Pass | Side and level both `unknown` |
 | 2026-11-21 | Second person behind the child | The signal does not change | Pass | Brusher close, second person behind: handNearMouth true. First try had the second person in FRONT (closer, larger face), so the largest-face rule followed them: expected, but a younger sibling leaning in closer is a real risk |
 | 2026-11-21 | Lights dimmed until the face is lost | Pass is `null` | Pass | Room darkened in daytime; screen said `null` for palm, wrist and fingertips |
+| 2026-11-21 | Phone: mirror and monster placement | Mirror image; upper right on the right cheek, lower left low on the left cheek; follows a tilted head | Pass | Motorola Edge 50 Neo, live site (10.2) |
+| 2026-11-21 | Phone: face lost | Monster returns to the plain position, nothing shown or said | Pass | Covering the face with a hand did not lose the face (detector still saw it); covering the camera did (10.3) |
+| 2026-11-21 | Phone: tab switch under a minute | Preview returns, no new prompt, same mode | Pass | 10.4 |
+| 2026-11-21 | Phone: camera light | Off at session end and when the tab is hidden | Pass | Green camera dot (10.5) |
+| 2026-11-21 | Phone: camera refused | Plain screen, no preview, no repeat prompt | Pass | Blocked in Chrome site settings (10.6) |
+| 2026-11-21 | Landscape and desktop | Preview usable; touch targets at least 48 px; no screenshot, record or share button | Pass | Phone landscape by Dr. Yatin; sizes and buttons measured in Chrome (Brush 186 by 75 px, big-button minimum 160 by 72 px) (10.7) |
+| 2026-11-21 | Network during a camera session | Only same-origin requests; nothing sent while brushing | Pass | 0 requests in 15 s of brushing on the live site (10.8) |
 
 ## 6. Counts and decision
 
@@ -123,7 +130,7 @@ Failed for the chewing surface of the upper right teeth (WUW; the palm hangs bel
 
 | Date | Device model | Android version | Chrome version | Note |
 |---|---|---|---|---|
-| | | | | |
+| 2026-11-21 | Motorola Edge 50 Neo | not read yet | not read yet | Live site in Chrome, portrait and landscape |
 
 | Date | Line | Frames per second | Pass or Fail | Note |
 |---|---|---|---|---|
@@ -140,3 +147,6 @@ Failed for the chewing surface of the upper right teeth (WUW; the palm hangs bel
 | 2026-11-20 | wasm/vision_wasm_internal.js | 336624 | From MEDIAPIPE-DOC-CHECK.md |
 | 2026-11-20 | wasm/vision_wasm_internal.wasm | 14665716 | From MEDIAPIPE-DOC-CHECK.md |
 | 2026-11-20 | total | 26809787 | From MEDIAPIPE-DOC-CHECK.md |
+| 2026-11-21 | NOTICE.txt | 1069 | Final build, npm run measure-assets |
+| 2026-11-21 | total of public/models | 26810856 | Final build, npm run measure-assets |
+| 2026-11-21 | first load (dist without models and lazy camera chunks) | 23121 | 6 files; camera code and models load only after tapping start |
