@@ -152,13 +152,13 @@ guided-timer mode THE SYSTEM SHALL treat every signal as `null`.
 5.3 THE SYSTEM SHALL NOT pass any other camera or tracking data into game logic; the
 signal above is the only bridge between tracking and logic.
 
-5.4 IF `handNearMouth` is true and `moving` is true and `side` matches the active zone's
-side and `level` matches the active zone's level THE SYSTEM SHALL treat the active zone
-as being brushed.
+5.4 IF `handNearMouth` is true and `moving` is true and, as far as requirement 5.7
+requires, `side` matches the active zone's side and `level` matches the active zone's
+level THE SYSTEM SHALL treat the active zone as being brushed.
 
-5.5 IF `handNearMouth` is false, or `moving` is false, or `side` does not match the active
-zone's side, or `level` does not match the active zone's level THE SYSTEM SHALL treat the
-active zone as not being brushed.
+5.5 IF `handNearMouth` is false, or `moving` is false, or, as far as requirement 5.7
+requires, `side` does not match the active zone's side or `level` does not match the
+active zone's level THE SYSTEM SHALL treat the active zone as not being brushed.
 
 5.6 A signal that is present with `handNearMouth` false SHALL mean: the face is seen and
 the hand is not at the mouth. A signal with `side` or `level` equal to `unknown` SHALL
@@ -167,10 +167,15 @@ mean: the hand is at the mouth but that side or level is unclear.
 5.7 THE SYSTEM SHALL hold one constant, `REQUIRE_LEVEL_MATCH`, default `true`. WHEN it is
 `false` THE SYSTEM SHALL ignore `level` in 5.4 and 5.5 (side-only checking). It is set to
 `false` only by Dr. Yatin's decision if the hand-tracking test shows that upper and lower
-cannot be told apart.
+cannot be told apart. `REQUIRE_LEVEL_MATCH` is now `false`, by Dr. Yatin's decision of
+21 Nov 2026 (the level check failed: the palm hangs below the mouth for the chewing
+surface of the upper teeth).
 THE SYSTEM SHALL also hold a second constant, `REQUIRE_SIDE_MATCH`, set to `false` by
 Dr. Yatin's decision of 21 Nov 2026 (the side check failed for brushing across the face).
 WHEN it is `false` THE SYSTEM SHALL ignore `side` in 5.4 and 5.5.
+With both constants `false`, a present signal counts as brushing when `handNearMouth` and
+`moving` are both true; the game guides which zone, and the camera checks only that the
+child is brushing at the mouth.
 
 ---
 
@@ -186,7 +191,7 @@ running the active zone timer; the timer SHALL NOT pause or stall.
 or the signal is `null`.
 
 6.3 IF the signal is present and does not fully match the active zone (per 5.4),
-including when any field is `unknown`, THE SYSTEM SHALL NOT reduce the active monster's
+including when a field that requirement 5.7 requires is `unknown`, THE SYSTEM SHALL NOT reduce the active monster's
 health. IF the signal is `null`, in either mode, THE SYSTEM SHALL reduce the active
 monster's health by the untracked drain (requirement 7.7) and SHALL count that second as
 an untracked second for the zone.

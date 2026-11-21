@@ -19,11 +19,12 @@ Where a rule is marked **[TO CONFIRM]**, ask before building on it.
 - The brush hand is near the mouth and moving. The game tells the child which zone to
   brush; the camera does not check the side, because a child brushing across the face
   holds the hand on the other side (tested 21 Nov 2026).
-- Upper vs lower is judged roughly from hand height relative to the mouth.
+- The camera does not check upper vs lower either: for the chewing surface of the upper
+  teeth the hand hangs below the mouth (tested 21 Nov 2026). Dr. Yatin set
+  `REQUIRE_LEVEL_MATCH` to `false`.
 - If tracking is uncertain, the game gives the benefit of the doubt to time
   (the zone timer still runs) rather than punishing the child.
-- Brushing the wrong level (top instead of bottom, or the reverse) does **not** damage
-  the active monster, while level is checked.
+- The game guides the zone order; the camera confirms real brushing at the mouth.
 
 ## Wording rules (Indian dental advertising code, DCI)
 - No claims that the game prevents cavities, cures anything, or replaces a dental visit.

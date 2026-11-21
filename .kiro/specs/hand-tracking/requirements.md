@@ -58,8 +58,9 @@ them, the feature is dropped. The brushing rules in `dental-rules.md` belong to
 Dr. Yatin and are not changed by this spec. In particular, "brushing a zone" means the
 brush hand is near the mouth and moving (the game tells the child which zone to brush;
 the camera does not check the side, because a child brushing across the face holds the
-hand on the other side), upper versus lower is judged roughly from hand height relative
-to the mouth, and uncertain tracking gives the benefit of the doubt to time.
+hand on the other side; the camera does not check upper versus lower either, because for
+the chewing surface of the upper teeth the hand hangs below the mouth), and uncertain
+tracking gives the benefit of the doubt to time.
 
 ---
 
@@ -137,7 +138,8 @@ means the signal becomes `null`, not a guess.
 of its 3 `level` readings are right; all three readings SHALL be recorded anyway. IF the
 level check fails THEN Dr. Yatin SHALL set `REQUIRE_LEVEL_MATCH` to `false`
 (core requirement 5.7), and the game checks side only. THE system SHALL NOT change that
-constant on its own.
+constant on its own. The level check failed on 21 Nov 2026; see "Decision 2, 21 Nov 2026"
+below.
 
 1.13 A surface (outer, chewing or inner) of a zone PASSES the side check when at least 2
 of its 3 `side` readings are right; all three readings SHALL be recorded anyway. IF the
@@ -509,3 +511,23 @@ Dr. Yatin decided this on 21 Nov 2026, after the side check (requirement 1.13) w
 5. **The remaining feasibility test** records `level` and the other checks of section 5
    of the results file. The 24 side rows are no longer required. Requirements 1.6, 1.9(a)
    and 1.9(c) stay as written, and their side rows are marked as no longer required.
+
+
+## Decision 2, 21 Nov 2026
+
+Dr. Yatin decided this on 21 Nov 2026, after the level check (requirement 1.12) was run.
+
+1. **The level check failed on the chewing surface.** Right hand, upper right zone,
+   chewing surface: `level` read `lower`, `unknown`, `lower`. The brush lies flat at mouth
+   height and the palm hangs below the mouth. The outer surface of the same zone passed
+   (right, right, right) after `NEAR_MOUTH_FACE_WIDTHS` was tuned to 1.1.
+2. **Dr. Yatin chose to stop the test and stop checking level.** `REQUIRE_LEVEL_MATCH` is
+   `false` (core requirement 5.7). The camera checks that the child is brushing at the
+   mouth and moving. The game tells the child which zone to brush.
+3. **The `side` and `level` fields are still computed** and still shown on the debug
+   page. The signal shape does not change.
+4. **The feasibility test ends here for side and level.** The 24 level rows are no longer
+   required. Requirements 1.7 and 1.9(a) stay as written, and their level rows are marked
+   as no longer required.
+5. **The other checks of section 5 of the results file are still to be done:** second
+   hand, both hands, second person and poor light.
