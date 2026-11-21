@@ -23,7 +23,7 @@ else
 fi
 
 # 3. Kiro must not edit the spec during a build run (ticking boxes in tasks.md is allowed)
-spec_changes=$(git status --short -- .kiro | grep -v 'tasks\.md$' || true)
+spec_changes=$(git status --short -- .kiro | grep -v 'tasks.md$' | grep -v 'tasks.meta.json$' || true)  # tasks.meta.json = Kiro IDE run history (allowed 21 Nov 2026, Dr. Yatin)
 if [ -z "$spec_changes" ]; then say "spec untouched" "PASS"
 else say "spec untouched" "FAIL  -> STOP AND CALL DR. YATIN"; echo "$spec_changes"; fail=1; fi
 
