@@ -1,9 +1,12 @@
 // Every number used by tracking classification (design 5.5, req 3.7).
-// Starting values, tuned later on the debug page. None is a dental rule.
+// Starting values, tuned on the debug page. None is a dental rule.
 import type { HandPointKind } from './types';
 
-/** Distance from the mouth centre within which a hand point counts as at the mouth. Unit: face widths. */
-export const NEAR_MOUTH_FACE_WIDTHS = 0.7;
+/**
+ * Distance from the mouth centre within which a hand point counts as at the mouth. Unit: face widths.
+ * Tuned 21 Nov 2026 on the debug page (was 0.7): the palm sat 0.93-0.95 away for front teeth.
+ */
+export const NEAR_MOUTH_FACE_WIDTHS = 1.1;
 
 /** Sideways distance from the mouth centre line inside which side is unknown. Unit: face widths. */
 export const SIDE_DEAD_ZONE = 0.1;

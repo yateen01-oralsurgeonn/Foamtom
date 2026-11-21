@@ -115,12 +115,30 @@ describe('aggregateMajority', () => {
         const held = <T>(values: T[], v: T) => values.filter((x) => x === v).length * 2 > m;
         const sides = nearFrames.map((f) => f.side);
         const levels = nearFrames.map((f) => f.level);
-        const expectedSide = m === 0 ? 'unknown' : held(sides, 'left') ? 'left' : held(sides, 'right') ? 'right' : 'unknown';
-        const expectedLevel = m === 0 ? 'unknown' : held(levels, 'upper') ? 'upper' : held(levels, 'lower') ? 'lower' : 'unknown';
+        // Req 3.6: when the aggregated handNearMouth is false, side and level are unknown.
+        const meaningful = result.handNearMouth && m > 0;
+        const expectedSide = !meaningful ? 'unknown' : held(sides, 'left') ? 'left' : held(sides, 'right') ? 'right' : 'unknown';
+        const expectedLevel = !meaningful ? 'unknown' : held(levels, 'upper') ? 'upper' : held(levels, 'lower') ? 'lower' : 'unknown';
         expect(result.side).toBe(expectedSide);
         expect(result.level).toBe(expectedLevel);
       }),
     );
+  });
+
+  it('a second with handNearMouth false always has side and level unknown (req 3.6)', () => {
+    fc.assert(
+      fc.property(framesArb, (frames) => {
+        const result = aggregateSecond(frames);
+        if (result === null || result.handNearMouth) return;
+        expect(result.side).toBe('unknown');
+        expect(result.level).toBe('unknown');
+      }),
+    );
+  });
+
+  it('fewer than half of the frames near gives unknown side and level, even when the near frames agree', () => {
+    const frames = [...repeat(near('right', 'lower'), 3), ...repeat(away, 4)];
+    expect(aggregateSecond(frames)).toEqual({ handNearMouth: false, side: 'unknown', level: 'unknown', moving: false });
   });
 
   it('dead-zone frames among the near frames can stop a majority', () => {

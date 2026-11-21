@@ -35,7 +35,8 @@ export function aggregateSecond(frames: readonly FrameResult[]): BrushingSignal 
 
   let side: BrushingSignal['side'] = 'unknown';
   let level: BrushingSignal['level'] = 'unknown';
-  if (m > 0) {
+  // Req 3.6: side and level mean something only when the aggregated handNearMouth is true.
+  if (handNearMouth && m > 0) {
     if (majorityNear((f) => f.side === 'left')) side = 'left';
     else if (majorityNear((f) => f.side === 'right')) side = 'right';
     if (majorityNear((f) => f.level === 'upper')) level = 'upper';

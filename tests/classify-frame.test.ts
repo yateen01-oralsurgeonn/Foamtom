@@ -452,7 +452,7 @@ describe('twoHandsRule', () => {
         faceSpecArb,
         fc.double({ min: 0, max: 0.6, noNaN: true }),
         angleArb,
-        fc.double({ min: 0.8, max: 3, noNaN: true }),
+        fc.double({ min: NEAR_MOUTH_FACE_WIDTHS + 0.1, max: NEAR_MOUTH_FACE_WIDTHS + 2.3, noNaN: true }),
         angleArb,
         fc.double({ min: 0.5, max: 2.5, noNaN: true }),
         (face, r1, a1, r2, a2, aspect) => {
