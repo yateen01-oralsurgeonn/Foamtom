@@ -56,9 +56,10 @@ All requirements below comply with the steering files in `.kiro/steering/`. The 
 `kid-safety-privacy.md` override any other requirement here; if a feature cannot meet
 them, the feature is dropped. The brushing rules in `dental-rules.md` belong to
 Dr. Yatin and are not changed by this spec. In particular, "brushing a zone" means the
-brush hand is near the mouth on the side of the active zone and moving, upper versus
-lower is judged roughly from hand height relative to the mouth, and uncertain tracking
-gives the benefit of the doubt to time.
+brush hand is near the mouth and moving (the game tells the child which zone to brush;
+the camera does not check the side, because a child brushing across the face holds the
+hand on the other side), upper versus lower is judged roughly from hand height relative
+to the mouth, and uncertain tracking gives the benefit of the doubt to time.
 
 ---
 
@@ -142,7 +143,7 @@ constant on its own.
 of its 3 `side` readings are right; all three readings SHALL be recorded anyway. IF the
 side check fails THEN work on this spec SHALL stop, and Dr. Yatin SHALL decide what
 happens next. THE developer SHALL NOT tune thresholds around a failed side check without
-his decision.
+his decision. The side check failed on 21 Nov 2026; see "Decision, 21 Nov 2026" below.
 
 1.14 The feasibility test SHALL be the **first task** in `tasks.md`. No task for
 requirements 5 to 8 SHALL start before the results file exists and the decision rule in
@@ -488,3 +489,23 @@ Dr. Yatin answered the eight open questions on 19 Nov 2026.
 7. **Face lost.** The monster keeps the plain-screen position (requirement 8.4).
 8. **Results file.** The row layout of `docs/review/TRACKING-TEST-RESULTS.md` is decided
    in `design.md`.
+
+
+## Decision, 21 Nov 2026
+
+Dr. Yatin decided this on 21 Nov 2026, after the side check (requirement 1.13) was run.
+
+1. **The side check failed for brushing across the face.** With the brush in the right
+   hand reaching across the face to the lower left zone, `side` read `right`, with the
+   palm as the hand point. The camera sees the hand, not the brush head, and the hand
+   stays on the right of the mouth. Same-side brushing read correctly.
+2. **The mirror-flip check (requirement 1.8) passed.**
+3. **Dr. Yatin chose to stop checking side.** The camera checks that the child is
+   brushing, not which side. `REQUIRE_SIDE_MATCH` is `false` (core requirement 5.7). The
+   game still tells the child which zone to brush, and the monster still sits on that
+   zone's cheek.
+4. **The `side` field is still computed** and still shown on the debug page. The signal
+   shape does not change.
+5. **The remaining feasibility test** records `level` and the other checks of section 5
+   of the results file. The 24 side rows are no longer required. Requirements 1.6, 1.9(a)
+   and 1.9(c) stay as written, and their side rows are marked as no longer required.

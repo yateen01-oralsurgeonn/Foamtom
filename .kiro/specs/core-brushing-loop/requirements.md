@@ -168,6 +168,9 @@ mean: the hand is at the mouth but that side or level is unclear.
 `false` THE SYSTEM SHALL ignore `level` in 5.4 and 5.5 (side-only checking). It is set to
 `false` only by Dr. Yatin's decision if the hand-tracking test shows that upper and lower
 cannot be told apart.
+THE SYSTEM SHALL also hold a second constant, `REQUIRE_SIDE_MATCH`, set to `false` by
+Dr. Yatin's decision of 21 Nov 2026 (the side check failed for brushing across the face).
+WHEN it is `false` THE SYSTEM SHALL ignore `side` in 5.4 and 5.5.
 
 ---
 
@@ -200,8 +203,8 @@ right spot, so that brushing feels like defeating it.**
 7.2 WHILE the active zone is being brushed (signal matches per 5.4) THE SYSTEM SHALL
 reduce the active monster's health.
 
-7.3 WHILE the active zone is not being brushed, or the wrong zone is being brushed THE
-SYSTEM SHALL NOT reduce the active monster's health (signal present and not matching).
+7.3 WHILE the active zone is not being brushed THE SYSTEM SHALL NOT reduce the active
+monster's health (signal present and not matching per 5.4).
 
 7.4 WHEN a monster's health reaches zero THE SYSTEM SHALL mark that monster as **defeated**
 (it "shrieks and dissolves into smoke").

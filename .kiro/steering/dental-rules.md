@@ -16,11 +16,14 @@ Where a rule is marked **[TO CONFIRM]**, ask before building on it.
 - Zone order: upper right, upper left, lower left, lower right.
 
 ## What "brushing a zone" means to the game
-- The brush hand is near the mouth on the side of the active zone, and moving.
+- The brush hand is near the mouth and moving. The game tells the child which zone to
+  brush; the camera does not check the side, because a child brushing across the face
+  holds the hand on the other side (tested 21 Nov 2026).
 - Upper vs lower is judged roughly from hand height relative to the mouth.
 - If tracking is uncertain, the game gives the benefit of the doubt to time
   (the zone timer still runs) rather than punishing the child.
-- Brushing the wrong zone does **not** damage the active monster.
+- Brushing the wrong level (top instead of bottom, or the reverse) does **not** damage
+  the active monster, while level is checked.
 
 ## Wording rules (Indian dental advertising code, DCI)
 - No claims that the game prevents cavities, cures anything, or replaces a dental visit.

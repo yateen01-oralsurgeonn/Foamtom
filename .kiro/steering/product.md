@@ -27,7 +27,7 @@ A timer alone does not show them *where* they skipped.
 2. Allow the front camera, or skip it (guided-timer mode).
 3. Four zones, 30 seconds each. The voice names the zone ("A ghoul is hiding upper left!").
    A monster sits over that zone.
-4. Brushing the right zone shrinks the monster to smoke. Brushing the wrong side does nothing.
+4. Brushing the right zone shrinks the monster to smoke. Brushing with the hand away from the mouth, or not moving, does nothing.
 5. At 2:00 the trapped monsters go into the **Monster Book**.
 
 ## Why the child comes back
