@@ -261,3 +261,19 @@ button.book-cell {
   line-height: 1.35;
   color: #e6dcf7;
 }
+
+/* ---- Caption plate (task 30): an opaque plate, so fog and cracks cannot change legibility.
+   Contrast of --caption-fg on --caption-bg is at least 4.5 to 1 (checked by a test). ---- */
+:root {
+  --caption-fg: #ffffff;
+  --caption-bg: #2b1f52;
+}
+
+.caption {
+  position: relative;
+  z-index: 2;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--caption-bg);
+  color: var(--caption-fg);
+}

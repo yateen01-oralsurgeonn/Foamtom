@@ -375,10 +375,10 @@ through to the end card.
 
 - [ ] 30. **Caption contrast**
   - Mark: needed for the video (req 4.5, 11.7).
-  - [ ] 30.1 In `src/ui/screens.css` define `--caption-fg` and `--caption-bg` on `:root` as 6-digit hex colours with a contrast ratio of at least 4.5 to 1, and restyle `.caption` with them so that the caption sits on an opaque plate. `screens.css` loads after `styles.css`, so `styles.css` is not edited. The caption stays outside the frame and above the fog
-  - [ ] 30.2 Test `captionContrast` (design test 23): `--caption-fg` and `--caption-bg` are 6-digit hex values found in `screens.css`; their contrast ratio, computed with the standard relative-luminance formula, is at least 4.5
+  - [x] 30.1 In `src/ui/screens.css` define `--caption-fg` and `--caption-bg` on `:root` as 6-digit hex colours with a contrast ratio of at least 4.5 to 1, and restyle `.caption` with them so that the caption sits on an opaque plate. `screens.css` loads after `styles.css`, so `styles.css` is not edited. The caption stays outside the frame and above the fog
+  - [x] 30.2 Test `captionContrast` (design test 23): `--caption-fg` and `--caption-bg` are 6-digit hex values found in `screens.css`; their contrast ratio, computed with the standard relative-luminance formula, is at least 4.5
   - [ ] 30.3 Check by hand (M2, legibility): `npm run dev`. During a session the caption is easy to read over the frame and fog, in all four zones, and the fog never covers the face or the monster
-  - [ ] 30.4 Run `npm run test:run` and `npm run build`: both pass. The game runs with the new caption plate
+  - [x] 30.4 Run `npm run test:run` and `npm run build`: both pass. The game runs with the new caption plate
   - _Requirements: 4.5, 11.7_
   - Test file: `tests/caption-contrast.test.ts`
   - Files this task may change: `src/ui/screens.css`, `tests/caption-contrast.test.ts`
