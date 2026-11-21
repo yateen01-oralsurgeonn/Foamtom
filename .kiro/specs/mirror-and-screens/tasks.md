@@ -144,13 +144,13 @@ through to the end card.
   - Test file: `tests/display-text.test.ts`, `tests/new-text-guard.test.ts`
   - Files this task may change: `src/ui/display-text.ts`, `tests/display-text.test.ts`, `tests/new-text-guard.test.ts`
 
-- [ ] 9. **Tap targets and title controls (pure)**
+- [x] 9. **Tap targets and title controls (pure)**
   - Mark: needed for the video (req 1, 7.7, 9.3, 11.4). The `parent` row and control are later (tasks 36 to 38).
-  - [ ] 9.1 Create `src/ui/tap-targets.ts` with `TapTargetId`, `TapTarget` and `TAP_TARGETS` (design section 5.5 starting values: `start` 160 x 72, `titleBook` 128 x 52, `bookCell` 72 x 72, `bookBack` 96 x 48, `endDone` 160 x 72, `endBook` 128 x 56). No `parent` row yet
-  - [ ] 9.2 Create `src/ui/title-model.ts` with `TitleControl` and `titleControls()` returning two controls: `start` (`large`, target `start`, text id `start-line`, icon) and `book` (`small`, target `titleBook`, text id `book-title`, icon)
-  - [ ] 9.3 Test `tapTargets` (design test 22, needed part): every entry is at least 48 x 48; `titleBook` is smaller than `start` in width and in height; `start` equals the `min-width` and `min-height` of `.big-button` in `src/ui/styles.css` (read the file and compare)
-  - [ ] 9.4 Test `titleModel` (design test 21, needed part): exactly one `large` control and it is `start`; one `small` control, `book`; each has an icon and a text id; no control id or text id mentions sound, mute or volume; `privacy` is a `DISPLAY_TEXT` entry of kind `shown`
-  - [ ] 9.5 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the files yet, so the game is unchanged
+  - [x] 9.1 Create `src/ui/tap-targets.ts` with `TapTargetId`, `TapTarget` and `TAP_TARGETS` (design section 5.5 starting values: `start` 160 x 72, `titleBook` 128 x 52, `bookCell` 72 x 72, `bookBack` 96 x 48, `endDone` 160 x 72, `endBook` 128 x 56). No `parent` row yet
+  - [x] 9.2 Create `src/ui/title-model.ts` with `TitleControl` and `titleControls()` returning two controls: `start` (`large`, target `start`, text id `start-line`, icon) and `book` (`small`, target `titleBook`, text id `book-title`, icon)
+  - [x] 9.3 Test `tapTargets` (design test 22, needed part): every entry is at least 48 x 48; `titleBook` is smaller than `start` in width and in height; `start` equals the `min-width` and `min-height` of `.big-button` in `src/ui/styles.css` (read the file and compare)
+  - [x] 9.4 Test `titleModel` (design test 21, needed part): exactly one `large` control and it is `start`; one `small` control, `book`; each has an icon and a text id; no control id or text id mentions sound, mute or volume; `privacy` is a `DISPLAY_TEXT` entry of kind `shown`
+  - [x] 9.5 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the files yet, so the game is unchanged
   - _Requirements: 1.1, 1.2, 1.8, 7.7, 9.3, 10.11, 11.4, 15.9, 16.2_
   - Test file: `tests/tap-targets.test.ts`, `tests/title-model.test.ts`
   - Files this task may change: `src/ui/tap-targets.ts`, `src/ui/title-model.ts`, `tests/tap-targets.test.ts`, `tests/title-model.test.ts`
