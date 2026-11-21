@@ -230,13 +230,13 @@ starts in camera mode. Guided-timer mode is never changed.
   - Test file: none new (the logic it paints is already tested); the privacy guard and `camera-preview` source scan must still pass
   - Files this task may change: `src/ui/session-screen.ts`, `src/ui/camera-preview.ts`
 
-- [ ] 9. **Wire the camera into the game (lazy)**
+- [x] 9. **Wire the camera into the game (lazy)**
   - [x] 9.1 In `src/main.ts`, inside the start-button handler only, load the camera source with a dynamic `import()` of `camera-source.ts` and pass it to the game loop in place of `nullSignalSource`. No static import of any camera, tracker or MediaPipe module anywhere in `main.ts` or the title screen. If the import fails, use `nullSignalSource`
   - [x] 9.2 Subscribe the session screen's preview to `onDraw`; paint the anchor from `monsterAnchor(draw, zone)`; attach the camera's video to the preview. When the draw value is `null`, show the plain position with no message. In timer-only mode do nothing of this
   - [x] 9.3 `attachVideo` and the preview are removed when the session ends; `stop()` is already called by the loop
   - [x] 9.4 Extend `tests/build-output.test.ts`: test `cameraCodeIsLazy` (design test 27: build with the manifest and fail if the entry chunk's static imports reach the chunk holding `camera-source` or `tasks-vision`); test `firstLoadUnder5MB` (design test 28: sum the bytes of every built file except `models/` and the lazy camera chunk; fail above 5,000,000)
   - [x] 9.5 Check by hand with the network panel open: load the title screen, and no `.task`, `.tflite` or `.wasm` request appears; tap start, and the model and WASM requests go only to this origin
-  - [ ] 9.6 Check by hand: allow the camera and play a session; refuse the camera and play a session (the plain screen, no preview, no nagging, a second session does not prompt more than the browser itself does)
+  - [x] 9.6 Check by hand: allow the camera and play a session; refuse the camera and play a session (the plain screen, no preview, no nagging, a second session does not prompt more than the browser itself does)
   - _Requirements: 6.1, 6.3, 7.1, 8.1, 8.2, 8.4, 8.6, 10.3_
   - Test file: `tests/build-output.test.ts`
   - Files this task may change: `src/main.ts`, `tests/build-output.test.ts`

@@ -109,3 +109,9 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   f08 rewrote task 2 for the decisions; TASK 2 DONE (ba0abe6, 199 tests). Next: tasks 3-9 via b00
   (one per run, check-task.sh, commit, push), then task 10 = his phone checks, task 11 README.
   Leftover small spec text: core design.md ~line 311 and test table ~line 620 still describe level-only matching.
+- 21 Nov ~16:45: TASKS 3-9 DONE (f09 settled task 4 start() count by his decision). 9.5 checked by Claude
+  in Playwright (no model requests on title, same origin only). 9.6 by Dr. Yatin in Edge: camera allowed ->
+  mirror + monster on cheek, monster shrank to smoke while brushing; camera blocked -> timer only, no
+  mirror, no nagging. Small later fixes: WASM loads twice; models still download when camera refused.
+  Next: task 10 (real phone checks, him) and task 11 (README) - he wants to do task 11 in the Kiro IDE
+  (Start task link), for the judges' "IDE or CLI" question and the video. Hooks still untested in the IDE.
