@@ -85,3 +85,14 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   the results file from his spoken readings.
 - Console on the debug page is clean apart from MediaPipe notes (verified with Playwright and
   Chrome); the WASM file loads twice per page load (14.7 MB each): small loader fix later.
+
+## Update 21 Nov, afternoon
+
+- Mirror-flip check PASSED (left hand at left lower reads `left`, hand on the left of the preview).
+- Side check FAILED for brushing across the face (right hand at lower left reads `right`: side comes
+  from the palm, and the camera cannot see the brush head). Dr. Yatin chose option 1: the camera checks
+  THAT the child brushes, not which side. Steering (dental-rules, product step 4) amended with his yes;
+  spec f06 by Kiro (79f87d9); code `REQUIRE_SIDE_MATCH = false` by Kiro (2a8977e), 192 tests pass.
+- Next: the LEVEL test only (24 rows, 3 tries each, both hands), one position at a time, codes RRR etc.
+  Reading cells must be exactly 3 letters or left empty (tests/test-results.test.ts checks the file).
+  Verdict text goes on the line BELOW "Side check:" / "Level check:".
