@@ -13,6 +13,8 @@ import type { ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
 import type { CameraPreview } from './camera-preview';
 import { frameGuidance } from './frame-guidance';
+import { GATE_OPEN, gateOnAnimationEnd, gateOnPaint, nextMonsterVisible } from './leaving-gate';
+import type { LeavingGate } from './leaving-gate';
 import { createMirrorFrame } from './mirror-frame';
 import { drawMonster } from './monster-art';
 import { monsterDrawState, monsterScale, smokeLook } from './monster-draw-state';
@@ -134,10 +136,41 @@ export function createSessionScreen(
   // At most one leaving copy exists. It is removed on `animationend`, on the next zone end,
   // on pause, on ended and in showStart(). No timer.
   let leavingEl: HTMLElement | null = null;
+  // While a leaving copy exists the next monster is hidden (design section 5.12).
+  let gate: LeavingGate = GATE_OPEN;
+  let lastView: View | null = null;
 
   function removeLeaving(): void {
     leavingEl?.remove();
     leavingEl = null;
+    gate = GATE_OPEN;
+  }
+
+  /** Paints the live monster and its smoke from one view. Hidden while the gate is closed. */
+  function paintMonster(view: View, monster: HTMLElement | null): void {
+    const activeCell = cells.get(view.zoneId);
+    const home = currentPreview ? currentPreview.monsterSlot : activeCell;
+    if (home && monster && stage.parentElement !== home) home.append(stage);
+
+    if (monster) {
+      const waiting = !nextMonsterVisible(gate);
+      const drawState = monsterDrawState(view, null);
+      const alive = !waiting && (drawState === 'sitting' || drawState === 'shrinking');
+      monster.hidden = !alive;
+      monsterName.hidden = !alive;
+      if (alive) monster.style.transform = `scale(${monsterScale(view.healthFraction).toFixed(3)})`;
+      // Smoke only after a defeat; it thins in puffs, size and opacity.
+      const look = smokeLook(view.smokeFraction);
+      const showSmoke = !waiting && drawState === 'defeated';
+      smoke.hidden = !showSmoke;
+      if (showSmoke) {
+        smokePuffs.forEach((puff, index) => {
+          puff.hidden = index >= look.puffs;
+        });
+        smoke.style.transform = `scale(${look.scale.toFixed(3)})`;
+        smoke.style.opacity = look.opacity.toFixed(3);
+      }
+    }
   }
 
   function drawLeaving(zoneEnd: ZoneEnd, view: View): void {
@@ -167,7 +200,11 @@ export function createSessionScreen(
     copy.setAttribute('aria-hidden', 'true');
     copy.append(body);
     body.addEventListener('animationend', (event) => {
-      if (event.target === body && copy === leavingEl) removeLeaving();
+      if (event.target === body && copy === leavingEl) {
+        removeLeaving();
+        gate = gateOnAnimationEnd(gate);
+        if (lastView) paintMonster(lastView, showMonster(lastView.monsterId)); // the next monster appears now
+      }
     });
 
     // Placement strings only; no tracking value is read.
@@ -191,6 +228,7 @@ export function createSessionScreen(
   return {
     showStart(): void {
       removeLeaving();
+      lastView = null;
       titlePanel.enableStart();
       spokenLineId = null;
       frame.paint(frameGuidance(null)); // a new session never starts with a lit region
@@ -203,6 +241,7 @@ export function createSessionScreen(
     paint(view: View, zoneEnd?: ZoneEnd): void {
       if (view.phase === 'ended') {
         removeLeaving();
+        lastView = null;
         return; // the end card takes over
       }
       if (view.phase === 'paused') removeLeaving();
@@ -224,29 +263,14 @@ export function createSessionScreen(
       // The leaving copy is drawn where the monster was, before the stage moves on.
       if (zoneEnd) drawLeaving(zoneEnd, view);
       for (const [id, cell] of cells) cell.classList.toggle('zone--active', id === view.zoneId);
-      const activeCell = cells.get(view.zoneId);
-      const monster = showMonster(view.monsterId);
-      const home = currentPreview ? currentPreview.monsterSlot : activeCell;
-      if (home && monster && stage.parentElement !== home) home.append(stage);
 
-      if (monster) {
-        const drawState = monsterDrawState(view, null);
-        const alive = drawState === 'sitting' || drawState === 'shrinking';
-        monster.hidden = !alive;
-        monsterName.hidden = !alive;
-        if (alive) monster.style.transform = `scale(${monsterScale(view.healthFraction).toFixed(3)})`;
-        // Smoke only after a defeat; it thins in puffs, size and opacity.
-        const look = smokeLook(view.smokeFraction);
-        const showSmoke = drawState === 'defeated';
-        smoke.hidden = !showSmoke;
-        if (showSmoke) {
-          smokePuffs.forEach((puff, index) => {
-            puff.hidden = index >= look.puffs;
-          });
-          smoke.style.transform = `scale(${look.scale.toFixed(3)})`;
-          smoke.style.opacity = look.opacity.toFixed(3);
-        }
-      }
+      // The next monster waits for the leaving copy (at most MAX_LEAVING_PAINTS paints).
+      const wasLeaving = gate.leaving;
+      gate = gateOnPaint(gate, { zoneEnd, phase: view.phase });
+      if (gate.leaving && !leavingEl) gate = GATE_OPEN; // no copy was drawn: nothing to wait for
+      if (wasLeaving && !gate.leaving) removeLeaving(); // the gate opened by paint count
+      lastView = view;
+      paintMonster(view, showMonster(view.monsterId));
       sessionPanel.classList.toggle('is-paused', view.phase === 'paused');
     },
 
