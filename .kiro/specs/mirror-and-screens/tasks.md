@@ -587,7 +587,7 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - [ ] 45.8 Run `npm run test:run` and `npm run build`: both pass. In a session each brushing tick now flinches the monster
   - _Requirements: 6.9, 6.10, 11.2, 11.3, 11.9, 15.4, 15.11_
   - Test file: `tests/hit-feedback.test.ts`
-  - Files this task may change: `src/ui/hit-feedback.ts`, `src/ui/effects.ts`, `src/ui/session-screen.ts`, `src/ui/monster-art.css`, `src/main.ts` (only to pass the effects value), `tests/hit-feedback.test.ts`, `tests/effects.test.ts` (the one new field), `tests/css-guards.test.ts` (only if needed)
+  - Files this task may change: `src/ui/hit-feedback.ts`, `src/ui/effects.ts`, `src/ui/session-screen.ts`, `src/ui/monster-art.css`, `src/main.ts` (only to pass the effects value), `tests/hit-feedback.test.ts`, `tests/effects.test.ts` (the one new field), `tests/css-guards.test.ts` (only if needed), `tests/effects-host.test.ts` (add `'fx-no-hit'` to `MOVING_CLASSES` (about line 58) because the test pins the list of moving-effect classes and fails without it; nothing else in that file changes and no assertion is weakened; Dr. Yatin's decision of 21 Nov 2026: no flinch with reduced motion)
 
 - [ ] 46. **Smoke readable over the camera picture (small change only)**
   - Mark: needed for the video (req 6.12).
