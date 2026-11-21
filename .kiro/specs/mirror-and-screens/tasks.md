@@ -327,13 +327,13 @@ through to the end card.
   - Test file: `tests/book-model.test.ts`
   - Files this task may change: `src/ui/book-model.ts`, `tests/book-model.test.ts`
 
-- [ ] 26. **Speaking monster names: `sayText` and book speech**
+- [x] 26. **Speaking monster names: `sayText` and book speech**
   - Mark: needed for the video (req 7.4, 10.8, 10.9).
-  - [ ] 26.1 In `src/audio/speaker.ts` add `TextSpeaker { sayText(text) }` and make `createBrowserSpeaker` return `Speaker & TextSpeaker`. `sayText` cancels what is being said, picks a voice with the existing `pickLocalVoice`, and speaks the text with the existing gentle volume. With no local voice it does nothing. `Speaker`, `silentSpeaker`, `rampGain`, `GAIN_LEVEL`, `GAIN_STEP_PER_MS` and `CLIP_LINE_IDS` are not changed, and the pre-spec `tests/speaker.test.ts` passes unchanged
-  - [ ] 26.2 In `src/audio/audio-kit.ts` let the kit's speaker pass `sayText` through, so its type is `Speaker & TextSpeaker`, and its `stop()` still stops the sounds
-  - [ ] 26.3 Create `src/ui/book-speech.ts` with `createBookSpeech(speaker)` that runs a `BookTapAction`: `say-name` calls `speaker.stop()` and then `speaker.sayText(name)`; `none` does nothing. A new tap therefore replaces what is being said and never queues. No DOM
-  - [ ] 26.4 Test `bookSpeech` (design test 11, needed part), with a fake speaker that records `stop`, `say` and `sayText`: an owned tap calls `stop` then `sayText(name)` once; a second tap calls `stop` again before its own `sayText`; a not-owned tap never calls `sayText`. Also: `sayText` with no local voice does not throw (use the fake speech-synthesis pattern of `tests/speaker.test.ts`, copied into the new test)
-  - [ ] 26.5 Run `npm run test:run` and `npm run build`: both pass. Nothing calls `sayText` yet, so the game sounds as before
+  - [x] 26.1 In `src/audio/speaker.ts` add `TextSpeaker { sayText(text) }` and make `createBrowserSpeaker` return `Speaker & TextSpeaker`. `sayText` cancels what is being said, picks a voice with the existing `pickLocalVoice`, and speaks the text with the existing gentle volume. With no local voice it does nothing. `Speaker`, `silentSpeaker`, `rampGain`, `GAIN_LEVEL`, `GAIN_STEP_PER_MS` and `CLIP_LINE_IDS` are not changed, and the pre-spec `tests/speaker.test.ts` passes unchanged
+  - [x] 26.2 In `src/audio/audio-kit.ts` let the kit's speaker pass `sayText` through, so its type is `Speaker & TextSpeaker`, and its `stop()` still stops the sounds
+  - [x] 26.3 Create `src/ui/book-speech.ts` with `createBookSpeech(speaker)` that runs a `BookTapAction`: `say-name` calls `speaker.stop()` and then `speaker.sayText(name)`; `none` does nothing. A new tap therefore replaces what is being said and never queues. No DOM
+  - [x] 26.4 Test `bookSpeech` (design test 11, needed part), with a fake speaker that records `stop`, `say` and `sayText`: an owned tap calls `stop` then `sayText(name)` once; a second tap calls `stop` again before its own `sayText`; a not-owned tap never calls `sayText`. Also: `sayText` with no local voice does not throw (use the fake speech-synthesis pattern of `tests/speaker.test.ts`, copied into the new test)
+  - [x] 26.5 Run `npm run test:run` and `npm run build`: both pass. Nothing calls `sayText` yet, so the game sounds as before
   - _Requirements: 7.4, 7.5, 10.8, 10.9, 15.9_
   - Test file: `tests/book-speech.test.ts`
   - Files this task may change: `src/audio/speaker.ts`, `src/audio/audio-kit.ts`, `src/ui/book-speech.ts`, `tests/book-speech.test.ts`

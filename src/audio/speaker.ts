@@ -59,8 +59,14 @@ function rampCurve(): Float32Array {
   return curve;
 }
 
+/** Speaks free text, such as a monster's name (req 7.4). Not a voice line: it has no id. */
+export interface TextSpeaker {
+  /** Cancels what is being said, then speaks the text. Does nothing without a local voice. */
+  sayText(text: string): void;
+}
+
 /** The browser speaker. Safe to create where no audio or speech exists: it then says nothing. */
-export function createBrowserSpeaker(): Speaker {
+export function createBrowserSpeaker(): Speaker & TextSpeaker {
   const g = globalThis as unknown as {
     AudioContext?: typeof AudioContext;
     speechSynthesis?: SpeechSynthesis;
@@ -117,6 +123,15 @@ export function createBrowserSpeaker(): Speaker {
       if (!line) return;
       if (playClip(lineId)) return;
       speak(line.text);
+    },
+
+    sayText(text: string): void {
+      try {
+        g.speechSynthesis?.cancel();
+      } catch {
+        // nothing to cancel
+      }
+      speak(text);
     },
 
     stop(): void {

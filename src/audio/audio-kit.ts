@@ -4,28 +4,31 @@
 import { createSoundPlayer } from './sound-player';
 import type { Sounds } from './sound-player';
 import { createBrowserSpeaker } from './speaker';
-import type { Speaker } from './speaker';
+import type { Speaker, TextSpeaker } from './speaker';
 
 export interface AudioKit {
-  readonly speaker: Speaker;
+  readonly speaker: Speaker & TextSpeaker;
   readonly sounds: Sounds;
 }
 
 export interface AudioKitDeps {
-  readonly speaker?: Speaker;
+  readonly speaker?: Speaker & Partial<TextSpeaker>;
   readonly sounds?: Sounds;
 }
 
 export function createAudioKit(deps: AudioKitDeps = {}): AudioKit {
   const voice = deps.speaker ?? createBrowserSpeaker();
   const sounds = deps.sounds ?? createSoundPlayer();
-  const speaker: Speaker = {
+  const speaker: Speaker & TextSpeaker = {
     unlock(): void {
       voice.unlock();
       sounds.unlock();
     },
     say(lineId: string): void {
       voice.say(lineId);
+    },
+    sayText(text: string): void {
+      voice.sayText?.(text);
     },
     stop(): void {
       voice.stop();
