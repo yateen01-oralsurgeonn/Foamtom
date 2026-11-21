@@ -11,9 +11,7 @@ import { MONSTERS } from '../logic/monsters';
 import type { MonsterDef, ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
 import type { CameraPreview } from './camera-preview';
-
-/** The smallest the monster is drawn, so it never vanishes before it is defeated. */
-const MIN_MONSTER_SCALE = 0.35;
+import { MIN_MONSTER_SCALE } from './monster-draw-state';
 
 /** Mouth grid in mirror order: the child's right is on the right of the screen. */
 const GRID: readonly { id: ZoneId; label: string }[] = [

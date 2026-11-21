@@ -85,14 +85,14 @@ through to the end card.
   - Test file: `tests/frame-guidance.test.ts`
   - Files this task may change: `src/ui/frame-guidance.ts`, `tests/frame-guidance.test.ts`
 
-- [ ] 3. **Monster draw state, smoke look and zone-end event (pure)**
+- [x] 3. **Monster draw state, smoke look and zone-end event (pure)**
   - Mark: needed for the video (req 6, 15.2).
-  - [ ] 3.1 Create `src/ui/monster-draw-state.ts` with `MIN_MONSTER_SCALE` (0.35, the value `session-screen.ts` has now), `MonsterDrawState`, `ZoneEndOutcome`, `ZoneEnd`, `SmokeLook`, `monsterDrawState(view, endOutcome)`, `monsterScale(h)`, `smokeLook(f)` and `zoneEndEvent(prev, next)` as in design section 5.4
-  - [ ] 3.2 In `src/ui/session-screen.ts` replace only the local `MIN_MONSTER_SCALE` constant with an import from the new file. Nothing else changes and the behaviour is the same
-  - [ ] 3.3 Test `monsterDrawStateProperties` (design test 4): one state for every generated `View` and outcome; health 1 gives `sitting`; between 0 and 1 gives `shrinking`; 0 with smoke above 0 gives `defeated`; 0 with no smoke gives `gone`; the outcomes `defeated`, `fled` and `trapped` give those states; the same input gives the same state
-  - [ ] 3.4 Test `scaleAndSmokeLook` (design test 5): `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1 and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff and anything above 0 gives at least one
-  - [ ] 3.5 Test `zoneEndEvents` (design test 6): over any 120 signals-or-null in either mode, exactly four events per session, in zone order, none `pending`, each equal to the final `monsters[i].outcome`; no event when the state is paused or resumed (use the existing `pause` and `resume`); the number of events is the same for every signal sequence
-  - [ ] 3.6 Run `npm run test:run` and `npm run build`: both pass. The game looks the same
+  - [x] 3.1 Create `src/ui/monster-draw-state.ts` with `MIN_MONSTER_SCALE` (0.35, the value `session-screen.ts` has now), `MonsterDrawState`, `ZoneEndOutcome`, `ZoneEnd`, `SmokeLook`, `monsterDrawState(view, endOutcome)`, `monsterScale(h)`, `smokeLook(f)` and `zoneEndEvent(prev, next)` as in design section 5.4
+  - [x] 3.2 In `src/ui/session-screen.ts` replace only the local `MIN_MONSTER_SCALE` constant with an import from the new file. Nothing else changes and the behaviour is the same
+  - [x] 3.3 Test `monsterDrawStateProperties` (design test 4): one state for every generated `View` and outcome; health 1 gives `sitting`; between 0 and 1 gives `shrinking`; 0 with smoke above 0 gives `defeated`; 0 with no smoke gives `gone`; the outcomes `defeated`, `fled` and `trapped` give those states; the same input gives the same state
+  - [x] 3.4 Test `scaleAndSmokeLook` (design test 5): `monsterScale` is never below `MIN_MONSTER_SCALE`, never above 1 and never rises as health falls; `smokeLook` puffs, scale and opacity never rise as smoke falls; 0 gives no puff and anything above 0 gives at least one
+  - [x] 3.5 Test `zoneEndEvents` (design test 6): over any 120 signals-or-null in either mode, exactly four events per session, in zone order, none `pending`, each equal to the final `monsters[i].outcome`; no event when the state is paused or resumed (use the existing `pause` and `resume`); the number of events is the same for every signal sequence
+  - [x] 3.6 Run `npm run test:run` and `npm run build`: both pass. The game looks the same
   - _Requirements: 6.1, 6.2, 6.5, 6.6, 6.7, 15.2, 16.2_
   - Test file: `tests/monster-draw-state.test.ts`
   - Files this task may change: `src/ui/monster-draw-state.ts`, `src/ui/session-screen.ts` (the one import), `tests/monster-draw-state.test.ts`
