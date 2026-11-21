@@ -137,3 +137,85 @@
     --u: 0.85px;
   }
 }
+
+/* ---- Monster Book (task 27). Fixed four-column grids for now; the reflow comes later. ---- */
+.book {
+  gap: 14px;
+  animation: screen-fade-in 600ms ease-out both;
+}
+
+.book__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.book__title {
+  margin: 0;
+  flex: 1;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.icon-button {
+  min-width: 96px;
+  min-height: 48px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 3px solid #f4eefc;
+  border-radius: 999px;
+  background: #3b2d66;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.icon-button__icon {
+  font-size: 1.3rem;
+}
+
+.book__commons,
+.book__rares {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px 6px;
+}
+
+.book-cell {
+  --u: 0.6px;
+  min-width: 72px;
+  min-height: 72px;
+  padding: 4px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+button.book-cell {
+  cursor: pointer;
+}
+
+.book-cell__name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.book__caption {
+  min-height: 2.6rem;
+}
