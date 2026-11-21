@@ -66,7 +66,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 
 | Date | Brush hand | Zone | Surface | Palm | Wrist | Fingertips | Result | Note |
 |---|---|---|---|---|---|---|---|---|
-| | Right | Upper right | Outer | | | | | |
+| 2026-11-21 | Right | Upper right | Outer | RRR | | | Pass | After NEAR_MOUTH_FACE_WIDTHS 0.7 -> 1.1; handNearMouth true on all 3; moving false (hand still while taking the screenshot) |
 | | Right | Upper right | Chewing | | | | | |
 | | Right | Upper right | Inner | | | | | |
 | | Right | Upper left | Outer | | | | | |
