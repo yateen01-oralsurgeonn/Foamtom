@@ -8,11 +8,12 @@
 import { getLine } from '../audio/lines';
 import type { Speaker } from '../audio/speaker';
 import { MONSTERS } from '../logic/monsters';
-import type { MonsterDef, ZoneId } from '../logic/types';
+import type { ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
 import type { CameraPreview } from './camera-preview';
 import { frameGuidance } from './frame-guidance';
 import { createMirrorFrame } from './mirror-frame';
+import { drawMonster } from './monster-art';
 import { MIN_MONSTER_SCALE } from './monster-draw-state';
 
 /** Mouth grid in mirror order: the child's right is on the right of the screen. */
@@ -34,20 +35,8 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-/**
- * Draws one cute monster from plain elements. Shared with the end card.
- * Rare monsters get a star, so rarity is not shown by colour alone.
- */
-export function drawMonster(def: MonsterDef): HTMLElement {
-  const body = el('div', `monster monster--${def.id}`);
-  body.setAttribute('role', 'img');
-  body.setAttribute('aria-label', def.name);
-  body.append(el('span', 'monster__ear monster__ear--left'), el('span', 'monster__ear monster__ear--right'));
-  body.append(el('span', 'monster__eye monster__eye--left'), el('span', 'monster__eye monster__eye--right'));
-  body.append(el('span', 'monster__mouth'));
-  if (def.rarity === 'rare') body.append(el('span', 'monster__star', '\u2605'));
-  return body;
-}
+// `drawMonster` lives in `monster-art.ts`; it is re-exported so `end-card.ts` keeps its import.
+export { drawMonster } from './monster-art';
 
 export interface SessionScreenHandlers {
   /** The big start button was tapped. */
