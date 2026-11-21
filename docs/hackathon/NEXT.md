@@ -103,3 +103,5 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
 - Still to do in task 1: section 5 "other checks" (DONE 21 Nov: 1-3 pass; second person FAIL, needs a screenshot; lights dimmed NOT done, after dark; both hands
   near, second person, lights dimmed -> null). Small spec leftover: core design.md still lists
   REQUIRE_LEVEL_MATCH default true (fix in next Kiro run). Then tasks 2-11 of hand-tracking.
+- Second person: PASS (161ab34+). Open idea for Dr. Yatin, not decided: follow the face that has a hand at
+  its mouth instead of the largest face (a sibling leaning in closer than the brushing child takes over).

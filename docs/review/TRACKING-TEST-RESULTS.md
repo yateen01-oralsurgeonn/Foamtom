@@ -100,7 +100,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | 2026-11-21 | Hand resting on sink edge | The signal follows the hand at the mouth | Pass | Other hand resting on the table |
 | 2026-11-21 | Hand touching cheek | The signal follows the hand at the mouth | Pass | No change in the reading |
 | 2026-11-21 | Both hands near the mouth | Pass is `side` reading `unknown` | Pass | Side and level both `unknown` |
-| 2026-11-21 | Second person behind the child | The signal does not change | Fail | Reported: everything looked stopped, side and level `unknown`; screenshot asked for to see handNearMouth and moving |
+| 2026-11-21 | Second person behind the child | The signal does not change | Pass | Brusher close, second person behind: handNearMouth true. First try had the second person in FRONT (closer, larger face), so the largest-face rule followed them: expected, but a younger sibling leaning in closer is a real risk |
 | | Lights dimmed until the face is lost | Pass is `null` | | Not done yet: daylight room on 21 Nov, check after dark |
 
 ## 6. Counts and decision
