@@ -254,11 +254,11 @@ through to the end card.
   - Test file: `tests/session-presenter.test.ts`
   - Files this task may change: `src/ui/session-presenter.ts`, `src/main.ts`, `tests/session-presenter.test.ts`
 
-- [ ] 19. **Sound player (Web Audio)**
+- [x] 19. **Sound player (Web Audio)**
   - Mark: needed for the video (req 10).
-  - [ ] 19.1 Create `src/audio/sound-player.ts` with `Sounds` (`unlock()`, `play(id, delayMs = 0)`, `stop()`) and `createSoundPlayer()`. The `AudioContext` is created in `unlock()` only. `play` builds one gain node whose curve is sampled from `envelopeGainAt` every 20 ms of sound time and sent with `setValueCurveAtTime`, plus one oscillator per voice with `frequency.setValueAtTime` and `linearRampToValueAtTime`, all started at `context.currentTime + delayMs / 1000` and stopped on the audio clock. No timer. Everything is in `try/catch`. A `play` before `unlock()` is ignored. `stop()` stops every live oscillator. No audio file is shipped
-  - [ ] 19.2 Test `soundPlayerSafe`, with a fake `AudioContext` (copy the fake-audio pattern of `tests/speaker.test.ts` into the new test): `play` before `unlock` does nothing and does not throw; a context that throws on creation or on `createOscillator` leaves the player silent without throwing; `stop` stops every live oscillator; `unlock` twice is safe; a played sound starts at gain 0; the source has no `setTimeout`, `setInterval` or `requestAnimationFrame`
-  - [ ] 19.3 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the player yet, so the game is unchanged
+  - [x] 19.1 Create `src/audio/sound-player.ts` with `Sounds` (`unlock()`, `play(id, delayMs = 0)`, `stop()`) and `createSoundPlayer()`. The `AudioContext` is created in `unlock()` only. `play` builds one gain node whose curve is sampled from `envelopeGainAt` every 20 ms of sound time and sent with `setValueCurveAtTime`, plus one oscillator per voice with `frequency.setValueAtTime` and `linearRampToValueAtTime`, all started at `context.currentTime + delayMs / 1000` and stopped on the audio clock. No timer. Everything is in `try/catch`. A `play` before `unlock()` is ignored. `stop()` stops every live oscillator. No audio file is shipped
+  - [x] 19.2 Test `soundPlayerSafe`, with a fake `AudioContext` (copy the fake-audio pattern of `tests/speaker.test.ts` into the new test): `play` before `unlock` does nothing and does not throw; a context that throws on creation or on `createOscillator` leaves the player silent without throwing; `stop` stops every live oscillator; `unlock` twice is safe; a played sound starts at gain 0; the source has no `setTimeout`, `setInterval` or `requestAnimationFrame`
+  - [x] 19.3 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the player yet, so the game is unchanged
   - _Requirements: 10.1, 10.2, 10.7, 10.8, 13.3_
   - Test file: `tests/sound-player.test.ts`
   - Files this task may change: `src/audio/sound-player.ts`, `tests/sound-player.test.ts`
