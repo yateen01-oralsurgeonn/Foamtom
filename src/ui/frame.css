@@ -1,0 +1,267 @@
+/* The haunted-mirror frame. Looks only: nothing here decides anything.
+   The ring is 32 px wide (FRAME_METRICS.ringPx). Every endless animation takes its duration
+   from a --cycle-* variable that effects-host.ts writes from LOOP_CYCLES_MS.
+   Keyframes move only opacity and a small translate. */
+
+.mirror-frame {
+  --ring: 32px;
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--ring);
+  border-radius: 28px;
+  background: #2a2147;
+  border: 3px solid #7d6aa8;
+  animation: frame-fade-in 600ms ease-out;
+}
+
+/* Decoration layer: behind the glass, never catches a tap. */
+.mirror-frame__deco {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* The play area. Opaque and above every decoration, so nothing covers the picture,
+   the monster, the countdown or the caption. */
+.mirror-frame__glass {
+  position: relative;
+  z-index: 1;
+  border-radius: 18px;
+  background: #1c1530;
+}
+
+/* ---- Fog: two soft ellipses, no shape and no face ---- */
+.frame-fog {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.frame-fog::before,
+.frame-fog::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.3;
+  background: radial-gradient(ellipse at center, rgba(216, 210, 230, 0.9) 0%, rgba(216, 210, 230, 0) 70%);
+}
+
+.frame-fog::before {
+  left: -20%;
+  top: 8%;
+  width: 90%;
+  height: 34%;
+  animation: frame-fog-drift var(--cycle-fog-drift) ease-in-out infinite alternate;
+}
+
+.frame-fog::after {
+  right: -20%;
+  bottom: 8%;
+  width: 90%;
+  height: 34%;
+  animation: frame-fog-drift var(--cycle-fog-drift) ease-in-out infinite alternate-reverse;
+}
+
+/* ---- Regions: one per ring corner ---- */
+.frame-region {
+  position: absolute;
+  z-index: 0;
+  width: var(--ring);
+  height: var(--ring);
+}
+
+.frame-region--top-left {
+  top: 0;
+  left: 0;
+}
+
+.frame-region--top-right {
+  top: 0;
+  right: 0;
+}
+
+.frame-region--bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.frame-region--bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* The glow sits behind the glass (lower z-index). Its brightness, size and flicker size
+   come from the three variables the painter sets. */
+.frame-glow {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: var(--glow-size, 0px);
+  height: var(--glow-size, 0px);
+  margin-left: calc(var(--glow-size, 0px) / -2);
+  margin-top: calc(var(--glow-size, 0px) / -2);
+  border-radius: 50%;
+  opacity: var(--glow-opacity, 0);
+  background: radial-gradient(circle at center, rgba(255, 205, 120, 1) 0%, rgba(255, 205, 120, 0) 70%);
+  transition: opacity 400ms ease;
+}
+
+/* Candle: a stick, and a flame that shows only in the active region. */
+.frame-candle {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 4px;
+  width: 8px;
+  height: 14px;
+  margin-left: -4px;
+  border-radius: 2px;
+  background: #f4eefc;
+}
+
+.frame-flame {
+  display: none;
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: 18px;
+  width: 10px;
+  height: 13px;
+  margin-left: -5px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: #ffd966;
+}
+
+.frame-region--active .frame-flame {
+  display: block;
+}
+
+/* ---- Flicker: a small change of opacity on unevenly spaced keyframes ---- */
+.frame-region--flicker.frame-region--active .frame-glow {
+  animation: frame-glow-flicker var(--cycle-glow-active) ease-in-out infinite;
+}
+
+.frame-region--flicker.frame-region--dim .frame-glow {
+  animation: frame-glow-flicker var(--cycle-glow-dim) ease-in-out infinite;
+}
+
+.frame-region--flicker.frame-region--active .frame-flame {
+  animation: frame-flame-flicker var(--cycle-flame-active) ease-in-out infinite;
+}
+
+/* ---- Cracks: a short, regular, star-shaped pattern in the ring corners ---- */
+.frame-cracks {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.35;
+}
+
+.frame-cracks__line {
+  stroke: #f4eefc;
+  stroke-width: 1;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.frame-cracks__corner {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+.frame-cracks__corner--top-right {
+  transform: rotate(90deg);
+}
+
+.frame-cracks__corner--bottom-right {
+  transform: rotate(180deg);
+}
+
+.frame-cracks__corner--bottom-left {
+  transform: rotate(270deg);
+}
+
+/* ---- Keyframes: opacity and a small translate only ---- */
+@keyframes frame-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes frame-fog-drift {
+  from {
+    transform: translate(-4%, 0);
+  }
+  to {
+    transform: translate(4%, 2%);
+  }
+}
+
+@keyframes frame-glow-flicker {
+  0% {
+    opacity: var(--glow-opacity, 0);
+  }
+  18% {
+    opacity: calc(var(--glow-opacity, 0) * (1 - var(--flicker-amplitude, 0)));
+  }
+  41% {
+    opacity: calc(var(--glow-opacity, 0) * (1 - var(--flicker-amplitude, 0) * 0.3));
+  }
+  67% {
+    opacity: calc(var(--glow-opacity, 0) * (1 - var(--flicker-amplitude, 0) * 0.8));
+  }
+  100% {
+    opacity: var(--glow-opacity, 0);
+  }
+}
+
+@keyframes frame-flame-flicker {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  23% {
+    opacity: 0.78;
+    transform: translate(0, 1px);
+  }
+  46% {
+    opacity: 0.95;
+    transform: translate(0, 0);
+  }
+  71% {
+    opacity: 0.75;
+    transform: translate(0, 1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/* ---- Effect switches (reduced motion) and tab hidden. The lit state itself stays. ---- */
+.fx-no-flicker .frame-glow,
+.fx-no-flicker .frame-flame {
+  animation: none !important;
+}
+
+.fx-no-fog .frame-fog::before,
+.fx-no-fog .frame-fog::after {
+  animation: none !important;
+}
+
+.fx-paused .mirror-frame,
+.fx-paused .mirror-frame *,
+.fx-paused .mirror-frame *::before,
+.fx-paused .mirror-frame *::after {
+  animation-play-state: paused !important;
+}
