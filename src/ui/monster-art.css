@@ -361,7 +361,25 @@
 }
 
 .smoke__puff {
+  /* Task 46: puffs 20 % larger and a mid-lilac outline, so they read over the camera picture. */
+  --smoke-size-mult: 1.2;
+  border-color: #8a6fc4;
   animation: smoke-drift var(--cycle-smoke-drift) ease-in-out infinite;
+}
+
+.smoke__puff--a {
+  width: calc(38px * var(--smoke-size-mult));
+  height: calc(38px * var(--smoke-size-mult));
+}
+
+.smoke__puff--b {
+  width: calc(44px * var(--smoke-size-mult));
+  height: calc(44px * var(--smoke-size-mult));
+}
+
+.smoke__puff--c {
+  width: calc(32px * var(--smoke-size-mult));
+  height: calc(32px * var(--smoke-size-mult));
 }
 
 .smoke__puff--b {

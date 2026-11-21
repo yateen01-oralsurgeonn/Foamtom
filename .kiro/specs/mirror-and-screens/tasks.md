@@ -589,11 +589,11 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - Test file: `tests/hit-feedback.test.ts`
   - Files this task may change: `src/ui/hit-feedback.ts`, `src/ui/effects.ts`, `src/ui/session-screen.ts`, `src/ui/monster-art.css`, `src/main.ts` (only to pass the effects value), `tests/hit-feedback.test.ts`, `tests/effects.test.ts` (the one new field), `tests/css-guards.test.ts` (only if needed), `tests/effects-host.test.ts` (add `'fx-no-hit'` to `MOVING_CLASSES` (about line 58) because the test pins the list of moving-effect classes and fails without it; nothing else in that file changes and no assertion is weakened; Dr. Yatin's decision of 21 Nov 2026: no flinch with reduced motion)
 
-- [ ] 46. **Smoke readable over the camera picture (small change only)**
+- [x] 46. **Smoke readable over the camera picture (small change only)**
   - Mark: needed for the video (req 6.12).
-  - [ ] 46.1 In `src/ui/monster-art.css` make the smoke puffs about 20 % larger (the puff size is multiplied by 1.2) and replace the near-white puff border with a mid-lilac one (starting value `#8a6fc4`, about 4:1 against white; adjust only if the test below fails). The smoke's colour family, puff counts, thinning rule, drift and opacity rules do not change, and `smokeLook` in `monster-draw-state.ts` is not touched
-  - [ ] 46.2 Test `smokeOutlineReadable` (design test 37): the puff outline is a 6-digit hex whose contrast ratio against white is at least 3 to 1 and that is not near-white; the puff rule holds the new 1.2 size multiplier; `scaleAndSmokeLook` still passes unchanged (puff counts and thinning)
-  - [ ] 46.3 Run `npm run test:run` and `npm run build`: both pass
+  - [x] 46.1 In `src/ui/monster-art.css` make the smoke puffs about 20 % larger (the puff size is multiplied by 1.2) and replace the near-white puff border with a mid-lilac one (starting value `#8a6fc4`, about 4:1 against white; adjust only if the test below fails). The smoke's colour family, puff counts, thinning rule, drift and opacity rules do not change, and `smokeLook` in `monster-draw-state.ts` is not touched
+  - [x] 46.2 Test `smokeOutlineReadable` (design test 37): the puff outline is a 6-digit hex whose contrast ratio against white is at least 3 to 1 and that is not near-white; the puff rule holds the new 1.2 size multiplier; `scaleAndSmokeLook` still passes unchanged (puff counts and thinning)
+  - [x] 46.3 Run `npm run test:run` and `npm run build`: both pass
   - _Requirements: 6.5, 6.6, 6.12_
   - Test file: `tests/smoke-outline.test.ts`
   - Files this task may change: `src/ui/monster-art.css`, `tests/smoke-outline.test.ts`
