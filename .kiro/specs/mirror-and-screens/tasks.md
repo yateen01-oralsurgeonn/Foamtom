@@ -106,11 +106,11 @@ through to the end card.
   - Test file: `tests/monster-looks.test.ts`
   - Files this task may change: `src/ui/monster-looks.ts`, `tests/monster-looks.test.ts`
 
-- [ ] 5. **Sound data and envelope (pure)**
+- [x] 5. **Sound data and envelope (pure)**
   - Mark: needed for the video (req 10).
-  - [ ] 5.1 Create `src/audio/sounds.ts` with `SoundId`, `SoundVoice`, `SoundSpec`, `EFFECT_PEAK_GAIN` (0.25), `CUE_GAP_MS` (450), the five-row `SOUNDS` table (design section 5.8 starting values) and `envelopeGainAt(spec, ms)`. Import `GAIN_LEVEL` and `GAIN_STEP_PER_MS` from `src/audio/speaker.ts`; do not copy them. Sine and triangle waves only, pitches 200 to 1000 Hz
-  - [ ] 5.2 Test `soundData` (design test 15), sampled every 1 ms: five sounds, one per `SoundId`; gain at 0 ms is 0; no 1 ms step rises by more than `GAIN_STEP_PER_MS`; no gain is above `GAIN_LEVEL` or `EFFECT_PEAK_GAIN`; `EFFECT_PEAK_GAIN` is below `GAIN_LEVEL`; each sound's voice levels add to at most 1; pitches are within 200 to 1000 Hz; each total length is at most 1500 ms; gain is 0 again at the end
-  - [ ] 5.3 Run `npm run test:run` and `npm run build`: both pass. Nothing plays yet, so the game is unchanged
+  - [x] 5.1 Create `src/audio/sounds.ts` with `SoundId`, `SoundVoice`, `SoundSpec`, `EFFECT_PEAK_GAIN` (0.25), `CUE_GAP_MS` (450), the five-row `SOUNDS` table (design section 5.8 starting values) and `envelopeGainAt(spec, ms)`. Import `GAIN_LEVEL` and `GAIN_STEP_PER_MS` from `src/audio/speaker.ts`; do not copy them. Sine and triangle waves only, pitches 200 to 1000 Hz
+  - [x] 5.2 Test `soundData` (design test 15), sampled every 1 ms: five sounds, one per `SoundId`; gain at 0 ms is 0; no 1 ms step rises by more than `GAIN_STEP_PER_MS`; no gain is above `GAIN_LEVEL` or `EFFECT_PEAK_GAIN`; `EFFECT_PEAK_GAIN` is below `GAIN_LEVEL`; each sound's voice levels add to at most 1; pitches are within 200 to 1000 Hz; each total length is at most 1500 ms; gain is 0 again at the end
+  - [x] 5.3 Run `npm run test:run` and `npm run build`: both pass. Nothing plays yet, so the game is unchanged
   - _Requirements: 10.1, 10.2, 10.3, 10.5, 10.10, 15.6, 16.2_
   - Test file: `tests/sounds.test.ts`
   - Files this task may change: `src/audio/sounds.ts`, `tests/sounds.test.ts`
