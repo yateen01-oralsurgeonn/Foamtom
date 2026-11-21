@@ -100,6 +100,6 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   Level: upper right outer RRR pass, upper right chewing WUW fail (palm hangs below the mouth).
   He chose to stop and set REQUIRE_LEVEL_MATCH=false (feabfa5 spec, 79b43a1 code, 195 tests).
   The camera now checks only: hand near the mouth + moving. Moving reads true while brushing (live).
-- Still to do in task 1: section 5 "other checks" (other hand resting / touching cheek, both hands
+- Still to do in task 1: section 5 "other checks" (DONE 21 Nov: 1-3 pass; second person FAIL, needs a screenshot; lights dimmed NOT done, after dark; both hands
   near, second person, lights dimmed -> null). Small spec leftover: core design.md still lists
   REQUIRE_LEVEL_MATCH default true (fix in next Kiro run). Then tasks 2-11 of hand-tracking.

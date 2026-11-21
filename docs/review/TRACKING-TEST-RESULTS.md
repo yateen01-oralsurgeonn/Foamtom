@@ -101,7 +101,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | 2026-11-21 | Hand touching cheek | The signal follows the hand at the mouth | Pass | No change in the reading |
 | 2026-11-21 | Both hands near the mouth | Pass is `side` reading `unknown` | Pass | Side and level both `unknown` |
 | 2026-11-21 | Second person behind the child | The signal does not change | Fail | Reported: everything looked stopped, side and level `unknown`; screenshot asked for to see handNearMouth and moving |
-| 2026-11-21 | Lights dimmed until the face is lost | Pass is `null` | Pass | Screen said null |
+| | Lights dimmed until the face is lost | Pass is `null` | | Not done yet: daylight room on 21 Nov, check after dark |
 
 ## 6. Counts and decision
 
