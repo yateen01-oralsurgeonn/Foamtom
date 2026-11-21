@@ -11,6 +11,8 @@ import { MONSTERS } from '../logic/monsters';
 import type { MonsterDef, ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
 import type { CameraPreview } from './camera-preview';
+import { frameGuidance } from './frame-guidance';
+import { createMirrorFrame } from './mirror-frame';
 import { MIN_MONSTER_SCALE } from './monster-draw-state';
 
 /** Mouth grid in mirror order: the child's right is on the right of the screen. */
@@ -100,7 +102,13 @@ export function createSessionScreen(
   smoke.append(el('span', 'smoke__puff smoke__puff--a'), el('span', 'smoke__puff smoke__puff--b'), el('span', 'smoke__puff smoke__puff--c'));
   const sessionCaption = el('p', 'caption caption--session');
   sessionCaption.setAttribute('aria-live', 'polite');
-  sessionPanel.append(countdown, mouth, sessionCaption);
+  // The haunted-mirror frame is the guidance. It is a sibling of the mirrored preview, never
+  // its parent or child. In a timer-only session its glass holds the mouth grid; in a camera
+  // session the glass holds the preview and the grid sits below the frame.
+  const frame = createMirrorFrame();
+  frame.glass.append(mouth);
+  frame.paint(frameGuidance(null));
+  sessionPanel.append(countdown, frame.element, sessionCaption);
 
   screen.append(startPanel, sessionPanel);
   root.append(screen);
@@ -134,6 +142,7 @@ export function createSessionScreen(
     showStart(): void {
       startButton.disabled = false;
       spokenLineId = null;
+      frame.paint(frameGuidance(null)); // a new session never starts with a lit region
       speaker.stop();
       sessionPanel.hidden = true;
       startPanel.hidden = false;
@@ -146,6 +155,8 @@ export function createSessionScreen(
       startPanel.hidden = true;
       sessionPanel.hidden = false;
 
+      // One synchronous call, in this order: the frame, the caption and voice, the monster.
+      frame.paint(frameGuidance(view));
       countdown.textContent = String(view.countdown);
       sessionCaption.textContent = getLine(view.captionLineId)?.caption ?? '';
       if (view.phase === 'paused') {
@@ -185,8 +196,14 @@ export function createSessionScreen(
       }
       currentPreview = preview;
       if (preview) {
-        sessionPanel.insertBefore(preview.element, mouth);
+        // The grid moves out below the frame; the preview takes the glass.
+        mouth.remove();
+        frame.glass.append(preview.element);
+        frame.element.after(mouth);
         if (monsterEl) preview.monsterSlot.append(stage);
+      } else {
+        mouth.remove();
+        frame.glass.append(mouth); // the grid goes back into the glass
       }
     },
   };
