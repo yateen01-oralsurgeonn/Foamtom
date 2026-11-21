@@ -9,27 +9,27 @@ import {
 } from '../src/ui/effects';
 
 const LOOP_IDS: LoopId[] = ['flameActive', 'glowActive', 'glowDim', 'fogDrift', 'smokeDrift'];
-const MOVING = ['flicker', 'fogDrift', 'smokeDrift', 'leavingMotion', 'bookMotion'] as const;
+const MOVING = ['flicker', 'fogDrift', 'smokeDrift', 'leavingMotion', 'bookMotion', 'hitMotion'] as const;
 const STATES = ['glow', 'ornament', 'sizeChange', 'smokeThinning'] as const;
 
 describe('effectsForReducedMotion', () => {
-  it('turns off the five moving effects and keeps the four states under reduced motion', () => {
+  it('turns off the six moving effects and keeps the four states under reduced motion', () => {
     const e = effectsFor(true);
     for (const k of MOVING) expect(e[k]).toBe(false);
     for (const k of STATES) expect(e[k]).toBe(true);
   });
 
-  it('has all nine on when motion is allowed', () => {
+  it('has all ten on when motion is allowed', () => {
     const e = effectsFor(false);
     const all = [...MOVING, ...STATES];
-    expect(all).toHaveLength(9);
+    expect(all).toHaveLength(10);
     for (const k of all) expect(e[k]).toBe(true);
     expect(effectClasses(e)).toEqual([]);
   });
 
   it('lists exactly the effects that are off', () => {
     expect([...effectClasses(effectsFor(true))].sort()).toEqual(
-      ['fx-no-book', 'fx-no-flicker', 'fx-no-fog', 'fx-no-leaving', 'fx-no-smoke-drift'].sort(),
+      ['fx-no-book', 'fx-no-flicker', 'fx-no-fog', 'fx-no-hit', 'fx-no-leaving', 'fx-no-smoke-drift'].sort(),
     );
     const partial = { ...effectsFor(false), fogDrift: false, bookMotion: false };
     expect([...effectClasses(partial)].sort()).toEqual(['fx-no-book', 'fx-no-fog']);

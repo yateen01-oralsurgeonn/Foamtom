@@ -61,6 +61,7 @@ const MOVING_CLASSES = [
   'fx-no-smoke-drift',
   'fx-no-leaving',
   'fx-no-book',
+  'fx-no-hit',
 ];
 
 describe('effectsHostFollowsPreference', () => {

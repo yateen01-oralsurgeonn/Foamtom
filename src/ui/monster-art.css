@@ -565,3 +565,47 @@
 .fx-no-leaving .leaving__smoke {
   opacity: 1;
 }
+
+/* ---- Hit flinch: one short squash and wobble when the monster's health falls (300 ms) ----
+   Two identical animations with different names, so swapping the class restarts it with no
+   timer. Transform only, never repeated, no colour change. Starts and ends at the monster's
+   current size (--monster-scale), so the shrink stays visible. */
+.monster--hit-a {
+  animation: hit-squash-a 300ms ease-out 1;
+}
+
+.monster--hit-b {
+  animation: hit-squash-b 300ms ease-out 1;
+}
+
+@keyframes hit-squash-a {
+  0%,
+  100% {
+    transform: scale(var(--monster-scale, 1)) rotate(0deg);
+  }
+  30% {
+    transform: scale(calc(var(--monster-scale, 1) * 1.12), calc(var(--monster-scale, 1) * 0.9)) rotate(-4deg);
+  }
+  65% {
+    transform: scale(calc(var(--monster-scale, 1) * 0.96), calc(var(--monster-scale, 1) * 1.04)) rotate(3deg);
+  }
+}
+
+@keyframes hit-squash-b {
+  0%,
+  100% {
+    transform: scale(var(--monster-scale, 1)) rotate(0deg);
+  }
+  30% {
+    transform: scale(calc(var(--monster-scale, 1) * 1.12), calc(var(--monster-scale, 1) * 0.9)) rotate(-4deg);
+  }
+  65% {
+    transform: scale(calc(var(--monster-scale, 1) * 0.96), calc(var(--monster-scale, 1) * 1.04)) rotate(3deg);
+  }
+}
+
+/* Reduced motion: no flinch. The size change still shows. */
+.fx-no-hit .monster--hit-a,
+.fx-no-hit .monster--hit-b {
+  animation: none;
+}

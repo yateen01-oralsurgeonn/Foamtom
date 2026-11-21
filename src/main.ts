@@ -15,7 +15,8 @@ import type { CameraSignalSource } from './tracking/camera-source';
 import type { CameraPreview } from './ui/camera-preview';
 import type { monsterAnchor as MonsterAnchorFn } from './ui/monster-anchor';
 import { createEndCard } from './ui/end-card';
-import { startEffects } from './ui/effects-host';
+import { REDUCED_MOTION_QUERY, startEffects } from './ui/effects-host';
+import { effectsFor } from './ui/effects';
 import { createGameLoop } from './ui/game-loop';
 import type { Scheduler, VisibilitySource, WakeLockHelper } from './ui/game-loop';
 import { createMonsterBookScreen } from './ui/monster-book-screen';
@@ -121,6 +122,16 @@ if (app) {
     app,
     { onStart: () => void loop.begin(), onOpenBook: () => openBook('title') },
     speaker,
+    // Same preference as effects-host.ts: read live, so a change during a session is followed.
+    () => {
+      let reduced = false;
+      try {
+        reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
+      } catch {
+        reduced = false; // no matchMedia: motion on, as effects-host does
+      }
+      return effectsFor(reduced);
+    },
   );
   const presenter = createSessionPresenter({ screen, sounds: kit.sounds });
   const endCard = createEndCard(

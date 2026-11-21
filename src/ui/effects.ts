@@ -20,6 +20,8 @@ export const ONE_SHOT_MS = {
   glowMove: 400,
   leave: 1400,
   intoBook: 1200,
+  /** The hit flinch (task 45): at most one per tick. */
+  hit: 300,
 } as const;
 
 export type RegionLevel = 'active' | 'dim' | 'off';
@@ -55,6 +57,8 @@ export interface Effects {
   readonly leavingMotion: boolean;
   /** The end-card "going into the Book" movement. */
   readonly bookMotion: boolean;
+  /** The hit flinch of the monster (req 6.9, 11.9). */
+  readonly hitMotion: boolean;
   // States: always on.
   readonly glow: true;
   readonly ornament: true;
@@ -70,6 +74,7 @@ export function effectsFor(prefersReducedMotion: boolean): Effects {
     smokeDrift: moving,
     leavingMotion: moving,
     bookMotion: moving,
+    hitMotion: moving,
     glow: true,
     ornament: true,
     sizeChange: true,
@@ -85,5 +90,6 @@ export function effectClasses(effects: Effects): string[] {
   if (!effects.smokeDrift) classes.push('fx-no-smoke-drift');
   if (!effects.leavingMotion) classes.push('fx-no-leaving');
   if (!effects.bookMotion) classes.push('fx-no-book');
+  if (!effects.hitMotion) classes.push('fx-no-hit');
   return classes;
 }

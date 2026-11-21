@@ -12,7 +12,10 @@ import { MONSTERS } from '../logic/monsters';
 import type { ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
 import type { CameraPreview } from './camera-preview';
+import type { Effects } from './effects';
+import { effectsFor } from './effects';
 import { frameGuidance } from './frame-guidance';
+import { hitClassFor, isHit } from './hit-feedback';
 import { GATE_OPEN, gateOnAnimationEnd, gateOnPaint, nextMonsterVisible } from './leaving-gate';
 import type { LeavingGate } from './leaving-gate';
 import { createMirrorFrame } from './mirror-frame';
@@ -71,6 +74,8 @@ export function createSessionScreen(
   root: HTMLElement,
   handlers: SessionScreenHandlers,
   speaker: Speaker,
+  /** The current effects (reduced motion off or on). Read at each paint, so a change is followed. */
+  getEffects: () => Effects = () => effectsFor(false),
 ): SessionScreen {
   const screen = el('section', 'screen');
 
@@ -139,6 +144,8 @@ export function createSessionScreen(
   // While a leaving copy exists the next monster is hidden (design section 5.12).
   let gate: LeavingGate = GATE_OPEN;
   let lastView: View | null = null;
+  // Alternates on each hit, so the other of two identical animations restarts the flinch.
+  let hitFlip = false;
 
   function removeLeaving(): void {
     leavingEl?.remove();
@@ -158,7 +165,12 @@ export function createSessionScreen(
       const alive = !waiting && (drawState === 'sitting' || drawState === 'shrinking');
       monster.hidden = !alive;
       monsterName.hidden = !alive;
-      if (alive) monster.style.transform = `scale(${monsterScale(view.healthFraction).toFixed(3)})`;
+      if (alive) {
+        const scale = monsterScale(view.healthFraction).toFixed(3);
+        monster.style.transform = `scale(${scale})`;
+        // The flinch keyframes start and end at this size, so the size change still shows.
+        monster.style.setProperty('--monster-scale', scale);
+      }
       // Smoke only after a defeat; it thins in puffs, size and opacity.
       const look = smokeLook(view.smokeFraction);
       const showSmoke = !waiting && drawState === 'defeated';
@@ -269,8 +281,21 @@ export function createSessionScreen(
       gate = gateOnPaint(gate, { zoneEnd, phase: view.phase });
       if (gate.leaving && !leavingEl) gate = GATE_OPEN; // no copy was drawn: nothing to wait for
       if (wasLeaving && !gate.leaving) removeLeaving(); // the gate opened by paint count
+      const previousView = lastView;
       lastView = view;
-      paintMonster(view, showMonster(view.monsterId));
+      const monster = showMonster(view.monsterId);
+      paintMonster(view, monster);
+      // The hit flinch: only for a monster that is shown, only when its health just fell.
+      if (monster) {
+        const shown = !monster.hidden;
+        const hit = shown && isHit(previousView, view);
+        const hitClass = hitClassFor(hit, getEffects(), hitFlip);
+        monster.classList.remove('monster--hit-a', 'monster--hit-b');
+        if (hitClass) {
+          monster.classList.add(hitClass);
+          hitFlip = !hitFlip;
+        }
+      }
       sessionPanel.classList.toggle('is-paused', view.phase === 'paused');
     },
 
