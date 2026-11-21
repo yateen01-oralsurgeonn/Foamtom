@@ -64,13 +64,13 @@ through to the end card.
 
 ## Group 1: needed for the video
 
-- [ ] 1. **Effects table and reduced motion (pure)**
+- [x] 1. **Effects table and reduced motion (pure)**
   - Mark: needed for the video (req 3, 4, 11, 15).
-  - [ ] 1.1 Create `src/ui/effects.ts` with: `MIN_CYCLE_MS = 334`; `LoopId` and `LOOP_CYCLES_MS` (`flameActive` 1700, `glowActive` 2200, `glowDim` 3600, `fogDrift` 30000, `smokeDrift` 2800); `ONE_SHOT_MS` (`fadeIn` 600, `glowMove` 400, `leave` 1400, `intoBook` 1200); `RegionLevel`, `RegionLook` and `REGION_LOOKS` for `active`, `dim` and `off` (design section 5.1 values); `FRAME_METRICS` with `ringPx` 32 only (the landscape size is added in task 39); `Effects`, `effectsFor(prefersReducedMotion)` and `effectClasses(effects)` (design section 5.9). Declare `RegionLevel` and `RegionLook` here, so that `frame-guidance.ts` can re-export them without a circular import
-  - [ ] 1.2 Test `effectsForReducedMotion` (design test 12): `effectsFor(true)` turns off the five moving effects and leaves `glow`, `ornament`, `sizeChange` and `smokeThinning` on; `effectsFor(false)` has all nine on; `effectClasses` lists exactly the effects that are off
-  - [ ] 1.3 Test `flashRate`, table part (design test 14): every `LoopId` has a cycle; every cycle is at least `MIN_CYCLE_MS`; no `flickerAmplitude` is above 0.25
-  - [ ] 1.4 Test `frameRegionLooksDiffer` (design test 2): `active` differs from `dim` in `glowOpacity` (higher), `glowSizePx` (larger) and `flame` (true against false) and has the larger `flickerAmplitude`; `off` has `glowOpacity` 0, `glowSizePx` 0 and no flame
-  - [ ] 1.5 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
+  - [x] 1.1 Create `src/ui/effects.ts` with: `MIN_CYCLE_MS = 334`; `LoopId` and `LOOP_CYCLES_MS` (`flameActive` 1700, `glowActive` 2200, `glowDim` 3600, `fogDrift` 30000, `smokeDrift` 2800); `ONE_SHOT_MS` (`fadeIn` 600, `glowMove` 400, `leave` 1400, `intoBook` 1200); `RegionLevel`, `RegionLook` and `REGION_LOOKS` for `active`, `dim` and `off` (design section 5.1 values); `FRAME_METRICS` with `ringPx` 32 only (the landscape size is added in task 39); `Effects`, `effectsFor(prefersReducedMotion)` and `effectClasses(effects)` (design section 5.9). Declare `RegionLevel` and `RegionLook` here, so that `frame-guidance.ts` can re-export them without a circular import
+  - [x] 1.2 Test `effectsForReducedMotion` (design test 12): `effectsFor(true)` turns off the five moving effects and leaves `glow`, `ornament`, `sizeChange` and `smokeThinning` on; `effectsFor(false)` has all nine on; `effectClasses` lists exactly the effects that are off
+  - [x] 1.3 Test `flashRate`, table part (design test 14): every `LoopId` has a cycle; every cycle is at least `MIN_CYCLE_MS`; no `flickerAmplitude` is above 0.25
+  - [x] 1.4 Test `frameRegionLooksDiffer` (design test 2): `active` differs from `dim` in `glowOpacity` (higher), `glowSizePx` (larger) and `flame` (true against false) and has the larger `flickerAmplitude`; `off` has `glowOpacity` 0, `glowSizePx` 0 and no flame
+  - [x] 1.5 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
   - _Requirements: 3.4, 3.5, 11.2, 11.3, 15.4, 15.5, 16.2_
   - Test file: `tests/effects.test.ts`
   - Files this task may change: `src/ui/effects.ts`, `tests/effects.test.ts`
