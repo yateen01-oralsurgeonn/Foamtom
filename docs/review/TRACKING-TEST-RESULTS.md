@@ -101,7 +101,7 @@ Read the `level` field. Result is for the HAND_POINT in use: pass if at least 2 
 | 2026-11-21 | Hand touching cheek | The signal follows the hand at the mouth | Pass | No change in the reading |
 | 2026-11-21 | Both hands near the mouth | Pass is `side` reading `unknown` | Pass | Side and level both `unknown` |
 | 2026-11-21 | Second person behind the child | The signal does not change | Pass | Brusher close, second person behind: handNearMouth true. First try had the second person in FRONT (closer, larger face), so the largest-face rule followed them: expected, but a younger sibling leaning in closer is a real risk |
-| | Lights dimmed until the face is lost | Pass is `null` | | Not done yet: daylight room on 21 Nov, check after dark |
+| 2026-11-21 | Lights dimmed until the face is lost | Pass is `null` | Pass | Room darkened in daytime; screen said `null` for palm, wrist and fingertips |
 
 ## 6. Counts and decision
 
@@ -134,4 +134,9 @@ Failed for the chewing surface of the upper right teeth (WUW; the palm hangs bel
 
 | Date | File | Size in bytes | Note |
 |---|---|---|---|
-| | | | |
+| 2026-11-20 | blaze_face_short_range.tflite | 229746 | From MEDIAPIPE-DOC-CHECK.md |
+| 2026-11-20 | face_landmarker.task | 3758596 | From MEDIAPIPE-DOC-CHECK.md |
+| 2026-11-20 | hand_landmarker.task | 7819105 | From MEDIAPIPE-DOC-CHECK.md |
+| 2026-11-20 | wasm/vision_wasm_internal.js | 336624 | From MEDIAPIPE-DOC-CHECK.md |
+| 2026-11-20 | wasm/vision_wasm_internal.wasm | 14665716 | From MEDIAPIPE-DOC-CHECK.md |
+| 2026-11-20 | total | 26809787 | From MEDIAPIPE-DOC-CHECK.md |

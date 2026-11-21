@@ -148,14 +148,14 @@ starts in camera mode. Guided-timer mode is never changed.
 
   - [ ] 1K. **Dr. Yatin runs the feasibility checks** (requirements 1.5 to 1.13, 9.3, 10.1, 10.2). This part is done by Dr. Yatin with the developer present. The developer changes no code in it except where a step says so
     - [ ] 1K.1 Check in Chrome that the debug page runs with exactly the one CSP change (`'wasm-unsafe-eval'` in `script-src`). Look at the browser's developer tools for CSP errors about workers, `blob:`, `unsafe-eval` or `media-src`. Write the result in words in the set-up part of the results file. STOP if MediaPipe needs any other relaxation (requirement 9.4, design 14 item 3)
-    - [ ] 1K.2 Fill in the set-up part: device, browser, face model used (`detector` or `mesh`), `HAND_POINT`, date. Try `?face=mesh` if the readout is `null` too often with the detector
-    - [ ] 1K.3 Copy the size table from `docs/review/MEDIAPIPE-DOC-CHECK.md` into the asset sizes part of the results file
+    - [x] 1K.2 Fill in the set-up part: device, browser, face model used (`detector` or `mesh`), `HAND_POINT`, date. Try `?face=mesh` if the readout is `null` too often with the detector
+    - [x] 1K.3 Copy the size table from `docs/review/MEDIAPIPE-DOC-CHECK.md` into the asset sizes part of the results file
     - [ ] 1K.4 Side check (requirement 1.6): brush with the right hand in each of the four zones on the outer, chewing and inner surfaces, three times each, and write the three codes for palm, wrist and fingertips for each of the 12 rows. Then repeat with the left hand (requirement 1.9a), 24 rows in all. Look at: the `side` field of the readout while brushing each surface
     - [ ] 1K.5 Level check (requirement 1.7): the same 24 cases, reading the `level` field
-    - [ ] 1K.6 Mirror-flip check (requirement 1.8): raise your own left hand. Look at two things and record them as two rows: the readout says `left`, and the hand appears on the left of the mirrored preview
-    - [ ] 1K.7 Both-hands checks (requirement 1.9b and 1.9c): brush with one hand while the other rests on the sink edge, then touches the cheek (the signal must follow the hand at the mouth); then hold both hands near the mouth (`side` must read `unknown`)
-    - [ ] 1K.8 Second-face check (requirement 1.10): a second person steps in behind you; the readout must not change
-    - [ ] 1K.9 Poor-light check (requirement 1.11): dim the lights until the face is lost; the readout must become `null`, not a guess
+    - [x] 1K.6 Mirror-flip check (requirement 1.8): raise your own left hand. Look at two things and record them as two rows: the readout says `left`, and the hand appears on the left of the mirrored preview
+    - [x] 1K.7 Both-hands checks (requirement 1.9b and 1.9c): brush with one hand while the other rests on the sink edge, then touches the cheek (the signal must follow the hand at the mouth); then hold both hands near the mouth (`side` must read `unknown`)
+    - [x] 1K.8 Second-face check (requirement 1.10): a second person steps in behind you; the readout must not change
+    - [x] 1K.9 Poor-light check (requirement 1.11): dim the lights until the face is lost; the readout must become `null`, not a guess
     - [ ] 1K.10 Fill in the hand-point comparison part from the tables, then the counts, then write the two verdict lines "Side check: pass or fail" and "Level check: pass or fail" with initials and date. Applying the decision rule (surface passes at 2 of 3) is Dr. Yatin's call (design 14 item 1)
     - [ ] 1K.11 Run `npm run test:run`: `resultsFileIsWordsOnly` must pass on the filled-in file
     - _Requirements: 1.5 to 1.13, 9.3, 9.4, 10.1, 10.2_
