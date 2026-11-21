@@ -105,3 +105,7 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   REQUIRE_LEVEL_MATCH default true (fix in next Kiro run). Then tasks 2-11 of hand-tracking.
 - Second person: PASS (161ab34+). Open idea for Dr. Yatin, not decided: follow the face that has a hand at
   its mouth instead of the largest face (a sibling leaning in closer than the brushing child takes over).
+- 21 Nov ~16:30: TASK 1 COMPLETE (all section-5 checks pass, CSP clean, verdicts initialled YGS).
+  f08 rewrote task 2 for the decisions; TASK 2 DONE (ba0abe6, 199 tests). Next: tasks 3-9 via b00
+  (one per run, check-task.sh, commit, push), then task 10 = his phone checks, task 11 README.
+  Leftover small spec text: core design.md ~line 311 and test table ~line 620 still describe level-only matching.
