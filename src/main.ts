@@ -4,7 +4,6 @@
 import { createBrowserSpeaker } from './audio/speaker';
 import { startSession } from './logic/session';
 import { toSessionResult } from './logic/session-result';
-import { toView } from './logic/view';
 import { createStorage } from './storage/storage';
 import type { StorageBackend } from './storage/storage';
 import type { SessionState, Zone } from './logic/types';
@@ -19,6 +18,7 @@ import { createEndCard } from './ui/end-card';
 import { startEffects } from './ui/effects-host';
 import { createGameLoop } from './ui/game-loop';
 import type { Scheduler, VisibilitySource, WakeLockHelper } from './ui/game-loop';
+import { createSessionPresenter } from './ui/session-presenter';
 import { createSessionScreen } from './ui/session-screen';
 
 const app = document.getElementById('app');
@@ -108,6 +108,7 @@ if (app) {
   const speaker = createBrowserSpeaker();
   const storage = createStorage(browserBackend());
   const screen = createSessionScreen(app, { onStart: () => void loop.begin() }, speaker);
+  const presenter = createSessionPresenter({ screen });
   const endCard = createEndCard(
     app,
     {
@@ -223,10 +224,11 @@ if (app) {
       });
     },
     onState: (state) => {
-      screen.paint(toView(state));
+      presenter.update(state);
       showCamera(state);
     },
     onEnded: (state) => {
+      presenter.reset();
       endCameraRun();
       storage.saveSession(toSessionResult(state));
       screen.hide();
@@ -234,6 +236,7 @@ if (app) {
       endCard.show(state.monsters.map((m) => m.def));
     },
     onDropped: () => {
+      presenter.reset();
       endCameraRun();
       endCard.hide();
       screen.showStart();
