@@ -96,3 +96,10 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
 - Next: the LEVEL test only (24 rows, 3 tries each, both hands), one position at a time, codes RRR etc.
   Reading cells must be exactly 3 letters or left empty (tests/test-results.test.ts checks the file).
   Verdict text goes on the line BELOW "Side check:" / "Level check:".
+- Later 21 Nov: NEAR_MOUTH_FACE_WIDTHS tuned 0.7 -> 1.1 (his yes) + aggregate bug fixed (req 3.6), 26f5e6b.
+  Level: upper right outer RRR pass, upper right chewing WUW fail (palm hangs below the mouth).
+  He chose to stop and set REQUIRE_LEVEL_MATCH=false (feabfa5 spec, 79b43a1 code, 195 tests).
+  The camera now checks only: hand near the mouth + moving. Moving reads true while brushing (live).
+- Still to do in task 1: section 5 "other checks" (other hand resting / touching cheek, both hands
+  near, second person, lights dimmed -> null). Small spec leftover: core design.md still lists
+  REQUIRE_LEVEL_MATCH default true (fix in next Kiro run). Then tasks 2-11 of hand-tracking.
