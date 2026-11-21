@@ -97,11 +97,11 @@ through to the end card.
   - Test file: `tests/monster-draw-state.test.ts`
   - Files this task may change: `src/ui/monster-draw-state.ts`, `src/ui/session-screen.ts` (the one import), `tests/monster-draw-state.test.ts`
 
-- [ ] 4. **Monster look table (pure)**
+- [x] 4. **Monster look table (pure)**
   - Mark: needed for the video (req 5).
-  - [ ] 4.1 Create `src/ui/monster-looks.ts` with the shape types, the 12-row `MONSTER_LOOKS` table (design section 5.3 starting values, shapes only) and `shapeKey(look)`. There is no colour field, and no mouth value that is a tooth, fang, blood or drip
-  - [ ] 4.2 Test `monsterLooks` (design test 8): keys equal the twelve ids of `MONSTERS` in table order; the twelve `shapeKey` values are pairwise different; every field is in its allowed set; every rare has `star` and a crest and the four crests are different; no common monster has a star or a crest
-  - [ ] 4.3 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
+  - [x] 4.1 Create `src/ui/monster-looks.ts` with the shape types, the 12-row `MONSTER_LOOKS` table (design section 5.3 starting values, shapes only) and `shapeKey(look)`. There is no colour field, and no mouth value that is a tooth, fang, blood or drip
+  - [x] 4.2 Test `monsterLooks` (design test 8): keys equal the twelve ids of `MONSTERS` in table order; the twelve `shapeKey` values are pairwise different; every field is in its allowed set; every rare has `star` and a crest and the four crests are different; no common monster has a star or a crest
+  - [x] 4.3 Run `npm run test:run` and `npm run build`: both pass. Nothing uses the file yet, so the game is unchanged
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 16.2_
   - Test file: `tests/monster-looks.test.ts`
   - Files this task may change: `src/ui/monster-looks.ts`, `tests/monster-looks.test.ts`
