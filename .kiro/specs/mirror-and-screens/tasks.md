@@ -124,12 +124,12 @@ through to the end card.
   - Test file: `tests/sound-cues.test.ts`
   - Files this task may change: `src/ui/sound-cues.ts`, `tests/sound-cues.test.ts`
 
-- [ ] 7. **Pin the seven existing lines and add `end-close`**
+- [x] 7. **Pin the seven existing lines and add `end-close`**
   - Mark: needed for the video (req 9.2, 14).
-  - [ ] 7.1 First write `tests/existing-lines-pinned.test.ts` (design test 18) and run it: it pins the exact `text` and `caption` of `start`, `zone-upper-right`, `zone-upper-left`, `zone-lower-left`, `zone-lower-right`, `smoke` and `end` as they are now. It must pass before any edit to `lines.ts`
-  - [ ] 7.2 In `src/audio/lines.ts` add exactly one line, with a caption: `end-close`, "Two minutes. Every corner." The seven existing lines are not touched. The pre-spec `tests/lines.test.ts` is not edited and passes with the new line
-  - [ ] 7.3 Extend the new test file: `end-close` has the text and caption "Two minutes. Every corner."; the seven pinned lines are unchanged
-  - [ ] 7.4 Run `npm run test:run` and `npm run build`: both pass. Nothing speaks `end-close` yet, so the game is unchanged
+  - [x] 7.1 First write `tests/existing-lines-pinned.test.ts` (design test 18) and run it: it pins the exact `text` and `caption` of `start`, `zone-upper-right`, `zone-upper-left`, `zone-lower-left`, `zone-lower-right`, `smoke` and `end` as they are now. It must pass before any edit to `lines.ts`
+  - [x] 7.2 In `src/audio/lines.ts` add exactly one line, with a caption: `end-close`, "Two minutes. Every corner." The seven existing lines are not touched. The pre-spec `tests/lines.test.ts` is not edited and passes with the new line
+  - [x] 7.3 Extend the new test file: `end-close` has the text and caption "Two minutes. Every corner."; the seven pinned lines are unchanged
+  - [x] 7.4 Run `npm run test:run` and `npm run build`: both pass. Nothing speaks `end-close` yet, so the game is unchanged
   - _Requirements: 9.2, 10.9, 14.1, 14.2, 14.3, 15.7_
   - Test file: `tests/existing-lines-pinned.test.ts`
   - Files this task may change: `src/audio/lines.ts`, `tests/existing-lines-pinned.test.ts`
