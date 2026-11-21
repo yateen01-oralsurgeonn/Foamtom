@@ -32,6 +32,10 @@ describe('thresholdsExported', () => {
     }
   });
 
+  it('MOVING_MIN_TRAVEL is 0.2 face widths per second (Dr. Yatin, 21 Nov 2026)', () => {
+    expect(thresholds.MOVING_MIN_TRAVEL).toBe(0.2);
+  });
+
   it('pins only the two values that requirements 4.2 and 4.3 name', () => {
     expect(thresholds.MIN_FRAMES_PER_SECOND).toBe(5);
     expect(thresholds.MIN_FACE_FRACTION).toBe(0.5);

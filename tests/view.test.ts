@@ -71,7 +71,7 @@ describe('viewMatchesState', () => {
     expect(toView(state).captionLineId).toBe('zone-upper-right');
     expect(toView(state).healthFraction).toBe(1);
     expect(toView(state).smokeFraction).toBe(0);
-    for (let i = 0; i < 20; i += 1) state = tick(state, UPPER_RIGHT);
+    for (let i = 0; i < 15; i += 1) state = tick(state, UPPER_RIGHT);
     expect(toView(state).captionLineId).toBe('smoke');
     expect(toView(state).healthFraction).toBe(0);
     expect(toView(state).smokeFraction).toBe(1);

@@ -161,7 +161,7 @@ describe('isBrushingTruthTable', () => {
 });
 
 describe('healthChangesOnlyByTheRule', () => {
-  it('each tick changes only the active monster by -3, -2 or 0, never below 0, whole numbers, never up', () => {
+  it('each tick changes only the active monster by -4, -3, -2 or 0, never below 0, whole numbers, never up', () => {
     fc.assert(
       fc.property(modeArb, pastSessionsArb, signalsArb, (mode, past, signals) => {
         let state = startSession(input(mode, past));
@@ -225,6 +225,64 @@ describe('healthChangesOnlyByTheRule', () => {
   });
 });
 
+describe('cameraDamageIs4', () => {
+  const IDLE: BrushingSignal = { handNearMouth: false, side: 'unknown', level: 'unknown', moving: false };
+
+  /** Runs the first zone: rushed brushing seconds first, then idle seconds, to the zone end. */
+  function runZone(brushed: number, startHealth = H_MAX) {
+    let state = startSession(input('camera'));
+    state = {
+      ...state,
+      monsters: state.monsters.map((m, i) =>
+        i === 0 ? { ...m, health: startHealth, startingHealth: startHealth } : m,
+      ),
+    };
+    const snapshots: SessionState[] = [];
+    for (let i = 0; i < ZONE_DURATION; i++) {
+      state = tick(state, i < brushed ? FULL_BRUSH : IDLE);
+      snapshots.push(state);
+    }
+    return { state, snapshots };
+  }
+
+  it('a monster at 60 brushed every second is pending with health 4 at tick 14 and defeated at tick 15', () => {
+    let state = startSession(input('camera'));
+    for (let i = 1; i <= 14; i++) state = tick(state, FULL_BRUSH);
+    expect(state.monsters[0].outcome).toBe('pending');
+    expect(state.monsters[0].health).toBe(4);
+    expect(state.monsters[0].defeatedAtElapsed).toBeNull();
+    state = tick(state, FULL_BRUSH);
+    expect(state.monsters[0].outcome).toBe('defeated');
+    expect(state.monsters[0].health).toBe(0);
+    expect(state.monsters[0].defeatedAtElapsed).toBe(15);
+  });
+
+  it('13 brushed seconds end fled with health 8; 12 end trapped with health 12', () => {
+    const fled = runZone(13).state.monsters[0];
+    expect(fled.health).toBe(8);
+    expect(fled.outcome).toBe('fled');
+    const trapped = runZone(12).state.monsters[0];
+    expect(trapped.health).toBe(12);
+    expect(trapped.outcome).toBe('trapped');
+  });
+
+  it('a monster that starts at 36 is defeated at 9 brushed seconds and fled at 7', () => {
+    const defeated = runZone(9, 36).state.monsters[0];
+    expect(defeated.health).toBe(0);
+    expect(defeated.outcome).toBe('defeated');
+    expect(defeated.defeatedAtElapsed).toBe(9);
+    const fled = runZone(7, 36).state.monsters[0];
+    expect(fled.health).toBe(8);
+    expect(fled.outcome).toBe('fled');
+  });
+
+  it('a null signal in camera mode still drains 2; timer-only still drains 3', () => {
+    expect(tick(startSession(input('camera')), null).monsters[0].health).toBe(H_MAX - UNTRACKED_DRAIN);
+    expect(tick(startSession(input('timer-only')), null).monsters[0].health).toBe(H_MAX - TIMER_ONLY_DAMAGE);
+    expect(DAMAGE_PER_SECOND).toBe(4);
+    expect(TIMER_ONLY_DAMAGE).toBe(3);
+  });
+});
 describe('sessionIsExactly120Ticks', () => {
   it('runs through ticks 1-119, ends at 120, and tick 121 changes nothing', () => {
     fc.assert(

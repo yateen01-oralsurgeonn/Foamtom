@@ -192,6 +192,19 @@ describe('aggregateMoving', () => {
     expect(aggregateSecond(path(points))?.moving).toBe(true);
   });
 
+  it('gentle strokes of 0.25 face widths in a second (between 0.2 and 0.3) are moving', () => {
+    expect(MOVING_MIN_TRAVEL).toBe(0.2);
+    const stroke = 0.0625; // 4 steps = 0.25 face widths of path
+    const points = [
+      { x: 0.3, y: 0.3 },
+      { x: 0.3 + stroke, y: 0.3 },
+      { x: 0.3, y: 0.3 },
+      { x: 0.3 + stroke, y: 0.3 },
+      { x: 0.3, y: 0.3 },
+    ];
+    expect(aggregateSecond(path(points))?.moving).toBe(true);
+  });
+
   it('a stroke shorter than MOVING_MIN_TRAVEL is not moving', () => {
     const stroke = MOVING_MIN_TRAVEL / 5;
     const points = [

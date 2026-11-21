@@ -20,8 +20,12 @@ export const MIN_FRAMES_PER_SECOND = 5;
 /** A face seen in fewer than this fraction of the frames gives a null signal. Unit: fraction of frames. */
 export const MIN_FACE_FRACTION = 0.5;
 
-/** Hand path length above this in one second counts as moving. Unit: face widths per second. */
-export const MOVING_MIN_TRAVEL = 0.3;
+/**
+ * Hand path length above this in one second counts as moving. Unit: face widths per second.
+ * Dr. Yatin's decision of 21 Nov 2026 (evening; a clinical decision): 0.2, was 0.3, so gentle
+ * short strokes count as brushing (hand-tracking Decision 4).
+ */
+export const MOVING_MIN_TRAVEL = 0.2;
 
 /** A step between two frames smaller than this is camera noise and adds no travel. Unit: face widths. */
 export const MOVE_JITTER_STEP = 0.01;

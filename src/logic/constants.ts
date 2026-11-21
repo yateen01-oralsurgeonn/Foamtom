@@ -9,10 +9,17 @@ export const ZONE_COUNT = 4;
 export const SESSION_DURATION = 120;
 /** Normal monster health (max). */
 export const H_MAX = 60;
-/** Camera-mode damage per second of correct brushing. */
-export const DAMAGE_PER_SECOND = 3;
-/** Guided-timer damage per second (core req 8.5, 8.6; Dr. Yatin's decision of 21 Nov 2026): a timer-only monster is defeated at 20 s. */
-export const TIMER_ONLY_DAMAGE = DAMAGE_PER_SECOND;
+/**
+ * Camera-mode damage per second of correct brushing. Dr. Yatin's decision of 21 Nov 2026
+ * (evening; a clinical decision): 4, so a camera-mode monster is defeated after 15 counted seconds
+ * (it was 3 and 20 s).
+ */
+export const DAMAGE_PER_SECOND = 4;
+/**
+ * Guided-timer damage per second (core req 8.5, 8.6; Dr. Yatin's decision of 21 Nov 2026):
+ * a timer-only monster is defeated at 20 s. Its own value, not tied to DAMAGE_PER_SECOND.
+ */
+export const TIMER_ONLY_DAMAGE = 3;
 /** Kind-proximity floor: starting health is at least this share of H_MAX (req 14.2). */
 export const KIND_FLOOR_RATIO = 0.6;
 /** KIND_FLOOR_RATIO × H_MAX. */
