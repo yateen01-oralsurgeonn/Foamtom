@@ -139,3 +139,9 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   Browser hand checks done by Claude: docs/review/MIRROR-SCREENS-CHECKS.md (boxes not ticked). Foamtom dev
   server runs on port 5180 (5173 = SafeRefer). Finding: MediaPipe telemetry POST to odml.pa.googleapis.com
   blocked by CSP; option to switch off at source, his call.
+- 21 Nov ~21:50: his camera play showed "monster not shrinking" + overlap. Recording of his real brushing:
+  debug page 88% brushing seconds; game DID shrink/defeat/smoke but too subtle, leaving copy overlapped
+  ~1.5 s on the same cheek. f13 spec + tasks 42-46 built: timer-only defeat at 20 s (core 8.5/8.6),
+  next monster waits for leaving copy (max 2 paints), MIN_MONSTER_SCALE 0.2, hit flinch each damaged
+  tick (fx-no-hit with reduced motion), smoke +20% with #8a6fc4 outline. Verified timer-only in
+  Playwright. Open: task 47 = his camera check. Build loop now repairs Kiro tick slips (mojibake, "[x]N").
