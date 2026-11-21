@@ -566,11 +566,11 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - Test file: `tests/leaving-gate.test.ts`
   - Files this task may change: `src/ui/leaving-gate.ts`, `src/ui/session-screen.ts`, `tests/leaving-gate.test.ts`, `tests/leaving-copy.test.ts` (the one line, only if needed)
 
-- [ ] 44. **Clearer shrink: `MIN_MONSTER_SCALE` 0.2**
+- [x] 44. **Clearer shrink: `MIN_MONSTER_SCALE` 0.2**
   - Mark: needed for the video (req 6.2, 6.11).
-  - [ ] 44.1 In `src/ui/monster-draw-state.ts` change `MIN_MONSTER_SCALE` from 0.35 to 0.2. The monster is still never at zero before it is defeated
-  - [ ] 44.2 Extend `tests/monster-draw-state.test.ts` (`scaleAndSmokeLook`, design test 5): `MIN_MONSTER_SCALE` is 0.2; `monsterScale(0)` is 0.2 and `monsterScale(1)` is 1; the existing never-below-floor, never-above-1 and never-rises properties stay. Update any assertion in that file that still reads the number 0.35 (it was this spec's own value, not a core or hand-tracking rule)
-  - [ ] 44.3 Run `npm run test:run` and `npm run build`: both pass. The monster now shrinks to a fifth of its size
+  - [x] 44.1 In `src/ui/monster-draw-state.ts` change `MIN_MONSTER_SCALE` from 0.35 to 0.2. The monster is still never at zero before it is defeated
+  - [x] 44.2 Extend `tests/monster-draw-state.test.ts` (`scaleAndSmokeLook`, design test 5): `MIN_MONSTER_SCALE` is 0.2; `monsterScale(0)` is 0.2 and `monsterScale(1)` is 1; the existing never-below-floor, never-above-1 and never-rises properties stay. Update any assertion in that file that still reads the number 0.35 (it was this spec's own value, not a core or hand-tracking rule)
+  - [x] 44.3 Run `npm run test:run` and `npm run build`: both pass. The monster now shrinks to a fifth of its size
   - _Requirements: 6.2, 6.11, 15.2_
   - Test file: `tests/monster-draw-state.test.ts` (extended)
   - Files this task may change: `src/ui/monster-draw-state.ts`, `tests/monster-draw-state.test.ts`

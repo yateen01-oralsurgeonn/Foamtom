@@ -4,7 +4,7 @@ import type { MonsterOutcome, SessionState, ZoneId } from '../logic/types';
 import type { View } from '../logic/view';
 
 /** The smallest the monster is drawn, so it never vanishes before it is defeated. */
-export const MIN_MONSTER_SCALE = 0.35;
+export const MIN_MONSTER_SCALE = 0.2;
 
 export type MonsterDrawState = 'sitting' | 'shrinking' | 'defeated' | 'gone' | 'fled' | 'trapped';
 export type ZoneEndOutcome = 'defeated' | 'fled' | 'trapped';

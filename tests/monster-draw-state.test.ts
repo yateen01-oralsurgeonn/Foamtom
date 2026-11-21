@@ -75,7 +75,7 @@ describe('monsterDrawStateProperties', () => {
 
 describe('scaleAndSmokeLook', () => {
   it('keeps the monster scale between the floor and 1, and never rises as health falls', () => {
-    expect(MIN_MONSTER_SCALE).toBe(0.35);
+    expect(MIN_MONSTER_SCALE).toBe(0.2);
     fc.assert(
       fc.property(fractionArb, fractionArb, (a, b) => {
         const [lo, hi] = a <= b ? [a, b] : [b, a];
@@ -85,6 +85,7 @@ describe('scaleAndSmokeLook', () => {
       }),
     );
     expect(monsterScale(0)).toBe(MIN_MONSTER_SCALE);
+    expect(monsterScale(0)).toBe(0.2);
     expect(monsterScale(1)).toBe(1);
   });
 
