@@ -150,11 +150,11 @@ build, mock or bypass that control, and adds no URL flag, hidden key or demo hoo
   - Test file: `tests/parent-screen-guards.test.ts`
   - May change: `src/ui/parent-screen.ts`, `tests/parent-screen-guards.test.ts`
 
-- [ ] 15. **Wire the parent screen in `main.ts`**
-  - [ ] 15.1 **Do not start until `mirror-and-screens` tasks 36, 37 and 38 are all `[x]`** and `src/ui/session-screen.ts` declares `onOpenParent`. If they are not, stop and report; do not mock or bypass the control
-  - [ ] 15.2 In `src/main.ts` only: build the frame adapter around the browser's frame callback (the one place the word may appear), build `createParentScreen` once with the existing `storage`, a `today` that reuses the `localDate` function `main.ts` already has, `now: () => performance.now()`, the frame adapter, the `visibility` source `main.ts` already has and `onBack: () => { parent.close(); screen.showStart(); }`. Define one `openParent` function (`screen.hide(); parent.open()`) and pass it as `onOpenParent`. Nothing else in `main.ts` changes, and the end card and session panel get no parent handler
-  - [ ] 15.3 Test `parentMainWiring` (design test 18): `main.ts` calls `createParentScreen` once and passes one `onOpenParent`; `parent.open()` is called only inside `openParent`; Back calls `parent.close()` and `screen.showStart()`; `end-card.ts` and the session panel code have no `onOpenParent`
-  - [ ] 15.4 Test `existingSuite` (design test 19): every existing test passes unchanged, including `storage`, `stats`, `display-text`, `new-text-guard`, `lines`, `existing-lines-pinned`, `privacy-guard`, `tracking-source-rules`, `mirror-screens-guards`, `csp` and `build-output`
+- [x] 15. **Wire the parent screen in `main.ts`**
+  - [x] 15.1 **Do not start until `mirror-and-screens` tasks 36, 37 and 38 are all `[x]`** and `src/ui/session-screen.ts` declares `onOpenParent`. If they are not, stop and report; do not mock or bypass the control
+  - [x] 15.2 In `src/main.ts` only: build the frame adapter around the browser's frame callback (the one place the word may appear), build `createParentScreen` once with the existing `storage`, a `today` that reuses the `localDate` function `main.ts` already has, `now: () => performance.now()`, the frame adapter, the `visibility` source `main.ts` already has and `onBack: () => { parent.close(); screen.showStart(); }`. Define one `openParent` function (`screen.hide(); parent.open()`) and pass it as `onOpenParent`. Nothing else in `main.ts` changes, and the end card and session panel get no parent handler
+  - [x] 15.3 Test `parentMainWiring` (design test 18): `main.ts` calls `createParentScreen` once and passes one `onOpenParent`; `parent.open()` is called only inside `openParent`; Back calls `parent.close()` and `screen.showStart()`; `end-card.ts` and the session panel code have no `onOpenParent`
+  - [x] 15.4 Test `existingSuite` (design test 19): every existing test passes unchanged, including `storage`, `stats`, `display-text`, `new-text-guard`, `lines`, `existing-lines-pinned`, `privacy-guard`, `tracking-source-rules`, `mirror-screens-guards`, `csp` and `build-output`
   - _Requirements: 1.1, 1.3, 1.5, 12.6, 14.12, 14.14, 15.1–15.3_
   - Test file: `tests/parent-main-wiring.test.ts`
   - May change: `src/main.ts`, `tests/parent-main-wiring.test.ts`

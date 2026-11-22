@@ -20,6 +20,7 @@ import { effectsFor } from './ui/effects';
 import { createGameLoop } from './ui/game-loop';
 import type { Scheduler, VisibilitySource, WakeLockHelper } from './ui/game-loop';
 import { createMonsterBookScreen } from './ui/monster-book-screen';
+import { createParentScreen } from './ui/parent-screen';
 import { createSessionPresenter } from './ui/session-presenter';
 import { createSessionScreen } from './ui/session-screen';
 
@@ -120,7 +121,11 @@ if (app) {
   }
   const screen = createSessionScreen(
     app,
-    { onStart: () => void loop.begin(), onOpenBook: () => openBook('title') },
+    {
+      onStart: () => void loop.begin(),
+      onOpenBook: () => openBook('title'),
+      onOpenParent: openParent,
+    },
     speaker,
     // Same preference as effects-host.ts: read live, so a change during a session is followed.
     () => {
@@ -156,6 +161,29 @@ if (app) {
       else screen.showStart();
     },
   });
+
+  // The grown-ups' screen. The gate's frame callback is adapted here, the one place it is used.
+  const parent = createParentScreen({
+    root: app,
+    storage,
+    today: () => localDate(new Date()),
+    now: () => performance.now(),
+    frames: {
+      request(callback) {
+        const id = requestAnimationFrame(() => callback());
+        return () => cancelAnimationFrame(id);
+      },
+    },
+    visibility,
+    onBack: () => {
+      parent.close();
+      screen.showStart();
+    },
+  });
+  function openParent(): void {
+    screen.hide();
+    parent.open();
+  }
 
   // The camera for the current session, loaded lazily after the start tap. Null in timer-only
   // mode and before the first start.
