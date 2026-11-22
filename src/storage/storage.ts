@@ -21,6 +21,9 @@ export interface Storage {
 
 export const STORAGE_KEY = 'foamtom:v1';
 
+/** Every key this app writes. `clearAll()` removes each one (parent-screen requirement 9.3). */
+export const STORED_KEYS: readonly string[] = [STORAGE_KEY];
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -63,10 +66,12 @@ export function createStorage(backend: StorageBackend): Storage {
   }
 
   function clearAll(): void {
-    try {
-      backend.removeItem(STORAGE_KEY);
-    } catch {
-      // Nothing to do.
+    for (const key of STORED_KEYS) {
+      try {
+        backend.removeItem(key);
+      } catch {
+        // One failing key must not stop the others.
+      }
     }
   }
 
