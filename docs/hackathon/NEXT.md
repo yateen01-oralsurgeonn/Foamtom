@@ -164,3 +164,8 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   tasks 1-15 via b00 (SPEC=parent-screen), then 16 = his manual checks. Task 15 stops if 36-38 are not done.
 - Small leftover text: design.md line ~43, section 1.2 stage D row and section 9 row 15.3 still say the
   index.html link awaits approval (it was approved, f18). Fix in the next spec-fix run.
+- 22 Nov ~13:10: BUILT by Kiro CLI, every task check-task ALL PASSED + pushed: mirror-and-screens 36-38
+  (Grown-ups control) and parent-screen 1-15 (last b8cdb85), 647 tests / 81 files. Live on Pages.
+  Next: parent-screen task 16 = his manual checks M1-M8 (gate on phone, layout, keyboard, network/camera,
+  real Clear all data, wording sign-off, entry control, grayscale/reduced motion), and 38.5 (control look).
+  Then: earlier open hand checks (sound, monster look, phone), m&s later tasks 33-35, 39-40, the video.
