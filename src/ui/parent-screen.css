@@ -1,0 +1,257 @@
+/* Parent screen (grown-ups): one scrolling column, plain text, numbers and buttons.
+   Loads after screens.css. Looks only. Nothing here moves except the gate progress mark,
+   and that changes only when the painter writes data-step and --gate-fraction.
+   Contrast of --parent-fg on --parent-bg is at least 4.5 to 1 (checked by a test). */
+
+:root {
+  --parent-fg: #f4eefc;
+  --parent-bg: #1c1530;
+  --parent-accent: #ffd966;
+  --parent-button-bg: #3b2d66;
+}
+
+/* ---- One column that scrolls vertically; nothing needs sideways scrolling at 360 px ---- */
+.parent {
+  width: 100%;
+  max-width: 480px;
+  max-height: 100vh;
+  max-height: 100dvh;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--parent-bg);
+  color: var(--parent-fg);
+  text-align: left;
+}
+
+.parent__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.parent__back {
+  min-width: 96px;
+  min-height: 48px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 3px solid var(--parent-fg);
+  border-radius: 999px;
+  background: var(--parent-button-bg);
+  color: var(--parent-fg);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.parent__back:focus-visible {
+  outline: 4px solid var(--parent-accent);
+  outline-offset: 4px;
+}
+
+#parent-title {
+  margin: 0;
+  flex: 1;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+#parent-title:focus {
+  outline: none;
+}
+
+.parent h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.parent p,
+.parent li {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.parent-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.parent-facts,
+.parent-disclosure,
+.parent-clear,
+.parent-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.parent-days,
+.parent-disclosure__list {
+  margin: 0;
+  padding: 0 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.parent-days {
+  list-style: none;
+  padding-left: 0;
+}
+
+.parent-notice {
+  padding: 10px 12px;
+  border: 2px solid var(--parent-fg);
+  border-radius: 12px;
+}
+
+/* ---- Gate button: a ring, three dots and a label. The button holds them in this order:
+   ring, dot, dot, dot, label (the dots are children 2, 3 and 4). ---- */
+.gate-button {
+  --gate-fraction: 0;
+  min-width: 160px;
+  min-height: 72px;
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  align-self: center;
+  border: 4px solid var(--parent-fg);
+  border-radius: 999px;
+  background: var(--parent-button-bg);
+  color: var(--parent-fg);
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.gate-button:focus-visible {
+  outline: 4px solid var(--parent-accent);
+  outline-offset: 4px;
+}
+
+/* The ring fills clockwise as --gate-fraction rises from 0 to 1. */
+.gate__ring {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 3px solid var(--parent-fg);
+  border-radius: 50%;
+  background: conic-gradient(var(--parent-accent) calc(var(--gate-fraction, 0) * 360deg), transparent 0);
+}
+
+.gate__ring::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--parent-button-bg);
+}
+
+/* Three dots: hollow at rest, solid one by one as data-step rises. A fill, not a colour. */
+.gate__dot {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid var(--parent-fg);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.gate-button[data-step='1'] .gate__dot:nth-child(2),
+.gate-button[data-step='2'] .gate__dot:nth-child(2),
+.gate-button[data-step='2'] .gate__dot:nth-child(3),
+.gate-button[data-step='3'] .gate__dot:nth-child(2),
+.gate-button[data-step='3'] .gate__dot:nth-child(3),
+.gate-button[data-step='3'] .gate__dot:nth-child(4) {
+  background: var(--parent-fg);
+}
+
+/* ---- Clear all data ---- */
+.parent-clear__button {
+  min-width: 160px;
+  min-height: 56px;
+  padding: 8px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: flex-start;
+  border: 3px solid var(--parent-fg);
+  border-radius: 999px;
+  background: var(--parent-button-bg);
+  color: var(--parent-fg);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.parent-clear__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 2px solid var(--parent-fg);
+  border-radius: 12px;
+}
+
+.parent-clear__confirm-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.parent-clear__confirm-clear,
+.parent-clear__keep {
+  min-width: 96px;
+  min-height: 48px;
+  padding: 6px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 3px solid var(--parent-fg);
+  border-radius: 999px;
+  background: var(--parent-button-bg);
+  color: var(--parent-fg);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.parent-clear__button:focus-visible,
+.parent-clear__confirm-clear:focus-visible,
+.parent-clear__keep:focus-visible {
+  outline: 4px solid var(--parent-accent);
+  outline-offset: 4px;
+}
+
+/* ---- Reduced motion: no smooth ring; the three dots show the steps ---- */
+@media (prefers-reduced-motion: reduce) {
+  .gate__ring {
+    display: none;
+  }
+}
