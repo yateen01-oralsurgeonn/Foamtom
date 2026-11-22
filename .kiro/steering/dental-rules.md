@@ -35,4 +35,8 @@ Where a rule is marked **[TO CONFIRM]**, ask before building on it.
 ## Parent screen wording
 - Show facts only: minutes brushed, sessions per day, zone most often missed.
 - No medical judgement ("Your child is at risk" is forbidden).
-- Allowed nudge: "Back-left was missed 3 nights. Try brushing it first tonight."
+- Allowed nudge (reworded 22 Nov 2026 by Dr. Yatin, because the camera checks only a
+  moving hand near the mouth, not which side): "During the upper-right turn, brushing was
+  not seen on 3 nights. Try brushing it first tonight." The zone name and the number
+  change; nothing else in the sentence does. The parent screen never says a zone "was
+  missed" as if the camera saw that side.
