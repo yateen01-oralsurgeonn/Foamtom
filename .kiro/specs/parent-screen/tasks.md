@@ -108,9 +108,9 @@ build, mock or bypass that control, and adds no URL flag, hidden key or demo hoo
   - Test file: `tests/adult-gate.test.ts`
   - May change: `src/ui/adult-gate.ts`, `tests/adult-gate.test.ts`
 
-- [ ] 10. **Screen model (pure phases, confirmation, notice)**
-  - [ ] 10.1 Create `src/ui/parent-screen-model.ts` with `ParentScreenState` and the pure steps `openScreen`, `withGate`, `askToClear`, `keepData`, `afterClear` and `closeScreen` per design sections 4 and 5.7. `openScreen` gives phase `gated`, a fresh gate, no notice and no confirmation. Contents are shown only in phase `unlocked`. `askToClear` does nothing unless `unlocked`. `afterClear` ends the confirmation and sets `notice` only for `'failed'`. `closeScreen` returns a state with no view, a fresh gate, no notice and no confirmation
-  - [ ] 10.2 Test `parentScreenModel` (design test 15): any sequence of steps follows the rules above; reopening always starts gated; the model never shows contents before the gate passes; `keepData` removes nothing and calls nothing
+- [x] 10. **Screen model (pure phases, confirmation, notice)**
+  - [x] 10.1 Create `src/ui/parent-screen-model.ts` with `ParentScreenState` and the pure steps `openScreen`, `withGate`, `askToClear`, `keepData`, `afterClear` and `closeScreen` per design sections 4 and 5.7. `openScreen` gives phase `gated`, a fresh gate, no notice and no confirmation. Contents are shown only in phase `unlocked`. `askToClear` does nothing unless `unlocked`. `afterClear` ends the confirmation and sets `notice` only for `'failed'`. `closeScreen` returns a state with no view, a fresh gate, no notice and no confirmation
+  - [x] 10.2 Test `parentScreenModel` (design test 15): any sequence of steps follows the rules above; reopening always starts gated; the model never shows contents before the gate passes; `keepData` removes nothing and calls nothing
   - _Requirements: 1.2, 1.6, 2.2, 9.2, 9.4, 9.5, 9.6, 14.11, 14.13_
   - Test file: `tests/parent-screen-model.test.ts`
   - May change: `src/ui/parent-screen-model.ts`, `tests/parent-screen-model.test.ts`
