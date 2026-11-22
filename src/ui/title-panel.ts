@@ -1,7 +1,7 @@
 // The title panel (design section 5.5, req 1): the game name, one large start button, a
 // smaller Monster Book button and the privacy line. The controls come from `titleControls()`
 // and their sizes from `TAP_TARGETS`. The panel only paints. It asks for nothing, loads
-// nothing and makes no request. The parent control is added later (task 38).
+// nothing and makes no request. The parent control is built only when a handler is given.
 import { getLine } from '../audio/lines';
 import type { Speaker } from '../audio/speaker';
 import { DISPLAY_TEXT } from './display-text';
@@ -13,6 +13,8 @@ export interface TitlePanelHandlers {
   onStart: () => void;
   /** The smaller Monster Book button. The button exists only when this is given. */
   onOpenBook?: () => void;
+  /** The small, quiet parent control. The control exists only when this is given. */
+  onParentOpen?: () => void;
 }
 
 export interface TitlePanel {
@@ -39,7 +41,9 @@ export function createTitlePanel(handlers: TitlePanelHandlers, speaker: Speaker)
 
   let startButton: HTMLButtonElement | null = null;
 
-  for (const control of titleControls()) {
+  const onParentOpen = handlers.onParentOpen;
+
+  for (const control of titleControls(onParentOpen !== undefined)) {
     const target = TAP_TARGETS[control.target as keyof typeof TAP_TARGETS];
     if (control.id === 'start') {
       // Icon, label, accessible name and the `start` line are unchanged.
@@ -71,6 +75,21 @@ export function createTitlePanel(handlers: TitlePanelHandlers, speaker: Speaker)
         speaker.unlock(); // names are spoken whichever screen the child came from
         onOpenBook(); // no session, no camera
       });
+      panel.append(button);
+    } else if (control.id === 'parent') {
+      // Small and quiet: an icon only, with an accessible name. It builds no gate; the
+      // parent-screen spec provides the handler and everything behind it.
+      if (!onParentOpen) continue;
+      const parentName = DISPLAY_TEXT['grown-ups'].text;
+      const button = el('button', 'icon-button icon-button--quiet');
+      button.type = 'button';
+      button.setAttribute('aria-label', parentName);
+      button.style.minWidth = `${target.minWidthPx}px`;
+      button.style.minHeight = `${target.minHeightPx}px`;
+      const icon = el('span', 'icon-button__icon', '\u{1F9D1}');
+      icon.setAttribute('aria-hidden', 'true');
+      button.append(icon);
+      button.addEventListener('click', () => onParentOpen());
       panel.append(button);
     }
   }

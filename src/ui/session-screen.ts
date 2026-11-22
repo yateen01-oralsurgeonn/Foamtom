@@ -51,6 +51,8 @@ export interface SessionScreenHandlers {
   onStart: () => void;
   /** The smaller Monster Book button on the start panel. Not shown when this is missing. */
   onOpenBook?: () => void;
+  /** The small parent control on the start panel. Not shown when this is missing. */
+  onOpenParent?: () => void;
 }
 
 export interface SessionScreen {
@@ -81,7 +83,11 @@ export function createSessionScreen(
 
   // Start panel (built by title-panel.ts)
   const titlePanel = createTitlePanel(
-    { onStart: () => handlers.onStart(), onOpenBook: handlers.onOpenBook },
+    {
+      onStart: () => handlers.onStart(),
+      onOpenBook: handlers.onOpenBook,
+      onParentOpen: handlers.onOpenParent,
+    },
     speaker,
   );
   const startPanel = titlePanel.element;

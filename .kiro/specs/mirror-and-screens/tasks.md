@@ -477,14 +477,14 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/tap-targets.test.ts` (extended), `tests/title-model.test.ts` (extended)
   - Files this task may change: `src/ui/tap-targets.ts`, `src/ui/title-model.ts`, `tests/tap-targets.test.ts`, `tests/title-model.test.ts`
 
-- [ ] 38. **Parent entry point: the small control on the title screen**
+- [x] 38. **Parent entry point: the small control on the title screen**
   - Mark: later (req 2).
-  - [ ] 38.1 In `src/ui/title-panel.ts` build the parent control when an `onParentOpen` handler is passed: call `titleControls(true)`, create a small, quiet icon button (class `icon-button`, an icon made from a character of the system font or a CSS shape, no padlock, accessible name `DISPLAY_TEXT['grown-ups']`, `TAP_TARGETS.parent`) whose tap calls the handler. It builds no gate, mock or bypass (that is the `parent-screen` spec). Only the title panel creates it, so it is never on the session screen or the end card
-  - [ ] 38.2 In `src/ui/session-screen.ts` add an optional `onOpenParent` to `SessionScreenHandlers` and pass it to the title panel. `main.ts` passes nothing, so the control is not shown until the `parent-screen` spec provides a handler
-  - [ ] 38.3 In `src/ui/screens.css` add the quiet control's styles: smaller and quieter than both the start and the Monster Book buttons
-  - [ ] 38.4 Extend `tests/title-panel.test.ts` (source scan): the parent control is created only inside a branch that needs the handler; `title-panel.ts` still has no `getUserMedia`, `import(`, `fetch`, `setItem` or `localStorage`; `session-screen.ts` creates no parent control
+  - [x] 38.1 In `src/ui/title-panel.ts` build the parent control when an `onParentOpen` handler is passed: call `titleControls(true)`, create a small, quiet icon button (class `icon-button`, an icon made from a character of the system font or a CSS shape, no padlock, accessible name `DISPLAY_TEXT['grown-ups']`, `TAP_TARGETS.parent`) whose tap calls the handler. It builds no gate, mock or bypass (that is the `parent-screen` spec). Only the title panel creates it, so it is never on the session screen or the end card
+  - [x] 38.2 In `src/ui/session-screen.ts` add an optional `onOpenParent` to `SessionScreenHandlers` and pass it to the title panel. `main.ts` passes nothing, so the control is not shown until the `parent-screen` spec provides a handler
+  - [x] 38.3 In `src/ui/screens.css` add the quiet control's styles: smaller and quieter than both the start and the Monster Book buttons
+  - [x] 38.4 Extend `tests/title-panel.test.ts` (source scan): the parent control is created only inside a branch that needs the handler; `title-panel.ts` still has no `getUserMedia`, `import(`, `fetch`, `setItem` or `localStorage`; `session-screen.ts` creates no parent control
   - [ ] 38.5 Check by hand (requirement 2.2, 2.3): this cannot be seen until the `parent-screen` spec passes a handler. Leave this sub-task unticked now. When that handler exists, look at the title screen: the control is small, quiet and at least 48 px, with a visible icon, and it is not on the session screen or the end card
-  - [ ] 38.6 Run `npm run test:run` and `npm run build`: both pass. The game runs and looks the same
+  - [x] 38.6 Run `npm run test:run` and `npm run build`: both pass. The game runs and looks the same
   - _Requirements: 2.1, 2.2, 2.3, 11.4_
   - Test file: `tests/title-panel.test.ts` (extended)
   - Files this task may change: `src/ui/title-panel.ts`, `src/ui/session-screen.ts`, `src/ui/screens.css`, `tests/title-panel.test.ts`

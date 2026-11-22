@@ -254,6 +254,23 @@ button.book-cell {
   font-size: 1.3rem;
 }
 
+/* The parent control (task 38): smaller and quieter than the start and Monster Book buttons. */
+.panel--start .icon-button--quiet {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 4px;
+  border-width: 2px;
+  border-color: #6d5a9c;
+  background: transparent;
+  color: #c9bde6;
+  opacity: 0.8;
+}
+
+.panel--start .icon-button--quiet:focus-visible {
+  outline: 4px solid #ffd966;
+  outline-offset: 4px;
+}
+
 .title-privacy {
   margin: 0;
   max-width: 28ch;
