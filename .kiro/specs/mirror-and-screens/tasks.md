@@ -458,11 +458,11 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/monster-book-screen.test.ts` (extended)
   - Files this task may change: `src/ui/monster-book-screen.ts`, `src/ui/screens.css`, `tests/monster-book-screen.test.ts`
 
-- [ ] 36. **Parent entry point: the `Grown-ups` name**
+- [x] 36. **Parent entry point: the `Grown-ups` name**
   - Mark: later (req 2).
-  - [ ] 36.1 In `src/ui/display-text.ts` add the row `grown-ups` ("Grown-ups", kind `name-only`) and the id to `DisplayTextId`
-  - [ ] 36.2 In `tests/display-text.test.ts` extend the pin to row 18; in `tests/new-text-guard.test.ts` add the row to the checked texts
-  - [ ] 36.3 Run `npm run test:run` and `npm run build`: both pass. Nothing shows the text yet, so the game is unchanged
+  - [x] 36.1 In `src/ui/display-text.ts` add the row `grown-ups` ("Grown-ups", kind `name-only`) and the id to `DisplayTextId`
+  - [x] 36.2 In `tests/display-text.test.ts` extend the pin to row 18; in `tests/new-text-guard.test.ts` add the row to the checked texts
+  - [x] 36.3 Run `npm run test:run` and `npm run build`: both pass. Nothing shows the text yet, so the game is unchanged
   - _Requirements: 2.2, 14.1, 14.4, 14.5_
   - Test file: `tests/display-text.test.ts` (extended), `tests/new-text-guard.test.ts` (extended)
   - Files this task may change: `src/ui/display-text.ts`, `tests/display-text.test.ts`, `tests/new-text-guard.test.ts`

@@ -1,9 +1,9 @@
 // The second text table: words that are shown (or read by a screen reader) but not spoken
 // from `src/audio/lines.ts`. Every string is one of the approved lines of the
 // mirror-and-screens spec (requirements 1.3, 14.1, 14.4). Pure: no DOM, no clock.
-// The `grown-ups` row is added later (task 36).
 
-export type DisplayTextId = 'privacy' | 'book-title' | 'back' | 'not-met';
+
+export type DisplayTextId = 'privacy' | 'book-title' | 'back' | 'grown-ups' | 'not-met';
 
 export interface DisplayText {
   readonly id: DisplayTextId;
@@ -20,5 +20,6 @@ export const DISPLAY_TEXT: Readonly<Record<DisplayTextId, DisplayText>> = {
   },
   'book-title': { id: 'book-title', text: 'Monster Book', kind: 'shown' },
   back: { id: 'back', text: 'Back', kind: 'shown' },
+  'grown-ups': { id: 'grown-ups', text: 'Grown-ups', kind: 'name-only' },
   'not-met': { id: 'not-met', text: 'Not met yet', kind: 'name-only' },
 };

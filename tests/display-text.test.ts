@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { DISPLAY_TEXT } from '../src/ui/display-text';
 import { MONSTERS } from '../src/logic/monsters';
 
-// Approved lines 1, 16, 17 and 19 of requirements.md (21 Nov 2026). Row 18 comes in task 36.
+// Approved lines 1, 16, 17 and 19 of requirements.md (21 Nov 2026). Row 18 was added in task 36.
 const APPROVED = {
   privacy: 'The camera stays on this phone. Nothing is saved or sent.',
   'book-title': 'Monster Book',
   back: 'Back',
+  'grown-ups': 'Grown-ups',
   'not-met': 'Not met yet',
 } as const;
 
@@ -36,10 +37,11 @@ describe('displayTextPinned', () => {
     }
   });
 
-  it('the kinds are shown, shown, shown and name-only', () => {
+  it('the kinds are shown, shown, shown, name-only and name-only', () => {
     expect(DISPLAY_TEXT.privacy.kind).toBe('shown');
     expect(DISPLAY_TEXT['book-title'].kind).toBe('shown');
     expect(DISPLAY_TEXT.back.kind).toBe('shown');
+    expect(DISPLAY_TEXT['grown-ups'].kind).toBe('name-only');
     expect(DISPLAY_TEXT['not-met'].kind).toBe('name-only');
   });
 
