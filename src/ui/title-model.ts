@@ -1,5 +1,5 @@
 // The controls of the title screen, as data (design section 5.5). Pure: no DOM, no clock.
-// The `parent` control is added later (task 37). There is no mute or volume control.
+// The `parent` control exists only when a handler is given. There is no mute or volume control.
 
 import type { DisplayTextId } from './display-text';
 import type { TapTargetId } from './tap-targets';
@@ -13,9 +13,13 @@ export interface TitleControl {
   readonly icon: true;
 }
 
-export function titleControls(): TitleControl[] {
-  return [
+export function titleControls(hasParentHandler = false): TitleControl[] {
+  const controls: TitleControl[] = [
     { id: 'start', size: 'large', target: 'start', textId: 'start-line', icon: true },
     { id: 'book', size: 'small', target: 'titleBook', textId: 'book-title', icon: true },
   ];
+  if (hasParentHandler) {
+    controls.push({ id: 'parent', size: 'quiet', target: 'parent', textId: 'grown-ups', icon: true });
+  }
+  return controls;
 }

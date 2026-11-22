@@ -467,12 +467,12 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/display-text.test.ts` (extended), `tests/new-text-guard.test.ts` (extended)
   - Files this task may change: `src/ui/display-text.ts`, `tests/display-text.test.ts`, `tests/new-text-guard.test.ts`
 
-- [ ] 37. **Parent entry point: title model and tap target**
+- [x] 37. **Parent entry point: title model and tap target**
   - Mark: later (req 2).
-  - [ ] 37.1 In `src/ui/tap-targets.ts` add the `parent` row (48 x 48). In `src/ui/title-model.ts` change the signature to `titleControls(hasParentHandler = false)`: with a handler it adds a third control `parent` (`quiet`, target `parent`, text id `grown-ups`, icon). Without one the result is the same two controls as before
-  - [ ] 37.2 Extend `tests/tap-targets.test.ts` (design test 22, later part): `parent` is smaller than `titleBook` in width and in height and is at least 48 x 48
-  - [ ] 37.3 Extend `tests/title-model.test.ts` (design test 21, later part): the parent control is `quiet` and present only with a handler; there is still exactly one `large` control; the parent control has an icon and a text id; no control mentions sound, mute or volume
-  - [ ] 37.4 Run `npm run test:run` and `npm run build`: both pass. `title-panel.ts` still calls `titleControls()` without an argument, so the game is unchanged
+  - [x] 37.1 In `src/ui/tap-targets.ts` add the `parent` row (48 x 48). In `src/ui/title-model.ts` change the signature to `titleControls(hasParentHandler = false)`: with a handler it adds a third control `parent` (`quiet`, target `parent`, text id `grown-ups`, icon). Without one the result is the same two controls as before
+  - [x] 37.2 Extend `tests/tap-targets.test.ts` (design test 22, later part): `parent` is smaller than `titleBook` in width and in height and is at least 48 x 48
+  - [x] 37.3 Extend `tests/title-model.test.ts` (design test 21, later part): the parent control is `quiet` and present only with a handler; there is still exactly one `large` control; the parent control has an icon and a text id; no control mentions sound, mute or volume
+  - [x] 37.4 Run `npm run test:run` and `npm run build`: both pass. `title-panel.ts` still calls `titleControls()` without an argument, so the game is unchanged
   - _Requirements: 2.1, 2.2, 11.4, 15.9_
   - Test file: `tests/tap-targets.test.ts` (extended), `tests/title-model.test.ts` (extended)
   - Files this task may change: `src/ui/tap-targets.ts`, `src/ui/title-model.ts`, `tests/tap-targets.test.ts`, `tests/title-model.test.ts`

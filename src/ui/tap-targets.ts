@@ -1,6 +1,6 @@
 // Minimum size, in px, of every tappable thing on the new screens (design section 5.5).
 // Pure: no DOM, no clock. The painters apply each pair with `style.minWidth` and
-// `style.minHeight`. The `parent` row is added later (task 37).
+// `style.minHeight`.
 
 export type TapTargetId =
   | 'start'
@@ -16,9 +16,10 @@ export interface TapTarget {
   readonly minHeightPx: number;
 }
 
-export const TAP_TARGETS: Readonly<Record<Exclude<TapTargetId, 'parent'>, TapTarget>> = {
+export const TAP_TARGETS: Readonly<Record<TapTargetId, TapTarget>> = {
   start: { minWidthPx: 160, minHeightPx: 72 },
   titleBook: { minWidthPx: 128, minHeightPx: 52 },
+  parent: { minWidthPx: 48, minHeightPx: 48 },
   bookCell: { minWidthPx: 72, minHeightPx: 72 },
   bookBack: { minWidthPx: 96, minHeightPx: 48 },
   endDone: { minWidthPx: 160, minHeightPx: 72 },

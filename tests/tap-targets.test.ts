@@ -15,6 +15,13 @@ describe('tapTargets', () => {
     expect(TAP_TARGETS.titleBook.minHeightPx).toBeLessThan(TAP_TARGETS.start.minHeightPx);
   });
 
+  it('parent is smaller than titleBook in width and in height and is at least 48 x 48', () => {
+    expect(TAP_TARGETS.parent.minWidthPx).toBeLessThan(TAP_TARGETS.titleBook.minWidthPx);
+    expect(TAP_TARGETS.parent.minHeightPx).toBeLessThan(TAP_TARGETS.titleBook.minHeightPx);
+    expect(TAP_TARGETS.parent.minWidthPx).toBeGreaterThanOrEqual(48);
+    expect(TAP_TARGETS.parent.minHeightPx).toBeGreaterThanOrEqual(48);
+  });
+
   it('start equals the min-width and min-height of .big-button in styles.css', () => {
     const css = readFileSync('src/ui/styles.css', 'utf8');
     const rule = /\.big-button\s*\{([^}]*)\}/.exec(css);
