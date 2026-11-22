@@ -255,6 +255,22 @@ describe('parentScreenSourceGuards', () => {
       const open = bodyOf(text, /\bopen\s*(?:\(\)\s*(?::\s*void\s*)?|:\s*function\s*\(\)\s*)/);
       if (open !== null) expect(open).not.toMatch(/PARENT_TAP_TARGETS\.(clear|confirmClear|keep)/);
     });
+    it.skipIf(!exists)('builds the clear controls and the confirmation only through the contents path, with the model steps', () => {
+      const text = read(path);
+      if (!text.includes('clear-button')) return;
+      const open = bodyOf(text, /\bopen\s*(?:\(\)\s*(?::\s*void\s*)?|:\s*function\s*\(\)\s*)/);
+      expect(open).not.toBeNull();
+      for (const name of ['buildClearSection', 'paintContents', 'clear-confirm', 'clear-keep', 'askToClear', 'clearAllData']) {
+        expect(open!, `open() mentions ${name}`).not.toContain(name);
+      }
+      // The clear section is built only by the contents builder and the confirmation repaint.
+      const builders = text.match(/buildClearSection\(\)/g) ?? [];
+      expect(builders.length).toBe(3); // the definition, paintContents, repaintClear
+      expect(text).toMatch(/askToClear\(state\)/);
+      expect(text).toMatch(/keepData\(state\)/);
+      expect(text).toMatch(/afterClear\(state, outcome, newView\)/);
+      expect(text).toMatch(/clearAllData\(storage\)/);
+    });
   });
 
   describe('the scanner itself', () => {

@@ -142,10 +142,10 @@ build, mock or bypass that control, and adds no URL flag, hidden key or demo hoo
   - Test file: `tests/parent-screen-guards.test.ts` (no edit expected; it reads the folder)
   - May change: `src/ui/parent-screen.ts`, `tests/parent-screen-guards.test.ts` (only to add a missing check)
 
-- [ ] 14. **Parent screen painter: "Clear all data"**
-  - [ ] 14.1 In `src/ui/parent-screen.ts`, build the "Clear all data" button (row 21, icon, accessible name, `PARENT_TAP_TARGETS.clear` size) only after the gate passes. Pressing it calls `askToClear` and shows one confirmation: the question (row 22), the clearing button ("Clear all data", row 21, `confirmClear` size) and "Keep" (row 23, `keep` size). Focus goes to "Keep". Nothing is removed before the clearing button is pressed, and there is no second confirmation
-  - [ ] 14.2 "Keep" calls `keepData`, removes nothing and returns focus to the clear button. The clearing button runs `clearAllData(storage)`, reads the sessions again, builds a new view with `parentView` and the same `today`, calls `afterClear` and repaints: row 13, no nudge and the disclosure after a clear; row 24 (`clearNotice`) and no claim of clearing after a failure
-  - [ ] 14.3 Confirm `tests/parent-screen-guards.test.ts` covers the three new buttons (size and accessible name) and that no clear control or confirmation is created before the gate passes. Add checks to that file only if one is missing
+- [x] 14. **Parent screen painter: "Clear all data"**
+  - [x] 14.1 In `src/ui/parent-screen.ts`, build the "Clear all data" button (row 21, icon, accessible name, `PARENT_TAP_TARGETS.clear` size) only after the gate passes. Pressing it calls `askToClear` and shows one confirmation: the question (row 22), the clearing button ("Clear all data", row 21, `confirmClear` size) and "Keep" (row 23, `keep` size). Focus goes to "Keep". Nothing is removed before the clearing button is pressed, and there is no second confirmation
+  - [x] 14.2 "Keep" calls `keepData`, removes nothing and returns focus to the clear button. The clearing button runs `clearAllData(storage)`, reads the sessions again, builds a new view with `parentView` and the same `today`, calls `afterClear` and repaints: row 13, no nudge and the disclosure after a clear; row 24 (`clearNotice`) and no claim of clearing after a failure
+  - [x] 14.3 Confirm `tests/parent-screen-guards.test.ts` covers the three new buttons (size and accessible name) and that no clear control or confirmation is created before the gate passes. Add checks to that file only if one is missing
   - _Requirements: 9.1–9.6, 12.1, 12.4, 14.9, 14.13_
   - Test file: `tests/parent-screen-guards.test.ts`
   - May change: `src/ui/parent-screen.ts`, `tests/parent-screen-guards.test.ts`

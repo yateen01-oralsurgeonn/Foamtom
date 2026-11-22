@@ -5,11 +5,15 @@
 import type { Storage as GameStorage } from '../storage/storage';
 import { DISPLAY_TEXT } from './display-text';
 import { GATE_START } from './adult-gate';
-import { PARENT_VIEW_CONSTANTS } from './parent-constants';
+import { clearAllData } from './parent-clear';
+import { PARENT_TAP_TARGETS, PARENT_VIEW_CONSTANTS } from './parent-constants';
 import { createGateView, type FrameScheduler, type GateView } from './parent-gate-view';
 import {
   CLOSED_STATE,
+  afterClear,
+  askToClear,
   closeScreen,
+  keepData,
   openScreen,
   showsContents,
   withGate,
@@ -40,6 +44,21 @@ export interface ParentScreen {
 
 const TITLE_ID = 'parent-title';
 const DAYS_HEADING_ID = 'days-heading';
+const CONFIRM_ID = 'clear-question';
+
+function iconSpan(glyph: string): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.className = 'icon-button__icon';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = glyph;
+  return icon;
+}
+
+function labelSpan(text: string): HTMLSpanElement {
+  const label = document.createElement('span');
+  label.textContent = text;
+  return label;
+}
 
 function applySize(node: HTMLElement, target: { minWidthPx: number; minHeightPx: number }): void {
   node.style.minWidth = `${target.minWidthPx}px`;
@@ -90,8 +109,11 @@ function factsSection(view: ParentView): HTMLElement | null {
   return section;
 }
 
-/** Everything after the gate. Called only from the path that runs when the gate passes. */
-function buildContents(view: ParentView): HTMLElement {
+/**
+ * Everything after the gate. Called only from the path that runs when the gate passes (and from
+ * the repaint after a clear, which can only be reached from these contents).
+ */
+function buildContents(view: ParentView, notice: string | null, clear: HTMLElement): HTMLElement {
   const content = document.createElement('div');
   content.className = 'parent-content';
 
@@ -104,11 +126,19 @@ function buildContents(view: ParentView): HTMLElement {
     content.append(empty);
   }
 
+  // Row 24 after a failed clear: no claim that anything was cleared.
+  if (notice !== null) {
+    const note = line(notice);
+    note.className = 'parent-notice';
+    note.setAttribute('role', 'status');
+    content.append(note);
+  }
+
   const disclosure = document.createElement('section');
   disclosure.className = 'parent-disclosure';
   disclosure.setAttribute('aria-labelledby', TITLE_ID);
   disclosure.append(listOf('parent-disclosure__list', view.disclosure));
-  content.append(disclosure);
+  content.append(disclosure, clear);
   return content;
 }
 
@@ -118,7 +148,11 @@ export function createParentScreen(deps: ParentScreenDeps): ParentScreen {
   let state: ParentScreenState = CLOSED_STATE;
   let gateView: GateView | null = null;
   let heading: HTMLHeadingElement | null = null;
+  let contentsEl: HTMLElement | null = null;
+  let clearButton: HTMLButtonElement | null = null;
+  let keepButton: HTMLButtonElement | null = null;
   const cleanups: Array<() => void> = [];
+  const clearCleanups: Array<() => void> = [];
 
   const section = document.createElement('section');
   section.className = 'screen parent';
@@ -170,10 +204,123 @@ export function createParentScreen(deps: ParentScreenDeps): ParentScreen {
     state = withGate(state, { ...GATE_START, passed: true });
     if (!showsContents(state)) return;
     const gateSection = gateView !== null ? gateView.element : null;
-    const contents = buildContents(view);
+    const contents = paintContents();
+    if (contents === null) return;
     if (gateSection !== null) gateSection.replaceWith(contents);
     else section.append(contents);
     if (heading !== null) heading.focus();
+  }
+
+  /** Builds the contents from the current state. Only reachable once the gate has passed. */
+  function paintContents(): HTMLElement | null {
+    const view = state.view;
+    if (!showsContents(state) || view === null) return null;
+    const clear = buildClearSection();
+    const contents = buildContents(view, state.notice, clear);
+    contentsEl = contents;
+    return contents;
+  }
+
+  function dropClearListeners(): void {
+    for (const undo of clearCleanups.splice(0)) undo();
+  }
+
+  function listenClear(node: HTMLElement, handler: () => void): void {
+    node.addEventListener('click', handler);
+    clearCleanups.push(() => node.removeEventListener('click', handler));
+  }
+
+  /** The "Clear all data" button, and the one confirmation while the model says so. */
+  function buildClearSection(): HTMLElement {
+    dropClearListeners();
+    clearButton = null;
+    keepButton = null;
+    const clear = document.createElement('section');
+    clear.className = 'parent-clear';
+    clear.setAttribute('aria-labelledby', TITLE_ID);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'parent-clear__button';
+    button.setAttribute('aria-label', PARENT_TEXT['clear-button'].text);
+    applySize(button, PARENT_TAP_TARGETS.clear);
+    button.append(iconSpan('\u2716'), labelSpan(PARENT_TEXT['clear-button'].text));
+    listenClear(button, onAskToClear);
+    clearButton = button;
+    clear.append(button);
+
+    if (state.confirming) {
+      const confirm = document.createElement('div');
+      confirm.className = 'parent-clear__confirm';
+      confirm.setAttribute('role', 'group');
+      confirm.setAttribute('aria-labelledby', CONFIRM_ID);
+
+      const question = line(PARENT_TEXT['clear-confirm'].text);
+      question.id = CONFIRM_ID;
+
+      const buttons = document.createElement('div');
+      buttons.className = 'parent-clear__confirm-buttons';
+
+      const doClear = document.createElement('button');
+      doClear.type = 'button';
+      doClear.className = 'parent-clear__confirm-clear';
+      doClear.setAttribute('aria-label', PARENT_TEXT['clear-button'].text);
+      applySize(doClear, PARENT_TAP_TARGETS.confirmClear);
+      doClear.append(labelSpan(PARENT_TEXT['clear-button'].text));
+      listenClear(doClear, onClearConfirmed);
+
+      const keep = document.createElement('button');
+      keep.type = 'button';
+      keep.className = 'parent-clear__keep';
+      keep.setAttribute('aria-label', PARENT_TEXT['clear-keep'].text);
+      applySize(keep, PARENT_TAP_TARGETS.keep);
+      keep.append(labelSpan(PARENT_TEXT['clear-keep'].text));
+      listenClear(keep, onKeep);
+      keepButton = keep;
+
+      buttons.append(doClear, keep);
+      confirm.append(question, buttons);
+      clear.append(confirm);
+    }
+    return clear;
+  }
+
+  /** Swaps in a new clear section without rebuilding the facts. */
+  function repaintClear(): void {
+    if (contentsEl === null) return;
+    const old = contentsEl.querySelector('.parent-clear');
+    const next = buildClearSection();
+    if (old !== null) old.replaceWith(next);
+    else contentsEl.append(next);
+  }
+
+  function onAskToClear(): void {
+    state = askToClear(state);
+    if (!state.confirming) return;
+    repaintClear();
+    // Focus goes to "Keep", the safe default.
+    if (keepButton !== null) keepButton.focus();
+  }
+
+  function onKeep(): void {
+    state = keepData(state);
+    repaintClear();
+    if (clearButton !== null) clearButton.focus();
+  }
+
+  /** The one press that clears. No second confirmation. */
+  function onClearConfirmed(): void {
+    if (state.phase !== 'unlocked' || !state.confirming) return;
+    const outcome = clearAllData(storage);
+    const newView = parentView(readSessions(), PARENT_VIEW_CONSTANTS, today());
+    state = afterClear(state, outcome, newView);
+    const old = contentsEl;
+    const next = paintContents();
+    if (next !== null) {
+      if (old !== null) old.replaceWith(next);
+      else section.append(next);
+    }
+    if (clearButton !== null) clearButton.focus();
   }
 
   function closeNow(): void {
@@ -182,7 +329,11 @@ export function createParentScreen(deps: ParentScreenDeps): ParentScreen {
       gateView = null;
     }
     for (const undo of cleanups.splice(0)) undo();
+    dropClearListeners();
     heading = null;
+    contentsEl = null;
+    clearButton = null;
+    keepButton = null;
     section.replaceChildren();
     section.hidden = true;
     state = closeScreen();
