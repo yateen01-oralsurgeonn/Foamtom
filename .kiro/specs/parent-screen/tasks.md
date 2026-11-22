@@ -83,10 +83,10 @@ build, mock or bypass that control, and adds no URL flag, hidden key or demo hoo
   - Test file: `tests/parent-view.test.ts`
   - May change: `src/ui/parent-view.ts`, `tests/parent-view.test.ts`
 
-- [ ] 7. **`parentView` over odd data, and the wording sweep**
-  - [ ] 7.1 Test `parentViewOddData` (design test 9): any mix of valid sessions, `oddSessionArb` entries and non-objects gives the same result as the valid sessions alone; the same list shuffled gives the same result; the ceilings of test 3 hold for the whole mix; `parentView` never throws for any JSON value; a store holding only skipped sessions shows row 13
-  - [ ] 7.2 Extend the wording test (design test 10, sentence part): every sentence `parentView` returns over generated sessions matches one approved template with only a number, a date part or a zone name filled in; the banned stems, urging phrases, digit runs and link characters of task 2.3 appear in none of them; the matcher flags "was missed", "prevents" and "risky" and passes the nudge
-  - [ ] 7.3 Fix `src/ui/parent-view.ts` or `src/ui/parent-accept.ts` only if one of these tests finds a real defect. Do not weaken a test to make it pass
+- [x] 7. **`parentView` over odd data, and the wording sweep**
+  - [x] 7.1 Test `parentViewOddData` (design test 9): any mix of valid sessions, `oddSessionArb` entries and non-objects gives the same result as the valid sessions alone; the same list shuffled gives the same result; the ceilings of test 3 hold for the whole mix; `parentView` never throws for any JSON value; a store holding only skipped sessions shows row 13
+  - [x] 7.2 Extend the wording test (design test 10, sentence part): every sentence `parentView` returns over generated sessions matches one approved template with only a number, a date part or a zone name filled in; the banned stems, urging phrases, digit runs and link characters of task 2.3 appear in none of them; the matcher flags "was missed", "prevents" and "risky" and passes the nudge
+  - [x] 7.3 Fix `src/ui/parent-view.ts` or `src/ui/parent-accept.ts` only if one of these tests finds a real defect. Do not weaken a test to make it pass
   - _Requirements: 10.1–10.6, 11.4, 13.4, 13.5, 13.7, 14.7, 14.15_
   - Test file: `tests/parent-view-odd.test.ts`, `tests/parent-text.test.ts`
   - May change: `tests/parent-view-odd.test.ts`, `tests/parent-text.test.ts`, and, only to fix a defect found by those tests, `src/ui/parent-view.ts`, `src/ui/parent-accept.ts`

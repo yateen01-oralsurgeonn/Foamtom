@@ -4,6 +4,12 @@ import { join } from 'node:path';
 import { JOIN, MONTH_NAMES, PARENT_TEXT, WEEKDAY_NAMES, ZONE_NAMES, fill } from '../src/ui/parent-text';
 import { LINES } from '../src/audio/lines';
 import { DISPLAY_TEXT } from '../src/ui/display-text';
+import fc from 'fast-check';
+import type { SessionResult } from '../src/logic/types';
+import { windowDates } from '../src/ui/calendar-days';
+import { PARENT_VIEW_CONSTANTS } from '../src/ui/parent-constants';
+import { parentView, type ParentView } from '../src/ui/parent-view';
+import { sessionArb, todayArb } from './fixtures/parent-sessions';
 
 // Design test 10, table part (parentTextPinned). parent-screen requirements 10.1 to 10.6,
 // 11.1 to 11.4, 13.4.
@@ -160,5 +166,128 @@ describe('parentTextPinned (table)', () => {
     expect(fill('No placeholders.', {})).toBe('No placeholders.');
     expect(() => fill('Hello {name}', {})).toThrow();
     expect(() => fill(PARENT_TEXT['time-game'].text, { m: 1 })).toThrow();
+  });
+});
+
+
+// Design test 10, sentence part (parentTextPinned). Every sentence parentView returns matches one
+// approved template with only a number, a date part or a zone name filled in.
+
+const ZONE_PATTERN = '(?:upper-right|upper-left|lower-left|lower-right)';
+const PLACEHOLDER_PATTERNS: Record<string, string> = {
+  weekday: `(?:${WEEKDAY_NAMES.join('|')})`,
+  day: '[1-9]\\d?',
+  month: `(?:${MONTH_NAMES.join('|')})`,
+  n: '\\d+',
+  m: '\\d+',
+  s: '\\d+',
+  zone: ZONE_PATTERN,
+  zones: `${ZONE_PATTERN}(?:, ${ZONE_PATTERN})* and ${ZONE_PATTERN}`,
+};
+
+function templateRegex(template: string): RegExp {
+  const escaped = template.replace(/[.*+?^$()|[\]\\]/g, '\\$&');
+  const body = escaped.replace(/\{([a-z]+)\}/g, (_w, name: string) => PLACEHOLDER_PATTERNS[name]);
+  return new RegExp(`^${body}$`);
+}
+
+const TEMPLATE_REGEXES = Object.values(PARENT_TEXT).map((r) => templateRegex(r.text));
+
+/** True when `sentence` is one approved template with only allowed fills. */
+function matchesApprovedTemplate(sentence: string): boolean {
+  return TEMPLATE_REGEXES.some((re) => re.test(sentence));
+}
+
+/** Every sentence a ParentView holds. */
+function sentencesOf(view: ParentView): string[] {
+  const out: string[] = [...view.disclosure];
+  if (view.noSessionsText !== null) out.push(view.noSessionsText);
+  if (view.daysHeading !== null) out.push(view.daysHeading);
+  for (const d of view.days) out.push(d.text);
+  if (view.durations !== null) {
+    out.push(view.durations.withGame.text, view.durations.cameraSaw.text, view.durations.timerOnly.text);
+  }
+  if (view.zoneFact !== null) out.push(view.zoneFact.text);
+  if (view.nudge !== null) out.push(view.nudge.text);
+  return out;
+}
+
+/** A camera night session in which brushing was verified and not seen in the zones set to 'zero'. */
+function shapedSession(
+  s: SessionResult,
+  shape: ReadonlyArray<'keep' | 'zero' | 'full'>,
+  quiet: boolean,
+): SessionResult {
+  if (!quiet) return s;
+  return {
+    ...s,
+    mode: 'camera',
+    timeOfDay: 'night',
+    zoneResults: s.zoneResults.map((z, i) => {
+      if (shape[i] === 'keep') return { ...z, verified: true };
+      const brushed = shape[i] === 'full' ? 30 : 0;
+      return { ...z, verified: true, secondsBrushed: brushed, secondsUntracked: 0 };
+    }),
+  };
+}
+
+describe('parentTextPinned (sentences)', () => {
+  it('every sentence parentView returns is one approved template with only allowed fills', () => {
+    const arb = todayArb.chain((today) => {
+      const dates = [...windowDates(today, 14), today];
+      const shaped = fc
+        .tuple(
+          sessionArb(dates),
+          fc.array(fc.constantFrom<'keep' | 'zero' | 'full'>('keep', 'zero', 'full'), { minLength: 4, maxLength: 4 }),
+          fc.boolean(),
+        )
+        .map(([s, shape, quiet]) => shapedSession(s, shape, quiet));
+      return fc.array(shaped, { maxLength: 14 }).map((sessions) => ({ today, sessions }));
+    });
+    fc.assert(
+      fc.property(arb, ({ today, sessions }) => {
+        const view = parentView(sessions, PARENT_VIEW_CONSTANTS, today);
+        for (const sentence of sentencesOf(view)) {
+          expect(matchesApprovedTemplate(sentence), sentence).toBe(true);
+          expect(wordingProblems(sentence), sentence).toEqual([]);
+          expect(linkProblems(sentence), sentence).toEqual([]);
+        }
+      }),
+    );
+  });
+
+  it('covers the nudge and a four-turn tie in a hand-built case', () => {
+    const today = '2026-11-22';
+    const [base] = fc.sample(sessionArb([today]), { numRuns: 1, seed: 5 });
+    const quiet = (date: string): SessionResult =>
+      shapedSession({ ...base, date }, ['zero', 'zero', 'zero', 'zero'], true);
+    const sessions = [quiet('2026-11-20'), quiet('2026-11-21'), quiet('2026-11-22')];
+    const view = parentView(sessions, PARENT_VIEW_CONSTANTS, today);
+    expect(view.nudge?.text).toBe(
+      'During the upper-right turn, brushing was not seen on 3 nights. Try brushing it first tonight.',
+    );
+    expect(view.zoneFact?.text).toBe(
+      'Brushing was seen least during the upper-right, upper-left, lower-left and lower-right turns.',
+    );
+    const sentences = sentencesOf(view);
+    expect(sentences).toContain(view.nudge!.text);
+    expect(sentences).toContain(view.zoneFact!.text);
+    for (const sentence of sentences) expect(matchesApprovedTemplate(sentence), sentence).toBe(true);
+  });
+
+  it('the template matcher flags "was missed", "prevents" and "risky" and passes the nudge', () => {
+    const nudge = 'During the upper-right turn, brushing was not seen on 3 nights. Try brushing it first tonight.';
+    expect(matchesApprovedTemplate(nudge)).toBe(true);
+    expect(matchesApprovedTemplate('The upper-left turn was missed.')).toBe(false);
+    expect(matchesApprovedTemplate('Brushing prevents problems.')).toBe(false);
+    expect(matchesApprovedTemplate('Brushing was seen least during the risky turn.')).toBe(false);
+    expect(matchesApprovedTemplate('During the upper-right turn, brushing was not seen on 3 nights.')).toBe(false);
+    expect(matchesApprovedTemplate('During the middle turn, brushing was not seen on 3 nights. Try brushing it first tonight.')).toBe(
+      false,
+    );
+    expect(wordingProblems('The upper-left turn was missed.')).toContain('missed');
+    expect(wordingProblems('Brushing prevents problems.')).toContain('prevent');
+    expect(wordingProblems('Brushing was seen least during the risky turn.')).toContain('risk');
+    expect(wordingProblems(nudge)).toEqual([]);
   });
 });
