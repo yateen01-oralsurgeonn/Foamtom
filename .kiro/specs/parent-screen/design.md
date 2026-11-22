@@ -197,7 +197,7 @@ Dr. Yatin to approve before it is built.
 |------|--------|-------------------|----------|
 | `src/storage/storage.ts` | Add `export const STORED_KEYS: readonly string[] = [STORAGE_KEY]`. `clearAll()` loops over it, one `try/catch` per key. `STORAGE_KEY`, `saveSession`, `loadSessions` and the types are unchanged. | None today: the list holds one key, so `clearAll` removes the same key. | Allowed by 15.3 |
 | `src/main.ts` | Wiring only: build the parent screen, a `FrameScheduler` adapter around `requestAnimationFrame`, `openParent`, and pass `onOpenParent: openParent`. The existing scheduler adapter, the loop and every other handler are not touched. | None | Allowed by 15.3 |
-| `index.html` | One line `<link rel="stylesheet" href="/src/ui/parent-screen.css" />`, in the same form as the four that exist. The CSP is not touched. The reason it is a link and not an `import` in TypeScript: `style-src 'self'` in the CSP blocks the `<style>` elements that Vite injects in development. | None | **Dr. Yatin to confirm** (requirement 15.3: not on the allowed list) |
+| `index.html` | One line `<link rel="stylesheet" href="/src/ui/parent-screen.css" />`, in the same form as the four that exist. The CSP is not touched. The reason it is a link and not an `import` in TypeScript: `style-src 'self'` in the CSP blocks the `<style>` elements that Vite injects in development. | None | **Confirmed by Dr. Yatin, 22 Nov 2026** (this line only; now on the allowed list of requirement 15.3) |
 
 `mirror-and-screens` files (`title-panel.ts`, `title-model.ts`, `tap-targets.ts`,
 `display-text.ts`, `session-screen.ts`, `screens.css`) are **not** edited by this spec. Tasks
@@ -1025,18 +1025,21 @@ to look at.
 
 ### Dr. Yatin to confirm
 
-1. **One line in `index.html`.** Add `<link rel="stylesheet" href="/src/ui/parent-screen.css" />`
-   next to the four existing links (section 3.1). Requirement 15.3 lists only the storage key
-   list and `main.ts` as expected changes, so this edit needs his say before it is built. The
-   CSP is not touched, and the line adds no third-party request. No other wording, number or dental rule is
-   left open: every line is from the approved table, and every number (3 seconds, 3 sessions, 2
-   nights, 7 days) is decided in the requirements.
+1. **One line in `index.html`: CONFIRMED by Dr. Yatin on 22 Nov 2026 (YES).** Add
+   `<link rel="stylesheet" href="/src/ui/parent-screen.css" />` next to the four existing
+   links (section 3.1). Requirement 15.3 now lists this one line on its allowed list. The CSP is
+   not touched, and the line adds no third-party request. No other wording, number or dental
+   rule is left open: every line is from the approved table, and every number (3 seconds, 3
+   sessions, 2 nights, 7 days) is decided in the requirements. Nothing is waiting for him.
 
 ### Dependency to resolve (not a dental decision)
 
 - **`mirror-and-screens` tasks 36 to 38 are marked "later"; this spec is "needed for the
   video".** The parent screen cannot be opened without them (section 1.2, 5.1). They should be
   moved up so that stage E can be built before 4 Dec 2026. This spec does not edit those files.
+  **Decided by Dr. Yatin on 22 Nov 2026:** `mirror-and-screens` tasks 36 to 38 (the entry
+  control) are built BEFORE this spec's wiring task (stage E), ahead of that spec's other
+  later tasks.
 
 ### Gaps found in existing files (requirement "Out of scope" asks for these to be listed)
 

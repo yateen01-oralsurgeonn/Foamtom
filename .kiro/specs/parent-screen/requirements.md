@@ -726,7 +726,8 @@ NOT change `toView`, `SignalSource` or the signal.
 `src/audio/lines.ts`.
 
 15.3 THE only existing code that the later design is expected to touch is the storage
-module's list of keys (requirement 9.3) and `main.ts` (wiring only). Any other change SHALL
+module's list of keys (requirement 9.3), `main.ts` (wiring only) and `index.html` (one line
+only: `<link rel="stylesheet" href="/src/ui/parent-screen.css" />`). Any other change SHALL
 be listed in `design.md` and approved by Dr. Yatin before it is built.
 
 ---
@@ -827,6 +828,9 @@ Dr. Yatin's answers. Each is applied in the requirement named.
   turns." For three: "...during the upper-right, upper-left and lower-left turns." Names
   follow `ZONE_ORDER`; "and" before the last; no comma before "and". If all four tie with
   unseen time, the same rule names all four. (Requirements 5.3, 14.6; row 10b)
+- **index.html link.** Dr. Yatin said YES: the parent screen may add one line to `index.html`,
+  `<link rel="stylesheet" href="/src/ui/parent-screen.css" />`, and nothing else in that file.
+  It is added to the allowed list of requirement 15.3.
 - **Lines table.** Dr. Yatin approved rows 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 21, 22, 23,
   24 and 25 on 22 Nov 2026, exactly as written, and the tie form as row 10b. Rows 14 to 20 were
   already decided and row 4 is an existing line. No row is waiting.
