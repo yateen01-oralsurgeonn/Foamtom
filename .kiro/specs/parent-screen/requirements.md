@@ -35,6 +35,8 @@ reads the stored sessions through the existing storage module and the existing f
    (requirement 1).
 5. Dr. Yatin answered Questions 1 to 13 on 22 Nov 2026. His answers are in "Decisions
    (22 Nov 2026)" at the end of this file and are applied in the requirements.
+6. Dr. Yatin also answered N1 to N5 and approved the lines table on 22 Nov 2026. Both are
+   in "Decisions (22 Nov 2026)" and are applied in the requirements. Nothing is left open.
 
 ### In scope
 
@@ -63,8 +65,8 @@ reads the stored sessions through the existing storage module and the existing f
 All requirements below comply with the steering files in `.kiro/steering/`.
 `kid-safety-privacy.md` overrides any other requirement here. The "Parent screen wording"
 and "Wording rules" sections of `dental-rules.md` are followed strictly and belong to
-Dr. Yatin. Every new line of text is listed in "Lines for Dr. Yatin to approve" and is not
-final until he approves it.
+Dr. Yatin. Every new line of text is listed in "Lines for Dr. Yatin to approve". He approved
+every line on 22 Nov 2026.
 
 ### Priority for the Kiroween video (due 4 Dec 2026)
 
@@ -269,7 +271,10 @@ same as in `stats.ts`: the average over its verified results of the unseen secon
 result has unseen time, THE SYSTEM SHALL show the sentence "Brushing was seen least during
 the upper-left turn." with the zone or zones that have the highest average of unseen
 seconds. WHEN several zones tie for the highest average, THE SYSTEM SHALL name every tied
-turn, in `ZONE_ORDER` order (see Open question N5 for the wording of a tie).
+turn, in `ZONE_ORDER` order, in one sentence (Decision N5): for two turns "Brushing was seen
+least during the upper-left and lower-left turns."; for three "Brushing was seen least during
+the upper-right, upper-left and lower-left turns."; for four the same form with all four
+names. THE SYSTEM SHALL write "and" before the last name and no comma before "and".
 
 5.4 IF the window holds 3 or more camera-mode sessions AND every verified zone result had no
 unseen time (the highest average is 0), THE SYSTEM SHALL show the line "Brushing was seen in
@@ -286,8 +291,10 @@ turn", "lower-left turn"; Decision Q8).
 5.7 THE zone fact and the nudge (requirement 7) are computed separately and MAY name
 different zones (Decision Q3).
 
-5.8 The case of 3 or more camera-mode sessions in the window but no verified zone result at
-all is not decided: see Open question N3.
+5.8 IF the window holds 3 or more camera-mode sessions AND no verified zone result exists in
+them, THE SYSTEM SHALL show the line "Not enough camera sessions yet." in place of this fact
+(Decision N3). THE SYSTEM SHALL NOT show "Brushing was seen in every turn." or name a zone in
+that case.
 
 ---
 
@@ -307,7 +314,8 @@ nudge. THE disclosure (requirement 8) SHALL still be shown.
 SYSTEM SHALL show the line "Not enough camera sessions yet." in place of the zone fact.
 `ZONE_FACT_MIN_CAMERA_SESSIONS` SHALL be a named constant with the value 3 (Decision Q4).
 Requirement 6.2 applies to the zone fact only. The three durations of requirement 4 are
-shown whenever there is at least one accepted session.
+shown whenever there is at least one accepted session. The nudge is not subject to this
+minimum (requirement 7.5).
 
 6.3 THE screen SHALL NOT show a zone that comes from fewer sessions than that minimum, and
 SHALL NOT show 0 as if it were a finding of the zone fact.
@@ -334,18 +342,21 @@ Only the zone name and the number change. No other word of the sentence SHALL ch
 screen SHALL NOT add any other advice, medical judgement, risk word, comparison or
 encouragement to it.
 
-7.2 A **night** for a zone SHALL be a calendar day on which a night session counts for that
-zone. A session counts when ALL of these hold (Decision Q2):
+7.2 A **night** for a zone SHALL be a calendar day that meets all of these conditions
+(Decisions Q2, N2):
 
-- its `timeOfDay` is night (started 17:00 to 23:59 local time);
-- its mode is camera;
-- its `date` is in the window (requirement 3.1: the last 7 calendar days including today);
-- that zone's result in it is verified, and its `secondsBrushed` is 0 (`secondsBrushed === 0`).
+- the day is in the window (requirement 3.1: the last 7 calendar days including today);
+- the day has at least one **qualifying night session** for that zone: a camera-mode session
+  whose `timeOfDay` is night (started 17:00 to 23:59 local time) and whose result for that
+  zone is verified;
+- EVERY qualifying night session of that day has `secondsBrushed === 0` for that zone.
 
-Untracked seconds SHALL NOT make a night count. Unverified zone results SHALL NOT count.
-Each calendar day SHALL count as at most one night for a zone, so that two night sessions on
-one day give at most one night. (Which of two night sessions on one day decides: see Open
-question N2.)
+WHEN any qualifying night session of the day has `secondsBrushed` above 0 for that zone, THE
+SYSTEM SHALL NOT count the day as a night for that zone. A night session whose result for
+that zone is unverified SHALL neither count nor block. IF all night sessions of a day are
+unverified for that zone, THE SYSTEM SHALL NOT count the day. Untracked seconds SHALL NOT
+make a night count. Each calendar day SHALL count as at most one night for a zone, so that
+two night sessions on one day give at most one night.
 
 7.3 THE nudge SHALL appear WHEN at least one zone has `NUDGE_MIN_NIGHTS` or more nights.
 `NUDGE_MIN_NIGHTS` SHALL be a named constant with the value 2. THE nudge SHALL name the zone
@@ -358,8 +369,9 @@ sessions and unverified zone results SHALL NOT be counted as nights and SHALL NO
 nudge appear.
 
 7.5 THE nudge SHALL NOT appear when there are no sessions (requirement 6.1), and SHALL NOT
-appear after "Clear all data". Whether it is also held back when the window has fewer than 3
-camera-mode sessions is not decided: see Open question N1.
+appear after "Clear all data". THE nudge has only its own rule (requirement 7.3): THE
+`ZONE_FACT_MIN_CAMERA_SESSIONS` minimum SHALL NOT hold it back (Decision N1), so that it MAY
+appear when the window holds fewer than 3 camera-mode sessions.
 
 7.6 THE nudge zone and the zone fact of requirement 5 are computed separately and MAY differ
 (requirement 5.7).
@@ -515,8 +527,8 @@ holds the parent text, or a new test of requirement 14.7 SHALL do so. No existin
 be changed.
 
 11.3 EVERY new line, label and sentence template of this screen SHALL be listed, one per row,
-in the final table "Lines for Dr. Yatin to approve" with where it is shown. A line is not
-final until he approves it, except the rows marked "decided 22 Nov". WHEN he changes a line,
+in the final table "Lines for Dr. Yatin to approve" with where it is shown. Every row of that
+table is approved (22 Nov 2026). WHEN he changes a line,
 the table and the code SHALL be updated to match.
 
 11.4 THE code SHALL NOT contain a parent-facing string that is not in that table, except the
@@ -592,7 +604,9 @@ game rule or number.
 
 13.7 `parentView` SHALL skip any stored session whose numbers are out of range: any second
 count (`secondsBrushed`, `secondsUntracked`) below 0 or above 30 in a zone result, any
-missing field, or a `durationSeconds` below 0 (Decision Q11). A skipped session SHALL count
+missing field, or a `durationSeconds` below 0 (Decision Q11). `parentView` SHALL also skip a
+session whose zone seconds (`secondsBrushed` plus `secondsUntracked`, summed over all its
+zone results) exceed its `durationSeconds` (Decision N4). A skipped session SHALL count
 nowhere: not in the day rows, not in any duration, not in the zone fact, not in the nights,
 and not toward "No sessions yet." (a store holding only skipped sessions shows that line).
 
@@ -624,7 +638,11 @@ without calling `parentView`), the number is at least `NUDGE_MIN_NIGHTS`, the zo
 with the most nights (ties to the first in `ZONE_ORDER`), and the sentence equals the
 approved sentence with only the zone name and the number replaced. When no zone has
 `NUDGE_MIN_NIGHTS` nights, none is returned. Two night sessions on one day never give two
-nights. A session with untracked seconds but `secondsBrushed > 0` never makes a night.
+nights. A day on which any verified night session has `secondsBrushed > 0` for the zone never
+counts for it. An unverified night session neither counts nor blocks, and a day whose night
+sessions are all unverified for the zone never counts. A session with untracked seconds but
+`secondsBrushed > 0` never makes a night. The nudge appears or not whatever the number of
+camera-mode sessions in the window (requirement 7.5).
 
 14.4 **Seven days:** `parentView` returns exactly seven day rows, consecutive, ending today;
 each count equals the number of stored sessions with that date; sessions outside the seven
@@ -633,14 +651,16 @@ days appear in no row and in no duration, zone fact or night.
 14.5 **Too little data:** with no sessions, `parentView` returns only "No sessions yet." in
 place of the facts (no day rows, no duration, no zone, no nudge). With fewer than
 `ZONE_FACT_MIN_CAMERA_SESSIONS` camera-mode sessions in the window, it returns "Not enough
-camera sessions yet." and no zone. It never names a zone whose highest average of unseen
-seconds is 0 (requirement 5.4).
+camera sessions yet." and no zone. With 3 or more camera-mode sessions but no verified zone
+result, it returns the same line and no zone (requirement 5.8). It never names a zone whose
+highest average of unseen seconds is 0 (requirement 5.4).
 
 14.6 **Zone fact:** when the data is sufficient and one zone has the highest positive
 average, that zone equals `zoneMostMissed` over the sessions of the window, and
 "camera saw brushing" equals `computeVerifiedTime` over them. On a tie, every tied zone is
-named, in `ZONE_ORDER` order. The zone fact and the nudge are computed separately and may
-differ.
+named, in `ZONE_ORDER` order, in the tie sentences of requirement 5.3 (rows 10 and 10b of the
+approved table; "and" before the last name, no comma before "and"). The zone fact and the
+nudge are computed separately and may differ.
 
 14.7 **Wording guard:** a test SHALL read every parent-facing string (the whole table of
 requirement 11.1, and every sentence `parentView` returns over generated sessions) and fail if
@@ -685,7 +705,8 @@ sound.
 
 14.15 **Odd stored data:** for any mix of valid sessions and sessions with out-of-range
 numbers (a second count below 0 or above 30 in a zone result, a missing field, a negative
-`durationSeconds`), the result of `parentView` equals its result for the valid sessions
+`durationSeconds`, or zone seconds that sum to more than `durationSeconds`), the result of
+`parentView` equals its result for the valid sessions
 alone. The ceilings of property 14.1 hold for the whole mix.
 
 ---
@@ -712,27 +733,29 @@ be listed in `design.md` and approved by Dr. Yatin before it is built.
 
 ## Lines for Dr. Yatin to approve
 
-Every NEW parent-facing line of this spec is below, one per row, with where it is shown. A
-row is final once Dr. Yatin approves it. Rows marked "decided 22 Nov" were set by him on
-22 Nov 2026. "Shown" means visible text; nothing on this screen is spoken. `<...>` marks a
+Every NEW parent-facing line of this spec is below, one per row, with where it is shown.
+Dr. Yatin approved every row on 22 Nov 2026, exactly as written, and no row is waiting. Rows
+marked "decided 22 Nov" were set by him earlier that day. "Shown" means visible text; nothing
+on this screen is spoken. `<...>` marks a
 part a template fills in. The title screen keeps its own approved privacy line ("The camera
 stays on this phone. Nothing is saved or sent."); it is not a row here.
 
 | # | Proposed text | Where it is shown | Status |
 |---|---------------|-------------------|--------|
-| 1 | Grown-ups | Heading of the parent screen | Text approved on 21 Nov 2026 as the name of the entry control; new use as a heading. Waiting |
-| 2 | Hold the button for 3 seconds. | Gate, instruction line | New. Waiting |
-| 3 | Hold | Gate, label of the button | New. Waiting |
+| 1 | Grown-ups | Heading of the parent screen | approved 22 Nov |
+| 2 | Hold the button for 3 seconds. | Gate, instruction line | approved 22 Nov |
+| 3 | Hold | Gate, label of the button | approved 22 Nov |
 | 4 | Back | Back button | Existing approved line (`display-text.ts`) |
-| 5 | Sessions in the last 7 days | Heading of the day rows | New. Waiting |
-| 6 | `<weekday> <day> <month>`: `<n>` | One day row (for example "Mon 16 Nov: 2") | New. Waiting |
-| 7 | Time with the game: `<m>` min `<s>` s | Facts (requirement 4.1) | New. Waiting |
-| 8 | Of that, the camera saw brushing: `<m>` min `<s>` s | Facts (requirement 4.1) | New. Waiting |
-| 9 | Timer only, not checked by the camera: `<m>` min `<s>` s | Facts (requirement 4.1) | New. Waiting |
-| 10 | Brushing was seen least during the `<zone>` turn. | Zone fact (requirement 5.3) | Wording given 22 Nov in the decision, with the example "upper-left"; not yet marked decided. Waiting. The wording for a tie of several turns is Open question N5 |
-| 11 | Brushing was seen in every turn. | Zone fact when every verified turn had no unseen time (requirement 5.4) | New. Waiting |
-| 12 | Not enough camera sessions yet. | Zone fact, when the window has fewer than 3 camera-mode sessions | New. Waiting |
-| 13 | No sessions yet. | Facts, when nothing is stored, and after "Clear all data" | New. Waiting |
+| 5 | Sessions in the last 7 days | Heading of the day rows | approved 22 Nov |
+| 6 | `<weekday> <day> <month>`: `<n>` | One day row (for example "Mon 16 Nov: 2") | approved 22 Nov |
+| 7 | Time with the game: `<m>` min `<s>` s | Facts (requirement 4.1) | approved 22 Nov |
+| 8 | Of that, the camera saw brushing: `<m>` min `<s>` s | Facts (requirement 4.1) | approved 22 Nov |
+| 9 | Timer only, not checked by the camera: `<m>` min `<s>` s | Facts (requirement 4.1) | approved 22 Nov |
+| 10 | Brushing was seen least during the `<zone>` turn. | Zone fact, one turn (requirement 5.3) | approved 22 Nov |
+| 10b | Brushing was seen least during the upper-left and lower-left turns. For three turns: Brushing was seen least during the upper-right, upper-left and lower-left turns. | Zone fact, a tie of two or more turns (requirement 5.3). Names follow `ZONE_ORDER`, "and" before the last name, no comma before "and"; if all four tie, all four are named | approved 22 Nov |
+| 11 | Brushing was seen in every turn. | Zone fact when every verified turn had no unseen time (requirement 5.4) | approved 22 Nov |
+| 12 | Not enough camera sessions yet. | Zone fact, when the window has fewer than 3 camera-mode sessions, or 3 or more but no verified zone result (requirements 5.5, 5.8) | approved 22 Nov |
+| 13 | No sessions yet. | Facts, when nothing is stored, and after "Clear all data" | approved 22 Nov |
 | 14 | During the `<zone>` turn, brushing was not seen on `<n>` nights. Try brushing it first tonight. | The nudge | Approved by Dr. Yatin on 22 Nov 2026 (`dental-rules.md`); decided 22 Nov. Only `<zone>` and `<n>` change |
 | 15 | The camera picture stays on this phone. It is never saved or sent. | Disclosure line 1 | decided 22 Nov |
 | 16 | Brushing times and the Monster Book are saved on this phone only, until you press Clear all data. | Disclosure line 2 | decided 22 Nov |
@@ -740,11 +763,11 @@ stays on this phone. Nothing is saved or sent."); it is not a row here.
 | 18 | In camera sessions, monsters get weaker in turns where brushing was often not seen. | Disclosure line 4 | decided 22 Nov |
 | 19 | A monster that is nearly beaten when the time is up counts as beaten. | Disclosure line 5 | decided 22 Nov |
 | 20 | Every monster your child meets goes into the Monster Book, beaten or not. | Disclosure line 6 | decided 22 Nov |
-| 21 | Clear all data | Button; also the clearing button of the confirmation | New (the name is in `kid-safety-privacy.md`). Waiting |
-| 22 | Clear all data from this phone? It cannot be undone. | Confirmation | New. Waiting |
-| 23 | Keep | Confirmation, the button that keeps the data | New. Waiting |
-| 24 | The data on this phone could not be cleared. | Shown if sessions can still be read after the clear (requirement 9.5) | New. Waiting |
-| 25 | upper-right, upper-left, lower-left, lower-right | Zone names inside rows 10 and 14 (hyphen before "turn": Decision Q8) | As written in the approved nudge. Waiting |
+| 21 | Clear all data | Button; also the clearing button of the confirmation | approved 22 Nov |
+| 22 | Clear all data from this phone? It cannot be undone. | Confirmation | approved 22 Nov |
+| 23 | Keep | Confirmation, the button that keeps the data | approved 22 Nov |
+| 24 | The data on this phone could not be cleared. | Shown if sessions can still be read after the clear (requirement 9.5) | approved 22 Nov |
+| 25 | upper-right, upper-left, lower-left, lower-right | Zone names inside rows 10, 10b and 14 (hyphen before "turn": Decision Q8) | approved 22 Nov |
 
 ---
 
@@ -788,28 +811,23 @@ Dr. Yatin's answers. Each is applied in the requirement named.
 - **Q13.** The parent screen is in the 4 Dec video. The "needed for the video" tags stay, and
   the nudge (requirement 7) is now also "needed for the video".
 
----
+- **N1.** The nudge has only its own rule (2 or more nights for one zone). The 3-camera-session
+  minimum applies to the zone fact only, not to the nudge. (Requirements 6.2, 7.5, 14.3)
+- **N2.** A calendar day counts as a night for a zone only when every night session of that
+  day had 0 seconds of brushing seen in that zone's verified turn. If any night session that
+  day saw brushing in that turn, the day does not count. A night session whose turn is
+  unverified neither counts nor blocks; if all of that day's night sessions are unverified
+  for the zone, the day does not count. This refines Q2. (Requirements 7.2, 14.3)
+- **N3.** If the window has 3 or more camera-mode sessions but no verified zone result, the
+  zone fact shows row 12, "Not enough camera sessions yet." (Requirements 5.8, 14.5)
+- **N4.** `parentView` also skips a session whose zone seconds (brushed plus untracked, summed
+  over its zones) exceed its `durationSeconds`. Skipped sessions count nowhere. (Requirements
+  13.7, 14.15)
+- **N5.** Tie wording: "Brushing was seen least during the upper-left and lower-left
+  turns." For three: "...during the upper-right, upper-left and lower-left turns." Names
+  follow `ZONE_ORDER`; "and" before the last; no comma before "and". If all four tie with
+  unseen time, the same rule names all four. (Requirements 5.3, 14.6; row 10b)
+- **Lines table.** Dr. Yatin approved rows 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 21, 22, 23,
+  24 and 25 on 22 Nov 2026, exactly as written, and the tie form as row 10b. Rows 14 to 20 were
+  already decided and row 4 is an existing line. No row is waiting.
 
-## Open questions
-
-Applying the decisions exposed these gaps. None is decided here.
-
-N1. **Does the 3-camera-session minimum also hold back the nudge?** Q4 sets the minimum for the
-    zone fact. Q3 sets the nudge rule (2 or more nights) and does not mention a minimum, but the
-    old requirement 7.4 held the nudge back whenever data was "too little". Two night sessions
-    on two days can give 2 nights with fewer than 3 camera-mode sessions in the window. Should the
-    nudge then appear?
-N2. **Two night sessions on one day.** Q2 says the day counts at most once. If the zone had 0
-    seconds brushed in one of the two sessions and some brushing in the other, does the day
-    count as a night (any session) or not (every session must have 0)? Requirement 7.2 and
-    property 14.3 wait for this. The sentence says "brushing was not seen on 3 nights".
-N3. **Window with 3 or more camera-mode sessions but no verified zone result.** Neither "Brushing
-    was seen least…" nor "Brushing was seen in every turn." is true there. What should the zone
-    fact show (nothing, or "Not enough camera sessions yet.")?
-N4. **Sessions whose zone seconds exceed their duration.** Q11 skips out-of-range counts, but a
-    session can have every count in 0 to 30 and still have zone seconds that add up to more than
-    its `durationSeconds`. Then "of that, the camera saw brushing" could exceed "time with the
-    game", against requirement 4.4 and `tech.md`. Skip such a session too, or leave it?
-N5. **Wording of a tie in the zone fact.** Q9 says to name every tied turn in `ZONE_ORDER`
-    order, but gives the sentence only for one turn. What is the wording for two, three or four
-    turns (for example "upper-left turn and lower-left turn")?
