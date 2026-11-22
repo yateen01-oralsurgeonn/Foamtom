@@ -35,10 +35,10 @@ build, mock or bypass that control, and adds no URL flag, hidden key or demo hoo
 
 ---
 
-- [ ] 1. **Calendar day maths**
-  - [ ] 1.1 Create `src/ui/calendar-days.ts` with `parseDate`, `daysFromCivil`, `civilFromDays`, `weekdayIndex` and `windowDates(today, n)` per design section 5.3. Integer maths on `YYYY-MM-DD` strings only. No `Date`, `Intl`, `toLocale*` or `getTimezoneOffset`
-  - [ ] 1.2 `parseDate` returns `null` for anything that is not a real calendar date in the exact form `YYYY-MM-DD` (`'2026-02-29'`, `'2026-13-01'`, `'2026-1-1'`, `''`); `windowDates` returns `[]` when `today` does not parse
-  - [ ] 1.3 Test `calendarDays` (design test 1): `daysFromCivil` and `civilFromDays` are inverses over several years including leap days, month ends and year ends; `windowDates(today, 7)` is 7 consecutive dates ending at `today`, oldest first; 2026-11-16 has weekday index 1 (Monday); invalid strings give `null` and `[]`; the file contains none of `Date`, `Intl`, `toLocale`, `getTimezoneOffset`
+- [x] 1. **Calendar day maths**
+  - [x] 1.1 Create `src/ui/calendar-days.ts` with `parseDate`, `daysFromCivil`, `civilFromDays`, `weekdayIndex` and `windowDates(today, n)` per design section 5.3. Integer maths on `YYYY-MM-DD` strings only. No `Date`, `Intl`, `toLocale*` or `getTimezoneOffset`
+  - [x] 1.2 `parseDate` returns `null` for anything that is not a real calendar date in the exact form `YYYY-MM-DD` (`'2026-02-29'`, `'2026-13-01'`, `'2026-1-1'`, `''`); `windowDates` returns `[]` when `today` does not parse
+  - [x] 1.3 Test `calendarDays` (design test 1): `daysFromCivil` and `civilFromDays` are inverses over several years including leap days, month ends and year ends; `windowDates(today, 7)` is 7 consecutive dates ending at `today`, oldest first; 2026-11-16 has weekday index 1 (Monday); invalid strings give `null` and `[]`; the file contains none of `Date`, `Intl`, `toLocale`, `getTimezoneOffset`
   - _Requirements: 3.1, 3.6, 13.2, 14.4_
   - Test file: `tests/calendar-days.test.ts`
   - May change: `src/ui/calendar-days.ts`, `tests/calendar-days.test.ts`
