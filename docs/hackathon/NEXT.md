@@ -151,3 +151,16 @@ Kiro runs over about 10 minutes go to the background; run them as ONE background
   Task 48 built (475 tests). His camera run: 3 of 4 monsters beaten + smoke; 47 + 48.5 PASSED (his word).
   Watch: upper-left zone varied (3 counted s in last run). Next: remaining hand checks (sound, phone,
   monster look 15.4/32.9), later tasks 33-40, parent-screen spec, video.
+
+## Update 22 Nov (parent-screen spec)
+
+- parent-screen spec COMPLETE: requirements (dbeced5, all 25+ lines approved by Dr. Yatin), design (ade3dab),
+  f18 (3533da6), tasks (16 tasks / 75 boxes). Prompts n03b, f16, f17, n90c, f18 in docs/review/kiro-prompts/.
+- His decisions 22 Nov: honest nudge "During the upper-right turn, brushing was not seen on 3 nights. Try
+  brushing it first tonight." (dental-rules.md); night = night session 17:00-23:59, last 7 days, 0 s seen,
+  every night session that day; nudge from 2 nights, most nights, tie = ZONE_ORDER; 3 time lines over 7 days;
+  zone fact after 3+ camera sessions; six-line honest disclosure; parent screen IS in the video.
+- Build order (his yes): mirror-and-screens tasks 36-38 (Grown-ups entry control) FIRST, then parent-screen
+  tasks 1-15 via b00 (SPEC=parent-screen), then 16 = his manual checks. Task 15 stops if 36-38 are not done.
+- Small leftover text: design.md line ~43, section 1.2 stage D row and section 9 row 15.3 still say the
+  index.html link awaits approval (it was approved, f18). Fix in the next spec-fix run.
