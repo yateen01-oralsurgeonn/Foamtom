@@ -25,7 +25,7 @@ reads the stored sessions through the existing storage module and the existing f
 
 1. The camera checks only a moving hand near the mouth. The original disclosure line 2
    ("near one side of the mouth") is replaced by a line that says the camera cannot see the
-   brush, the teeth, or which side is brushed (requirement 8.2).
+   brush, the teeth, or which part of the mouth is brushed (requirement 8.1, line 3).
 2. The original disclosure line 6 (the `REQUIRE_LEVEL_MATCH` condition) is dropped. It no
    longer applies.
 3. The nudge is the sentence reworded by Dr. Yatin on 22 Nov 2026 in `dental-rules.md`, not
@@ -33,19 +33,20 @@ reads the stored sessions through the existing storage module and the existing f
 4. The entry control on the title screen belongs to `mirror-and-screens` (its tasks 36 to 38,
    not built yet). This spec builds the screen behind it and receives its open handler
    (requirement 1).
-5. How "3 nights" is counted is not settled. It is an open question, not decided here.
+5. Dr. Yatin answered Questions 1 to 13 on 22 Nov 2026. His answers are in "Decisions
+   (22 Nov 2026)" at the end of this file and are applied in the requirements.
 
 ### In scope
 
 1. **Adult gate** (requirement 2).
-2. **Facts:** sessions per day for the last 7 days, time played, time the camera saw
-   brushing, time guided and not checked by the camera, and the part of the mouth where
-   brushing was seen least (requirements 3 to 6).
-3. **One allowed nudge** (requirement 7).
-4. **Plain disclosure**, always visible on the screen (requirement 8).
-5. **Clear all data** (requirement 9).
-6. **Wording limits**, **display-only text**, **comfort and access** (requirements 10 to 12).
-7. **The pure function `parentView`** and its **tests** (requirements 13 and 14).
+2. **Facts:** sessions per day for the last 7 days, three time lines, and the part of the
+   mouth where brushing was seen least (requirements 3 to 5).
+3. **Too little data** (requirement 6).
+4. **One allowed nudge** (requirement 7).
+5. **Plain disclosure**, always visible on the screen (requirement 8).
+6. **Clear all data** (requirement 9).
+7. **Wording limits**, **display-only text**, **comfort and access** (requirements 10 to 12).
+8. **The pure function `parentView`** and its **tests** (requirements 13 and 14).
 
 ### Out of scope
 
@@ -67,25 +68,25 @@ final until he approves it.
 
 ### Priority for the Kiroween video (due 4 Dec 2026)
 
-Each requirement carries one tag: **needed for the video** or **later**. The tags assume the
-parent screen is shown in the video (see Open question 13).
+Each requirement carries one tag: **needed for the video** or **later**. The parent screen is
+in the 4 Dec video (Decision Q13), and so is the nudge.
 
 | # | Requirement | Tag |
 |---|-------------|-----|
 | 1 | Entry handler and screen shape | needed for the video |
 | 2 | Adult gate | needed for the video |
 | 3 | Fact: sessions per day, last 7 days | needed for the video |
-| 4 | Facts: time played, camera saw brushing, guided | needed for the video |
+| 4 | Facts: time with the game, camera saw brushing, timer only | needed for the video |
 | 5 | Fact: where brushing was seen least | needed for the video |
 | 6 | Too little data | needed for the video |
-| 7 | The nudge | later |
+| 7 | The nudge | needed for the video |
 | 8 | Plain disclosure | needed for the video |
 | 9 | Clear all data | needed for the video |
 | 10 | Wording limits | needed for the video |
 | 11 | Display-only text and approval | needed for the video |
 | 12 | Comfort and access | needed for the video |
 | 13 | `parentView` is pure | needed for the video |
-| 14 | Tests | needed for the video (the nudge tests: later) |
+| 14 | Tests | needed for the video |
 | 15 | Nothing else changes | needed for the video |
 
 ---
@@ -156,13 +157,15 @@ NOT flash faster than three times a second. WHEN the device asks for reduced mot
 (`prefers-reduced-motion: reduce`) THE progress mark SHALL show its steps without smooth
 movement; it SHALL still be shown.
 
-2.6 THE hold SHALL be measured against an injected clock (the same style as core
-requirement 15.2), so that tests can use a fake clock. THE gate SHALL NOT call `setInterval`
-or `setTimeout`. How the hold is checked while the button is down is decided in `design.md`
-(Open question 12).
+2.6 THE hold SHALL be measured against an injected time source (the same style as core
+requirement 15.2), so that tests can use a fake clock. WHILE the button is held THE gate MAY
+check the hold with `requestAnimationFrame` and pointer-event timestamps, as
+`mirror-and-screens` 13.3 allows for effects (Decision Q12). THE gate SHALL NOT call
+`setInterval` or `setTimeout`.
 
 2.7 THE gate SHALL work with the keyboard: holding Space or Enter on the focused button for
-`GATE_HOLD_SECONDS` seconds SHALL pass it, with a visible focus mark.
+`GATE_HOLD_SECONDS` seconds SHALL pass it, with a visible focus mark. This keyboard hold is
+the accessible path. THE SYSTEM SHALL NOT add a second gate (Decision Q12).
 
 2.8 THE gate button SHALL have a touch target of at least 48 px and an accessible name made
 from its label and the instruction line of the approval table.
@@ -179,53 +182,63 @@ instruction would help a child to pass it (see requirement 11.1).
 **As a parent, I want to see how many times my child brushed on each of the last seven days,
 so that I know whether brushing is happening.**
 
-3.1 THE SYSTEM SHALL show seven rows, one per calendar day, from six days before today up to
-today, oldest first. Each row SHALL show the date and the number of stored sessions whose
-`date` equals that day.
+3.1 THE SYSTEM SHALL define **the window** as the seven calendar days from six days before
+today up to and including today. Every time fact (requirement 4), the zone fact
+(requirement 5) and the nudge (requirement 7) SHALL use only sessions whose `date` is in the
+window.
 
-3.2 EVERY stored session SHALL count, whatever its mode (camera or timer-only) and its time
-of day (morning, night or neither). A day with no sessions SHALL show 0, not a blank.
+3.2 THE SYSTEM SHALL show seven rows, one per calendar day of the window, oldest first. Each
+row SHALL show the date and the number of stored sessions whose `date` equals that day.
 
-3.3 A session dated after today, or before the seventh day, SHALL NOT appear in these rows.
+3.3 EVERY stored session in the window SHALL count in these rows, whatever its mode (camera
+or timer-only) and its time of day (morning, night or neither). A day with no sessions SHALL
+show 0, not a blank. A session dated after today, or before the seventh day, SHALL NOT
+appear in these rows.
 
-3.4 THE rows SHALL NOT show a streak, a total of days in a row, a comparison with other
+3.4 IF there are no sessions at all (requirement 6.1) THE SYSTEM SHALL NOT show the seven
+rows (no seven rows of zeros).
+
+3.5 THE rows SHALL NOT show a streak, a total of days in a row, a comparison with other
 days, a target, a colour that rates the day, or any word of praise or blame. Numbers only.
 
-3.5 THE day arithmetic SHALL be done on the `YYYY-MM-DD` strings of the sessions and of
+3.6 THE day arithmetic SHALL be done on the `YYYY-MM-DD` strings of the sessions and of
 "today" (requirement 13.2). It SHALL NOT read the clock and SHALL NOT depend on the time zone
 of the machine running the test.
 
 ---
 
-### 4. Facts: time played, camera saw brushing, guided
+### 4. Facts: time with the game, camera saw brushing, timer only
 
 **Tag: needed for the video.**
 
-**As a parent, I want to see how much time was played and how much of it the camera
-actually saw brushing, so that I know how much to trust the numbers.**
+**As a parent, I want to see how much time was spent with the game and how much of it the
+camera actually saw brushing, so that I know how much to trust the numbers.**
 
-4.1 THE SYSTEM SHALL show three durations, each as whole minutes and seconds:
+4.1 THE SYSTEM SHALL show exactly three durations, each as whole minutes and seconds, all
+over the sessions of the window (requirement 3.1):
 
-- **Time played:** the sum of `durationSeconds` of the stored sessions.
-- **Camera saw brushing:** the result of `computeVerifiedTime` in `src/logic/stats.ts`,
-  that is, the `secondsBrushed` of verified zones of camera-mode sessions.
-- **Guided, not checked by the camera:** 30 seconds (`ZONE_DURATION`) for every zone result
-  that belongs to a timer-only session or is unverified.
+- **Time with the game:** the sum of `durationSeconds` of all sessions in the window.
+- **Of that, the camera saw brushing:** the result of `computeVerifiedTime` in
+  `src/logic/stats.ts` over the sessions of the window, that is, the `secondsBrushed` of
+  verified zones of camera-mode sessions.
+- **Timer only, not checked by the camera:** the sum of `durationSeconds` of the timer-only
+  sessions in the window.
 
-The reading of "time played" is a working one: see Open question 1.
+THE SYSTEM SHALL NOT show a fourth line, a remainder or any claim about the gap between the
+three durations (Decision Q1).
 
 4.2 THE SYSTEM SHALL use `computeVerifiedTime` unchanged and SHALL NOT recompute verified
 time a second way.
 
-4.3 TIMER-ONLY sessions and unverified zones SHALL NOT be counted as "camera saw brushing",
-and SHALL NOT be counted as missed or as "brushing not seen" anywhere on the screen. They
-appear only in "Guided, not checked by the camera".
+4.3 TIMER-ONLY sessions and unverified zones SHALL NOT be counted as "the camera saw
+brushing", and SHALL NOT be counted as missed or as "brushing not seen" anywhere on the
+screen. Timer-only sessions appear only in "Timer only, not checked by the camera".
 
 4.4 THE "camera saw brushing" duration SHALL NOT exceed 30 seconds per verified zone result,
-SHALL NOT exceed 120 seconds per camera-mode session, and SHALL NOT exceed the "time played"
-duration. THE sum of "camera saw brushing" and "guided, not checked" SHALL NOT exceed "time
-played". (This follows `tech.md`: parent stats never report more brushing time than elapsed
-time. It holds for valid stored sessions; see Open question 11 for odd stored data.)
+SHALL NOT exceed 120 seconds per camera-mode session, and SHALL NOT exceed "time with the
+game". THE sum of "camera saw brushing" and "timer only" SHALL NOT exceed "time with the
+game". (This follows `tech.md`: parent stats never report more brushing time than elapsed
+time. It holds for valid stored sessions; requirement 13.7 removes the others.)
 
 4.5 THE durations SHALL be shown in whole seconds without rounding up, so that no duration
 is shown as longer than it is.
@@ -243,26 +256,38 @@ Dr. Yatin to approve".
 **As a parent, I want to know which turn of the brush most often had no brushing seen, so
 that I can help my child with it, without the screen claiming more than the camera knows.**
 
-5.1 THE SYSTEM SHALL show one zone, the result of `zoneMostMissed` in `src/logic/stats.ts`,
-which uses all stored camera-mode sessions and their verified zones only. THE sentence
-SHALL be the approved wording that says brushing was seen least during that zone's turn. THE
-screen SHALL NOT say a zone "was missed", "skipped" or "not brushed", and SHALL NOT claim
-that the camera saw which side or which teeth were brushed (`dental-rules.md`, "Parent
-screen wording").
+5.1 THE SYSTEM SHALL work out this fact from the camera-mode sessions of the window
+(requirement 3.1) and from their verified zone results only. Timer-only sessions and
+unverified zones SHALL NOT contribute (core requirement 13.4).
 
-5.2 THE SYSTEM SHALL use `zoneMostMissed` unchanged. IF the highest average of "brushing not
-seen" seconds over the verified zone results is 0 (so that every verified zone was fully
-seen), THE SYSTEM SHALL NOT show a zone, because `zoneMostMissed` then returns the first
-zone in order and showing it would be untrue. In that case the screen SHALL show nothing for
-this fact. What it shows instead is decided in Open question 9.
+5.2 `parentView` SHALL filter the sessions to the window and SHALL compute the fact itself.
+`src/logic/stats.ts` SHALL NOT be changed (Decision Q4). For each zone the measure is the
+same as in `stats.ts`: the average over its verified results of the unseen seconds,
+`max(0, ZONE_DURATION - secondsBrushed - secondsUntracked)`.
 
-5.3 TIMER-ONLY sessions and unverified zones SHALL NOT contribute to this fact
-(core requirement 13.4).
+5.3 WHEN the window holds 3 or more camera-mode sessions AND at least one verified zone
+result has unseen time, THE SYSTEM SHALL show the sentence "Brushing was seen least during
+the upper-left turn." with the zone or zones that have the highest average of unseen
+seconds. WHEN several zones tie for the highest average, THE SYSTEM SHALL name every tied
+turn, in `ZONE_ORDER` order (see Open question N5 for the wording of a tie).
 
-5.4 THE fact SHALL be shown only when the data is sufficient (requirement 6).
+5.4 IF the window holds 3 or more camera-mode sessions AND every verified zone result had no
+unseen time (the highest average is 0), THE SYSTEM SHALL show the line "Brushing was seen in
+every turn." and SHALL NOT name a zone.
 
-5.5 WHEN two or more zones have the same highest positive average, `zoneMostMissed` returns
-the first in `ZONE_ORDER`. How the screen shows a tie is decided in Open question 9.
+5.5 IF the window holds fewer than 3 camera-mode sessions THE SYSTEM SHALL show the line "Not
+enough camera sessions yet." in place of this fact (requirement 6.2).
+
+5.6 THE screen SHALL NOT say a zone "was missed", "skipped" or "not brushed", and SHALL NOT
+claim that the camera saw which side or which teeth were brushed (`dental-rules.md`, "Parent
+screen wording"). Zone names SHALL be written with a hyphen before "turn" ("upper-right
+turn", "lower-left turn"; Decision Q8).
+
+5.7 THE zone fact and the nudge (requirement 7) are computed separately and MAY name
+different zones (Decision Q3).
+
+5.8 The case of 3 or more camera-mode sessions in the window but no verified zone result at
+all is not decided: see Open question N3.
 
 ---
 
@@ -273,17 +298,19 @@ the first in `ZONE_ORDER`. How the screen shows a tie is decided in Open questio
 **As a parent, I want the screen to say plainly when it has too little to show, so that I am
 not given a number that means nothing.**
 
-6.1 IF there are no stored sessions THE SYSTEM SHALL show the line "No sessions yet." in
-place of the facts of requirements 4 and 5, and SHALL show the seven day rows of
-requirement 3 with 0 in each, or the line alone (Open question 4).
+6.1 IF there are no stored sessions that `parentView` accepts (requirement 13.7) THE SYSTEM
+SHALL show only the line "No sessions yet." in place of the facts (the seven rows of
+requirement 3, the durations of requirement 4, the zone fact of requirement 5) and the
+nudge. THE disclosure (requirement 8) SHALL still be shown.
 
-6.2 IF there are stored sessions but fewer than the minimum needed for a fact THE SYSTEM
-SHALL show a plain line saying so, in place of that fact's number or zone. THE minimum for
-each fact SHALL be a named constant whose value Dr. Yatin sets (Open question 4). This spec
-SHALL NOT choose the values.
+6.2 IF the window holds fewer than `ZONE_FACT_MIN_CAMERA_SESSIONS` camera-mode sessions THE
+SYSTEM SHALL show the line "Not enough camera sessions yet." in place of the zone fact.
+`ZONE_FACT_MIN_CAMERA_SESSIONS` SHALL be a named constant with the value 3 (Decision Q4).
+Requirement 6.2 applies to the zone fact only. The three durations of requirement 4 are
+shown whenever there is at least one accepted session.
 
-6.3 THE screen SHALL NOT show a number or a zone that comes from fewer data than that
-minimum, and SHALL NOT show 0 as if it were a finding.
+6.3 THE screen SHALL NOT show a zone that comes from fewer sessions than that minimum, and
+SHALL NOT show 0 as if it were a finding of the zone fact.
 
 6.4 THE "too little data" lines SHALL NOT blame, urge or advise (no "brush more", "try again"
 or "keep going").
@@ -292,7 +319,7 @@ or "keep going").
 
 ### 7. The nudge
 
-**Tag: later.**
+**Tag: needed for the video.**
 
 **As a parent, I want one short suggestion for tonight, in words Dr. Yatin has approved, so
 that I know what to try.**
@@ -307,26 +334,41 @@ Only the zone name and the number change. No other word of the sentence SHALL ch
 screen SHALL NOT add any other advice, medical judgement, risk word, comparison or
 encouragement to it.
 
-7.2 THE nudge SHALL be shown only when its number is true: the number SHALL equal the count
-produced by the counting rule of Open question 2 for that zone, from the stored sessions, and
-SHALL be at least the minimum of Open question 3. This spec SHALL NOT choose the counting
-rule or the minimum.
+7.2 A **night** for a zone SHALL be a calendar day on which a night session counts for that
+zone. A session counts when ALL of these hold (Decision Q2):
 
-7.3 THE nudge SHALL use only verified zones of camera-mode sessions. Timer-only sessions and
-unverified zones SHALL NOT be counted as nights on which brushing was not seen, and SHALL NOT
-make a nudge appear.
+- its `timeOfDay` is night (started 17:00 to 23:59 local time);
+- its mode is camera;
+- its `date` is in the window (requirement 3.1: the last 7 calendar days including today);
+- that zone's result in it is verified, and its `secondsBrushed` is 0 (`secondsBrushed === 0`).
 
-7.4 THE nudge SHALL NOT appear when the data is too little (requirement 6), and SHALL NOT
-appear after "Clear all data".
+Untracked seconds SHALL NOT make a night count. Unverified zone results SHALL NOT count.
+Each calendar day SHALL count as at most one night for a zone, so that two night sessions on
+one day give at most one night. (Which of two night sessions on one day decides: see Open
+question N2.)
 
-7.5 THE screen SHALL NOT say a zone "was missed", and SHALL NOT claim that the camera saw
-which side was brushed (requirement 5.1).
+7.3 THE nudge SHALL appear WHEN at least one zone has `NUDGE_MIN_NIGHTS` or more nights.
+`NUDGE_MIN_NIGHTS` SHALL be a named constant with the value 2. THE nudge SHALL name the zone
+with the most nights; WHEN zones tie, it SHALL name the first of them in `ZONE_ORDER`. THE
+number in the sentence SHALL be that zone's count of nights, and "nights" SHALL always be
+plural, because the number is never below 2 (Decision Q8).
 
-7.6 THE nudge SHALL NOT carry a colour, icon, bell, badge or sound that makes it urgent, and
+7.4 THE nudge SHALL use only camera-mode sessions and verified zone results. Timer-only
+sessions and unverified zone results SHALL NOT be counted as nights and SHALL NOT make a
+nudge appear.
+
+7.5 THE nudge SHALL NOT appear when there are no sessions (requirement 6.1), and SHALL NOT
+appear after "Clear all data". Whether it is also held back when the window has fewer than 3
+camera-mode sessions is not decided: see Open question N1.
+
+7.6 THE nudge zone and the zone fact of requirement 5 are computed separately and MAY differ
+(requirement 5.7).
+
+7.7 THE screen SHALL NOT say a zone "was missed", and SHALL NOT claim that the camera saw
+which side was brushed (requirement 5.6).
+
+7.8 THE nudge SHALL NOT carry a colour, icon, bell, badge or sound that makes it urgent, and
 SHALL NOT be shown to the child.
-
-7.7 WHICH zone the nudge names when several qualify, and how the number is written for 1
-night, are decided in Open questions 3 and 8.
 
 ---
 
@@ -339,41 +381,45 @@ so that I can trust it.**
 
 8.1 THE SYSTEM SHALL show the disclosure block on the unlocked screen at all times: not
 collapsed, not behind a tap, and in every data state (no sessions, too little data, enough
-data, after "Clear all data"). It SHALL contain exactly these five lines, in this order, and
-no sixth line:
+data, after "Clear all data"). It SHALL contain exactly these six lines, in this order, and
+no seventh line (Decisions Q5, Q6, Q7):
 
-1. "The camera stays on this phone. Nothing is saved or sent." (the approved privacy line of
-   `mirror-and-screens` requirement 1.3.)
-2. A line saying that the camera sees a moving hand near the mouth, and cannot see the brush,
-   the teeth, or which side is brushed. (Replaces the original line 2. See the table of
-   lines.)
-3. "The game gets easier on spots your child often misses." (core requirement 14.6.)
-4. "A monster that is nearly beaten when the time is up counts as beaten." (core requirement
-   14.6.)
-5. "Every monster your child meets goes into the Monster Book, beaten or not."
+1. "The camera picture stays on this phone. It is never saved or sent."
+2. "Brushing times and the Monster Book are saved on this phone only, until you press Clear
+   all data."
+3. "The camera sees a moving hand near the mouth. It cannot see the brush, the teeth, or
+   which part of the mouth is being brushed."
+4. "In camera sessions, monsters get weaker in turns where brushing was often not seen."
+5. "A monster that is nearly beaten when the time is up counts as beaten."
+6. "Every monster your child meets goes into the Monster Book, beaten or not."
+
+The title screen keeps its own approved privacy line, unchanged ("The camera stays on this
+phone. Nothing is saved or sent."). It is not part of this block.
 
 8.2 THE disclosure SHALL NOT include the condition on `REQUIRE_LEVEL_MATCH` (the original line
 6). It no longer applies.
 
-8.3 THE text of each line SHALL be the approved text of "Lines for Dr. Yatin to approve". THE
-SYSTEM SHALL NOT reword any line itself. WHEN a line is found no longer true against the code
-it SHALL be listed under "Open questions", not changed here.
+8.3 THE text of each line SHALL be the text of requirement 8.1. THE SYSTEM SHALL NOT reword
+any line itself. WHEN a line is found no longer true against the code it SHALL be listed
+under "Open questions", not changed here.
 
-8.4 LINE 2 is true only while `REQUIRE_SIDE_MATCH` and `REQUIRE_LEVEL_MATCH` are both
+8.4 LINE 3 is true only while `REQUIRE_SIDE_MATCH` and `REQUIRE_LEVEL_MATCH` are both
 `false`. IF either constant passed to `parentView` is `true` THE test of requirement 14.8
 SHALL fail, so that Dr. Yatin must approve new wording. `parentView` SHALL NOT silently show
 a false line.
 
-8.5 EVERY line of the disclosure SHALL be checked against the code. The result as of
-22 Nov 2026 is in the table below. A line marked "check" is listed under "Open questions".
+8.5 EVERY line of the disclosure was checked against the code on 22 Nov 2026:
 
 | Line | Checked against | Result |
 |------|-----------------|--------|
-| 1 | `src/storage/storage.ts` stores sessions in `localStorage` only; no frame, landmark or image is stored (core 9.5, 9.6) | True for the camera picture. The same screen also shows the saved sessions: check (Open question 6) |
-| 2 (new) | `src/logic/constants.ts`: `REQUIRE_SIDE_MATCH` and `REQUIRE_LEVEL_MATCH` are `false`; `isBrushing` in `src/logic/session.ts` tests only `handNearMouth` and `moving` | True |
-| 3 | `src/logic/miss-score.ts`: starting health falls to a floor of 36 for zones with a high miss score, from the 7 most recent camera-mode sessions, verified zones only; `session.ts` applies it in camera mode only and gives every timer-only monster 60 | True for camera sessions. "Spots" and "misses" suggest the camera sees the spot: check (Open question 5) |
-| 4 | `src/logic/monsters.ts` `resolveMonster`: a pending monster at health 9 or less when its zone ends is `fled`, and a fled monster counts as beaten (core 14.3). In timer-only mode every monster is defeated at 20 s, so the rule never applies | True |
-| 5 | `src/logic/session-result.ts`: `monstersEarned` is the four monsters of every session; `computeMonsterBook` takes the union (core 10.2, 10.3) | True |
+| 1 | `src/storage/storage.ts` stores only session results; no frame, landmark or image is stored (core 9.5, 9.6) | True |
+| 2 | `src/storage/storage.ts`: one key, `foamtom:v1` (`STORAGE_KEY`), in `localStorage` (passed in by `main.ts`); `clearAll` removes that key; the Monster Book is worked out from the stored sessions (`computeMonsterBook`), so it holds nothing of its own | True |
+| 3 | `src/logic/constants.ts`: `REQUIRE_SIDE_MATCH` and `REQUIRE_LEVEL_MATCH` are `false`; `isBrushing` in `src/logic/session.ts` tests only `handNearMouth` and `moving` | True |
+| 4 | `src/logic/miss-score.ts`: `computeMissScores` counts, for verified zones of the most recent `MISS_WINDOW` camera-mode sessions, the seconds of a turn that were neither brushed nor untracked; `startingHealth` lowers a monster's starting health (to a floor of `KIND_FLOOR`) as that score rises. `session.ts` applies it in camera mode only | True. The seconds counted are exactly "brushing was not seen" (tracked, no brushing). The line does not state the window of sessions or any number |
+| 5 | `src/logic/monsters.ts` `resolveMonster`: a pending monster at health 9 or less when its zone ends is `fled`, and a fled monster counts as beaten (core 14.3). In timer-only mode every monster is defeated at 20 s, so the rule never applies | True |
+| 6 | `src/logic/session-result.ts`: `monstersEarned` is the four monsters of every session; `computeMonsterBook` takes the union (core 10.2, 10.3) | True |
+
+No line needed to be listed as a new open question from this check.
 
 The camera-mode rule (a normal monster is defeated after 15 counted seconds, `DAMAGE_PER_SECOND`
 4) and the guided-timer rule (defeat at 20 s, `TIMER_ONLY_DAMAGE` 3) are not stated in any
@@ -438,8 +484,9 @@ risk, danger, disease, decay, cavity-free, prevent and cure (and their forms, su
 clinic or doctor, from the wording guard of core requirement 13.11.
 
 10.4 NO text SHALL say, as a statement about the child, that a zone "was missed", "skipped"
-or "not brushed". The only allowed forms are the nudge of requirement 7.1 and the sentence of
-requirement 5.1 ("brushing was not seen" / "seen least"), which describe what the camera saw.
+or "not brushed". The only allowed forms are the nudge of requirement 7.1 and the sentences of
+requirement 5 ("brushing was not seen" / "seen least" / "seen in every turn"), which describe
+what the camera saw.
 
 10.5 NO text SHALL urge, scare or guilt: no streak, no "again", no "don't forget your
 child's…", no "you should", no praise score, no red or green rating (core requirements
@@ -469,8 +516,8 @@ be changed.
 
 11.3 EVERY new line, label and sentence template of this screen SHALL be listed, one per row,
 in the final table "Lines for Dr. Yatin to approve" with where it is shown. A line is not
-final until he approves it. WHEN he changes a line, the table and the code SHALL be updated
-to match.
+final until he approves it, except the rows marked "decided 22 Nov". WHEN he changes a line,
+the table and the code SHALL be updated to match.
 
 11.4 THE code SHALL NOT contain a parent-facing string that is not in that table, except the
 numbers, dates and zone names a template fills in (requirement 13.4).
@@ -502,7 +549,8 @@ facts and the disclosure.
 second, and SHALL follow `prefers-reduced-motion` (requirement 2.5).
 
 12.6 NEW files of this spec SHALL NOT call `setInterval` or `setTimeout`. `src/ui/game-loop.ts`
-stays the only module that owns a timer (`tech.md`).
+stays the only module that owns a timer (`tech.md`); the gate's use of `requestAnimationFrame`
+is allowed by requirement 2.6.
 
 ---
 
@@ -515,71 +563,84 @@ it can be property-tested without a browser.**
 
 13.1 THE SYSTEM SHALL provide a pure function `parentView` that returns every number and
 every sentence the parent screen shows after the gate: the seven day rows, the three
-durations, the zone and its sentence (or the reason none is shown), the "too little data"
-and "No sessions yet." lines, the nudge (or none) and the five disclosure lines. THE screen
-SHALL only paint this result and SHALL NOT make its own decisions (as
-`mirror-and-screens` requirement 16.3).
+durations, the zone fact (its sentence, or "Brushing was seen in every turn.", or the "Not
+enough camera sessions yet." line), the "No sessions yet." line, the nudge (or none) and the
+six disclosure lines. THE screen SHALL only paint this result and SHALL NOT make its own
+decisions (as `mirror-and-screens` requirement 16.3).
 
-13.2 THE inputs SHALL be the stored sessions, the constants it needs (`ZONE_DURATION`,
-`SESSION_DURATION`, `ZONE_ORDER`, `REQUIRE_SIDE_MATCH`, `REQUIRE_LEVEL_MATCH`, and the
-parent-screen constants of requirements 2, 6 and 7), passed in so that tests can vary them,
-and today's local date as a `YYYY-MM-DD` string read once by `main.ts`. The original
-prompt named two inputs, `parentView(sessions, constants)`. The date is a third input
-because the function cannot read the clock (Open question 10).
+13.2 THE signature SHALL be `parentView(sessions, constants, today)` (Decision Q10). `today`
+SHALL be a local calendar date as a `YYYY-MM-DD` string, read once by the caller (`main.ts`)
+and passed in. `parentView` SHALL NEVER read the clock. `constants` carries `ZONE_DURATION`,
+`SESSION_DURATION`, `ZONE_ORDER`, `REQUIRE_SIDE_MATCH`, `REQUIRE_LEVEL_MATCH`,
+`ZONE_FACT_MIN_CAMERA_SESSIONS` and `NUDGE_MIN_NIGHTS`, passed in so that tests can vary them.
 
 13.3 `parentView` SHALL have no DOM, no clock, no randomness, no storage access and no
 network access. It MAY import from `src/logic/`. Nothing under `src/logic/` SHALL import it
 (`structure.md`). It SHALL NOT change `src/logic/stats.ts`; it SHALL call
-`computeVerifiedTime` and `zoneMostMissed`.
+`computeVerifiedTime` for the time fact and SHALL compute the zone fact and the nights
+itself (requirements 5.2 and 7.2).
 
 13.4 EVERY sentence SHALL be built from the approved table of requirement 11.3, filling in
-only numbers, dates and zone names. THE zone names SHALL be written as in the approved nudge
-(`upper-right`, `upper-left`, `lower-left`, `lower-right`; Open question 8).
+only numbers, dates and zone names. THE zone names SHALL be written `upper-right`,
+`upper-left`, `lower-left`, `lower-right`, with a hyphen before "turn" in the sentences.
 
 13.5 THE same inputs SHALL always give the same result. The result SHALL NOT depend on the
-order of the stored sessions, except where `zoneMostMissed` itself breaks a tie by
-`ZONE_ORDER`.
+order of the stored sessions.
 
 13.6 `parentView` SHALL NOT change, add or remove a stored value, and SHALL NOT change a
 game rule or number.
+
+13.7 `parentView` SHALL skip any stored session whose numbers are out of range: any second
+count (`secondsBrushed`, `secondsUntracked`) below 0 or above 30 in a zone result, any
+missing field, or a `durationSeconds` below 0 (Decision Q11). A skipped session SHALL count
+nowhere: not in the day rows, not in any duration, not in the zone fact, not in the nights,
+and not toward "No sessions yet." (a store holding only skipped sessions shows that line).
 
 ---
 
 ### 14. Tests
 
-**Tag: needed for the video (the nudge tests: later).**
+**Tag: needed for the video.**
 
 **As a developer, I want fast-check properties and guards that hold for all inputs, so that
 the parent screen can never show a number or a sentence that is not true.**
 
-All properties below use valid sessions built by the existing `sessionResultArb` of
-`/tests/` (core design section 11), with arbitrary modes, verified flags and dates.
+Properties 14.1 to 14.8 use sessions built by the existing `sessionResultArb` of `/tests/`
+(core design section 11), with arbitrary modes, verified flags, times of day and dates.
+Property 14.15 adds sessions with odd numbers.
 
-14.1 **Verified time ceiling:** for any sessions, "camera saw brushing" is at most 30 seconds
-per verified zone result, at most 120 per camera-mode session, and at most "time played".
-"Camera saw brushing" plus "guided, not checked" is at most "time played".
+14.1 **Time ceiling:** for any sessions, "the camera saw brushing" is at most 30 seconds per
+verified zone result, at most 120 per camera-mode session, and at most "time with the game".
+"Camera saw brushing" plus "timer only" is at most "time with the game". All three equal
+their definitions in requirement 4.1 over the sessions of the window.
 
-14.2 **Guided is never verified or missed:** adding any number of timer-only sessions, or
-changing any zone result to unverified, never raises "camera saw brushing", never changes the
-zone shown in requirement 5, and never makes a nudge appear. Those zone results appear only
-in "guided, not checked by the camera".
+14.2 **Timer-only and unverified never count as seen or unseen:** adding any number of
+timer-only sessions, or changing any zone result to unverified, never raises "the camera saw
+brushing", never changes the zone fact, and never makes a nudge appear.
 
 14.3 **Nudge only when true:** whenever a nudge is returned, its zone and its number equal an
-independent count of the stored sessions by the rule of Open question 2 (the test counts
-without calling `parentView`), the number is at least the minimum of Open question 3, and the
-sentence equals the approved sentence with only the zone name and the number replaced.
+independent count of the stored sessions by the rule of requirement 7.2 (the test counts
+without calling `parentView`), the number is at least `NUDGE_MIN_NIGHTS`, the zone is the one
+with the most nights (ties to the first in `ZONE_ORDER`), and the sentence equals the
+approved sentence with only the zone name and the number replaced. When no zone has
+`NUDGE_MIN_NIGHTS` nights, none is returned. Two night sessions on one day never give two
+nights. A session with untracked seconds but `secondsBrushed > 0` never makes a night.
 
 14.4 **Seven days:** `parentView` returns exactly seven day rows, consecutive, ending today;
 each count equals the number of stored sessions with that date; sessions outside the seven
-days appear in no row.
+days appear in no row and in no duration, zone fact or night.
 
-14.5 **Too little data:** with no sessions, `parentView` returns "No sessions yet." and no
-duration other than zero, no zone and no nudge. With fewer data than the minimum of
-requirement 6.2, it returns the "too little data" line and no number, zone or nudge for that
-fact. It never returns a zone whose highest average of unseen seconds is 0 (requirement 5.2).
+14.5 **Too little data:** with no sessions, `parentView` returns only "No sessions yet." in
+place of the facts (no day rows, no duration, no zone, no nudge). With fewer than
+`ZONE_FACT_MIN_CAMERA_SESSIONS` camera-mode sessions in the window, it returns "Not enough
+camera sessions yet." and no zone. It never names a zone whose highest average of unseen
+seconds is 0 (requirement 5.4).
 
-14.6 **Stats are the stats:** "camera saw brushing" equals `computeVerifiedTime`, and the zone
-equals `zoneMostMissed`, whenever the data is sufficient and the highest average is above 0.
+14.6 **Zone fact:** when the data is sufficient and one zone has the highest positive
+average, that zone equals `zoneMostMissed` over the sessions of the window, and
+"camera saw brushing" equals `computeVerifiedTime` over them. On a tie, every tied zone is
+named, in `ZONE_ORDER` order. The zone fact and the nudge are computed separately and may
+differ.
 
 14.7 **Wording guard:** a test SHALL read every parent-facing string (the whole table of
 requirement 11.1, and every sentence `parentView` returns over generated sessions) and fail if
@@ -590,9 +651,9 @@ address, e-mail or link appears. It SHALL also check that every sentence is in t
 table, and that no sentence says a zone "was missed". (Word stems are matched so that
 "prevents" or "risky" fail too.)
 
-14.8 **Disclosure:** `parentView` always returns the five disclosure lines, in order, in every
-data state, with no sixth line. A test SHALL fail if `REQUIRE_SIDE_MATCH` or
-`REQUIRE_LEVEL_MATCH` is `true` while line 2 is the approved line of this spec
+14.8 **Disclosure:** `parentView` always returns the six disclosure lines of requirement 8.1,
+in order, in every data state, with no seventh line. A test SHALL fail if
+`REQUIRE_SIDE_MATCH` or `REQUIRE_LEVEL_MATCH` is `true` while line 3 is the line of this spec
 (requirement 8.4), and SHALL fail if the disclosure contains the numbers 15, 20, 36 or 9.
 
 14.9 **Clear all data:** with a `Map`-backed fake backend holding sessions, after the clear
@@ -607,7 +668,8 @@ removed by the clear.
 
 14.11 **Gate:** with a fake clock, holding for `GATE_HOLD_SECONDS` passes the gate; holding
 for less does not; an early release resets the hold, and several short holds never add up;
-the gate is closed again each time the screen opens; the gate stores nothing.
+a keyboard hold of Space or Enter passes in the same way; the gate is closed again each time
+the screen opens; the gate stores nothing.
 
 14.12 **Privacy and timers:** the existing privacy guard (core requirement 13.10) and tracking
 guard keep passing and scan every new file. A test SHALL fail if any new file of this spec
@@ -620,6 +682,11 @@ fact is in the DOM before the gate is passed, and that the screen holds no fog, 
 sound.
 
 14.14 **Nothing broken:** every existing test passes unchanged.
+
+14.15 **Odd stored data:** for any mix of valid sessions and sessions with out-of-range
+numbers (a second count below 0 or above 30 in a zone result, a missing field, a negative
+`durationSeconds`), the result of `parentView` equals its result for the valid sessions
+alone. The ceilings of property 14.1 hold for the whole mix.
 
 ---
 
@@ -645,109 +712,104 @@ be listed in `design.md` and approved by Dr. Yatin before it is built.
 
 ## Lines for Dr. Yatin to approve
 
-Every NEW parent-facing line of this spec is below, one per row, with where it is shown. None
-is final until Dr. Yatin approves it. "Shown" means visible text; nothing on this screen is
-spoken. `<...>` marks a part a template fills in. Zone names are written as in the approved
-nudge. Row 1 already exists and is reused.
+Every NEW parent-facing line of this spec is below, one per row, with where it is shown. A
+row is final once Dr. Yatin approves it. Rows marked "decided 22 Nov" were set by him on
+22 Nov 2026. "Shown" means visible text; nothing on this screen is spoken. `<...>` marks a
+part a template fills in. The title screen keeps its own approved privacy line ("The camera
+stays on this phone. Nothing is saved or sent."); it is not a row here.
 
 | # | Proposed text | Where it is shown | Status |
 |---|---------------|-------------------|--------|
-| 1 | The camera stays on this phone. Nothing is saved or sent. | Disclosure line 1 | Existing approved line (`display-text.ts`, 21 Nov 2026); see Open question 6 |
-| 2 | Grown-ups | Heading of the parent screen | Text approved on 21 Nov 2026 as the name of the entry control; new use as a heading |
-| 3 | Hold the button for 3 seconds. | Gate, instruction line | New |
-| 4 | Hold | Gate, label of the button | New |
-| 5 | Back | Back button | Existing approved line (`display-text.ts`) |
-| 6 | Sessions in the last 7 days | Heading of the day rows | New |
-| 7 | `<weekday> <day> <month>`: `<n>` | One day row (for example "Mon 16 Nov: 2") | New |
-| 8 | Time played: `<m>` min `<s>` s | Facts | New |
-| 9 | Camera saw brushing: `<m>` min `<s>` s | Facts | New |
-| 10 | Guided, not checked by the camera: `<m>` min `<s>` s | Facts | New |
-| 11 | Brushing was seen least during the `<zone>` turn. | Fact of requirement 5 | New. The honest form of "zone most often missed" |
-| 12 | No sessions yet. | Facts, when nothing is stored, and after "Clear all data" | New (wording given in the prompt) |
-| 13 | Not enough sessions with the camera yet. | Facts, when there is too little data | New |
-| 14 | During the `<zone>` turn, brushing was not seen on `<n>` nights. Try brushing it first tonight. | The nudge | Approved by Dr. Yatin on 22 Nov 2026 (`dental-rules.md`). Only `<zone>` and `<n>` change |
-| 15 | The camera sees a moving hand near the mouth. It cannot see the brush, the teeth, or which side is brushed. | Disclosure line 2 | New. Replaces the prompt's line 2 |
-| 16 | The game gets easier on spots your child often misses. | Disclosure line 3 | Wording from core requirement 14.6; see Open question 5 |
-| 17 | A monster that is nearly beaten when the time is up counts as beaten. | Disclosure line 4 | Wording from core requirement 14.6 |
-| 18 | Every monster your child meets goes into the Monster Book, beaten or not. | Disclosure line 5 | New (wording given in the prompt) |
-| 19 | Clear all data | Button; also the clearing button of the confirmation | New (the name is in `kid-safety-privacy.md`) |
-| 20 | Clear all data from this phone? It cannot be undone. | Confirmation | New |
-| 21 | Keep | Confirmation, the button that keeps the data | New |
-| 22 | The data on this phone could not be cleared. | Shown if sessions can still be read after the clear (requirement 9.5) | New |
-| 23 | upper-right, upper-left, lower-left, lower-right | Zone names inside rows 11 and 14 | As written in the approved nudge |
+| 1 | Grown-ups | Heading of the parent screen | Text approved on 21 Nov 2026 as the name of the entry control; new use as a heading. Waiting |
+| 2 | Hold the button for 3 seconds. | Gate, instruction line | New. Waiting |
+| 3 | Hold | Gate, label of the button | New. Waiting |
+| 4 | Back | Back button | Existing approved line (`display-text.ts`) |
+| 5 | Sessions in the last 7 days | Heading of the day rows | New. Waiting |
+| 6 | `<weekday> <day> <month>`: `<n>` | One day row (for example "Mon 16 Nov: 2") | New. Waiting |
+| 7 | Time with the game: `<m>` min `<s>` s | Facts (requirement 4.1) | New. Waiting |
+| 8 | Of that, the camera saw brushing: `<m>` min `<s>` s | Facts (requirement 4.1) | New. Waiting |
+| 9 | Timer only, not checked by the camera: `<m>` min `<s>` s | Facts (requirement 4.1) | New. Waiting |
+| 10 | Brushing was seen least during the `<zone>` turn. | Zone fact (requirement 5.3) | Wording given 22 Nov in the decision, with the example "upper-left"; not yet marked decided. Waiting. The wording for a tie of several turns is Open question N5 |
+| 11 | Brushing was seen in every turn. | Zone fact when every verified turn had no unseen time (requirement 5.4) | New. Waiting |
+| 12 | Not enough camera sessions yet. | Zone fact, when the window has fewer than 3 camera-mode sessions | New. Waiting |
+| 13 | No sessions yet. | Facts, when nothing is stored, and after "Clear all data" | New. Waiting |
+| 14 | During the `<zone>` turn, brushing was not seen on `<n>` nights. Try brushing it first tonight. | The nudge | Approved by Dr. Yatin on 22 Nov 2026 (`dental-rules.md`); decided 22 Nov. Only `<zone>` and `<n>` change |
+| 15 | The camera picture stays on this phone. It is never saved or sent. | Disclosure line 1 | decided 22 Nov |
+| 16 | Brushing times and the Monster Book are saved on this phone only, until you press Clear all data. | Disclosure line 2 | decided 22 Nov |
+| 17 | The camera sees a moving hand near the mouth. It cannot see the brush, the teeth, or which part of the mouth is being brushed. | Disclosure line 3 | decided 22 Nov |
+| 18 | In camera sessions, monsters get weaker in turns where brushing was often not seen. | Disclosure line 4 | decided 22 Nov |
+| 19 | A monster that is nearly beaten when the time is up counts as beaten. | Disclosure line 5 | decided 22 Nov |
+| 20 | Every monster your child meets goes into the Monster Book, beaten or not. | Disclosure line 6 | decided 22 Nov |
+| 21 | Clear all data | Button; also the clearing button of the confirmation | New (the name is in `kid-safety-privacy.md`). Waiting |
+| 22 | Clear all data from this phone? It cannot be undone. | Confirmation | New. Waiting |
+| 23 | Keep | Confirmation, the button that keeps the data | New. Waiting |
+| 24 | The data on this phone could not be cleared. | Shown if sessions can still be read after the clear (requirement 9.5) | New. Waiting |
+| 25 | upper-right, upper-left, lower-left, lower-right | Zone names inside rows 10 and 14 (hyphen before "turn": Decision Q8) | As written in the approved nudge. Waiting |
+
+---
+
+## Decisions (22 Nov 2026)
+
+Dr. Yatin's answers. Each is applied in the requirement named.
+
+- **Q1.** All time facts cover the last 7 calendar days, like the day rows. Three lines only:
+  time with the game, of that the camera saw brushing (`computeVerifiedTime`), and timer only,
+  not checked by the camera. No leftover line. (Requirement 4)
+- **Q2.** A "night" for the nudge: a night session (17:00 to 23:59) in camera mode, in the last
+  7 calendar days, counted once per calendar day, where the zone's verified turn had
+  `secondsBrushed === 0`. Untracked seconds and unverified results never count. (Requirement 7.2)
+- **Q3.** The nudge appears when a zone has 2 or more nights. It names the zone with the most
+  nights, a tie to the first in `ZONE_ORDER`. One nudge at most. The nudge zone and the zone
+  fact are computed separately and may differ. (Requirements 5.7, 7.3, 7.6)
+- **Q4.** The zone fact uses the last 7 days, camera sessions, verified zones. It is shown only
+  with 3 or more camera-mode sessions in the window, otherwise "Not enough camera sessions
+  yet." `stats.ts` is not changed; `parentView` filters and computes. With no sessions at all
+  the screen shows only "No sessions yet." (Requirements 5, 6)
+- **Q5.** Disclosure line 1 on this screen: "The camera picture stays on this phone. It is
+  never saved or sent." The title screen keeps its own line. (Requirement 8.1)
+- **Q6.** Disclosure line 2 says that brushing times and the Monster Book are saved on this
+  phone only, until Clear all data. Checked against the storage code: true. (Requirements 8.1, 8.5)
+- **Q7.** Disclosure line 3 says what the camera sees and cannot see; line 4 says that in
+  camera sessions monsters get weaker in turns where brushing was often not seen; lines 5 and 6
+  stay. Line 4 checked against the kind-proximity code: true. (Requirements 8.1, 8.5)
+- **Q8.** Zone names are written with a hyphen before "turn". The nudge needs 2 or more nights,
+  so "nights" is always plural. (Requirements 5.6, 7.3, 13.4)
+- **Q9.** On a tie in the zone fact, every tied turn is named in `ZONE_ORDER` order. If every
+  verified turn had no unseen time, the screen shows "Brushing was seen in every turn."
+  (Requirements 5.3, 5.4)
+- **Q10.** Confirmed: `parentView(sessions, constants, today)`, `today` a local calendar date
+  passed in by the caller. `parentView` never reads the clock. (Requirement 13.2)
+- **Q11.** `parentView` skips any stored session whose numbers are out of range (a second
+  count below 0 or above 30 per zone, missing fields, `durationSeconds` below 0). Skipped
+  sessions count nowhere. (Requirements 13.7, 14.15)
+- **Q12.** The hold gate may use `requestAnimationFrame` and pointer-event timestamps. A
+  keyboard hold (Space or Enter, 3 s) is the accessible path. No second gate. (Requirements
+  2.6, 2.7)
+- **Q13.** The parent screen is in the 4 Dec video. The "needed for the video" tags stay, and
+  the nudge (requirement 7) is now also "needed for the video".
 
 ---
 
 ## Open questions
 
-These are for Dr. Yatin. None is decided in this file. Where a requirement depends on one, it
-says which.
+Applying the decisions exposed these gaps. None is decided here.
 
-1. **What does "total time in guided sessions" mean?** The prompt says "total time in guided
-   sessions; of that, time the camera actually saw brushing". Requirement 4.1 works on this
-   reading: every session is guided by the game, so "time played" is the sum of
-   `durationSeconds` of all stored sessions. The alternative is the time of timer-only
-   sessions alone. Also unsettled: (a) all stored sessions, or only the last 7 days; (b) the
-   three numbers do not add up to "time played", because time in verified zones when no
-   brushing was seen is in none of them. Should the screen show that remainder (for example
-   "Camera did not see brushing"), or leave it out?
-2. **How is "3 nights" counted?** Options for each part:
-   - *Unit:* distinct calendar days, or distinct sessions.
-   - *Which sessions:* any session, only night sessions (17:00 to 23:59), or morning and night
-     sessions. The word "nights" suggests night sessions only. A session at "neither" times
-     exists.
-   - *What counts as "not seen":* no brushing seen at all in that zone's turn (0 brushed
-     seconds); fewer than some number of brushed seconds; or more than some number of unseen
-     seconds (`30 - secondsBrushed - secondsUntracked`, the quantity `stats.ts` and
-     `miss-score.ts` use).
-   - *Unseen time:* the prompt says unverified zones do not count. A zone with up to 10
-     untracked seconds is still verified. Do those seconds count as "not seen"?
-   - *Window:* last 7 days, last 7 camera-mode sessions (as kind proximity does), or all
-     stored sessions.
-3. **When does the nudge appear, and for which zone?** The minimum `n` (1, 2, 3, ...), and the
-   choice when several zones qualify (the highest `n`, the first in zone order, or none when
-   they tie). And does the nudge name the same zone as the fact of requirement 5, or may they
-   differ?
-4. **How much data is "too little"?** The values of the minimum constants of requirement 6.2:
-   how many camera-mode sessions before the "camera saw brushing" time and the zone fact are
-   shown, and how many verified results per zone. And with no sessions, should the seven day
-   rows show seven zeros, or only "No sessions yet."?
-5. **Disclosure line 3, "The game gets easier on spots your child often misses."** The line is
-   true for camera sessions only (timer-only monsters never get easier). It also calls a zone
-   a "spot" that the child "misses", which reads as if the camera saw the spot, which
-   `dental-rules.md` says the parent screen must not do. In the code, a "miss" is the seconds
-   of a zone's turn in which no brushing was seen at the mouth. Keep the line, reword it, or
-   add "in camera sessions"? Not reworded here.
-6. **Disclosure line 1, "Nothing is saved or sent."** On this same screen the sessions are
-   shown and a "Clear all data" button exists, so "nothing is saved" is true of the camera
-   picture and not of the sessions. Line 1 is the approved privacy line used on the title
-   screen. Keep it as is on this screen, or add a line that says that session times are saved
-   on this phone (the data `kid-safety-privacy.md` lists as stored)? Not reworded here.
-7. **Disclosure line 2 (new).** The prompt asked for a line naming the brush, the teeth and
-   the side. The camera does not check upper or lower either. Should the line say so ("or which
-   side, or upper or lower, is brushed")? Row 15 uses the prompt's three items only.
-8. **Zone name and plural.** The approved nudge writes "upper-right" with a hyphen. Is that
-   the form for all zone names on the screen? And how should "1 nights" be written (for
-   example "1 night")? The nudge says "nights" only for the number in the approved example.
-9. **When the zone fact cannot be shown honestly.** `zoneMostMissed` returns the first zone in
-   order (`upper-right`) when every verified zone was fully seen (average 0), and picks the
-   first in order when two zones tie. Requirement 5.2 stops the first case. What should the
-   screen show then (nothing, or a line such as "Brushing was seen in every turn"), and for a
-   tie, one zone, all tied zones, or none? Changing `stats.ts` is out of scope here.
-10. **`parentView` takes a third input, today's date.** The prompt names two inputs. A pure
-    function cannot read the clock, and the seven day rows need today. Confirm the third input.
-11. **Odd stored data.** The loader only checks the shape of a stored session, not its numbers.
-    A session with `secondsBrushed` above 30, a negative number or a missing field can break
-    the ceiling of requirement 4.4. Should `parentView` ignore such sessions, clamp the
-    values, or treat all data as no sessions? The properties of requirement 14 are written for
-    valid sessions only.
-12. **The gate and timers.** The hold needs a clock check while the button is down, and
-    `tech.md` says only `src/ui/game-loop.ts` owns a timer. May the gate use
-    `requestAnimationFrame` and pointer-event timestamps (as `mirror-and-screens` 13.3 allows
-    for effects), or must it be driven by `game-loop.ts`? Also, a "hold for 3 seconds" gate is
-    hard to use with some assistive tools. Is a keyboard hold (requirement 2.7) enough, or do
-    you want a second gate, such as a sum a 5-year-old cannot do (`kid-safety-privacy.md`)?
-13. **Is the parent screen in the 4 Dec video?** `mirror-and-screens` tags its entry control
-    "later". The tags in the table of this spec assume the screen is shown. If it is not, every
-    "needed for the video" tag here becomes "later", except 8 and 9, which are privacy
-    requirements.
+N1. **Does the 3-camera-session minimum also hold back the nudge?** Q4 sets the minimum for the
+    zone fact. Q3 sets the nudge rule (2 or more nights) and does not mention a minimum, but the
+    old requirement 7.4 held the nudge back whenever data was "too little". Two night sessions
+    on two days can give 2 nights with fewer than 3 camera-mode sessions in the window. Should the
+    nudge then appear?
+N2. **Two night sessions on one day.** Q2 says the day counts at most once. If the zone had 0
+    seconds brushed in one of the two sessions and some brushing in the other, does the day
+    count as a night (any session) or not (every session must have 0)? Requirement 7.2 and
+    property 14.3 wait for this. The sentence says "brushing was not seen on 3 nights".
+N3. **Window with 3 or more camera-mode sessions but no verified zone result.** Neither "Brushing
+    was seen least…" nor "Brushing was seen in every turn." is true there. What should the zone
+    fact show (nothing, or "Not enough camera sessions yet.")?
+N4. **Sessions whose zone seconds exceed their duration.** Q11 skips out-of-range counts, but a
+    session can have every count in 0 to 30 and still have zone seconds that add up to more than
+    its `durationSeconds`. Then "of that, the camera saw brushing" could exceed "time with the
+    game", against requirement 4.4 and `tech.md`. Skip such a session too, or leave it?
+N5. **Wording of a tie in the zone fact.** Q9 says to name every tied turn in `ZONE_ORDER`
+    order, but gives the sentence only for one turn. What is the wording for two, three or four
+    turns (for example "upper-left turn and lower-left turn")?
