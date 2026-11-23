@@ -201,7 +201,7 @@ opens and a timer-only session plays through to the end card.
   - [x] 13.2 In the one synchronous `paint(view)` call, in this order: `frame.paint(frameGuidance(view))`, then the caption and `speaker.say(...)`, then the monster. The glow, the spoken line and the monster therefore change together. Use no timer. `showStart()` paints the frame with `frameGuidance(null)`, so a new session never starts with a lit region, and nothing shows the frame outside the session panel
   - [x] 13.3 Test `glowMatchesLineAndMonster` (design test 3), with the pure functions and `toView`, no DOM: over any 120 signals-or-null in either mode, at every tick the active region equals `ZONE_REGION` of `toView(state).zoneId`; when the caption id is a zone line, that zone is the active one; the region does not change between a defeat and the zone end; both modes give the same regions for the same zone
   - [x] 13.4 Test `decorativeFrame`, screen part (design test 24): in `session-screen.ts` the preview element is appended into the frame's glass slot, the frame is never appended into the preview, `frameGuidance(view)` and `frameGuidance(null)` are both used, and no `scaleX`, `raw-` string or left/right ternary appears
-  - [ ] 13.5 Check by hand (M1, timer-only): `npm run dev`. Play a timer-only session. In each of the four zones, in the order upper right, upper left, lower left, lower right (the child's left is on the left of the screen), the ring corner nearest the zone is brighter, has a larger glow and shows a lit candle; the other three corners are dim with no candle. Look at the moment a zone changes: the glow, the spoken line, its caption and the monster all change together. Switch to another tab and back within a few seconds: the active corner stays lit. At the start screen and at the end card, no corner glows
+  - [x] 13.5 Check by hand (M1, timer-only): `npm run dev`. Play a timer-only session. In each of the four zones, in the order upper right, upper left, lower left, lower right (the child's left is on the left of the screen), the ring corner nearest the zone is brighter, has a larger glow and shows a lit candle; the other three corners are dim with no candle. Look at the moment a zone changes: the glow, the spoken line, its caption and the monster all change together. Switch to another tab and back within a few seconds: the active corner stays lit. At the start screen and at the end card, no corner glows
   - [ ] 13.6 Check by hand (M1, camera): start a camera session. The frame surrounds the mirrored live picture, and the picture is not flipped by the frame. Cover the face mid-zone: the glow does not change
   - [x] 13.7 Run `npm run test:run` and `npm run build`: both pass. The game runs: the title screen opens and a timer-only session plays through, now inside the frame
   - _Requirements: 3.1, 3.2, 3.3, 3.6, 3.7, 3.8, 3.9, 3.10, 4.3, 4.4, 15.1_
@@ -218,7 +218,7 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/monster-art.test.ts`
   - Files this task may change: `src/ui/monster-art.ts`, `src/ui/session-screen.ts` (remove the old body, add the re-export), `tests/monster-art.test.ts`
 
-- [ ] 15. **Monster art styles**
+- [x] 15. **Monster art styles**
   - Mark: needed for the video (req 5, 11.5).
   - [x] 15.1 Create `src/ui/monster-art.css`: big round friendly eyes with a highlight; the four mouth shapes (none with teeth); the four body shapes; the ear, extra and crest shapes; the rare star; the friendly silhouette (same blob for every common, star and crest only for rares, no padlock, cross or number). Every size is a multiple of one variable `--u` (default `1px`), so a Book cell can set a smaller `--u` and the cheek its own. Keep the existing colour classes working. No colour is the only difference between two monsters
   - [x] 15.2 Link `monster-art.css` from `index.html`, next to the other `<link>` lines. Do not touch the Content-Security-Policy
@@ -229,12 +229,12 @@ opens and a timer-only session plays through to the end card.
   - Test file: none new (`cssGuards` from task 12 and `drawMonsterSignature` from task 14 cover it)
   - Files this task may change: `src/ui/monster-art.css`, `index.html`
 
-- [ ] 16. **Monster states and smoke in the session screen**
+- [x] 16. **Monster states and smoke in the session screen**
   - Mark: needed for the video (req 6.1, 6.2, 6.5, 6.6, 11.3).
   - [x] 16.1 In `src/ui/session-screen.ts` paint the live monster from `monsterDrawState(view, null)`, `monsterScale` and `smokeLook`: `sitting` and `shrinking` show the monster at `monsterScale(view.healthFraction)`; `defeated` hides the monster and shows the smoke; `gone` shows nothing. The smoke shows `smokeLook(view.smokeFraction)`: the first `puffs` of the three existing puff elements, scaled by `scale` and set to `opacity`. The smoke has no text and no colour change
   - [x] 16.2 In `src/ui/monster-art.css` add the smoke styles: puff count, size and opacity come from the painter; a slow drift whose duration is `var(--cycle-smoke-drift)`; `.fx-no-smoke-drift` sets `animation: none`, and the puffs, their count and their size stay. Smoke eases in (no sudden full-size puff)
   - [x] 16.3 Test `sessionScreenStates` (source scan): `session-screen.ts` imports and uses `monsterDrawState`, `monsterScale` and `smokeLook`; the word `smokeFraction` appears in `src/ui/` only in `monster-draw-state.ts` and, once, as the argument of `smokeLook` in `session-screen.ts`; no `src/audio/` or `src/ui/` file other than those two reads `smokeFraction`; the smoke code has no text and no colour assignment
-  - [ ] 16.4 Check by hand (M9, states): `npm run dev`, play a camera-less session. Each monster is full size at the start of its zone; with brushing in camera mode it would shrink to a floor and turn to smoke when defeated, and in timer-only mode it turns to smoke on the last second of its zone. The smoke thins as it fades: fewer and smaller puffs, not only fainter
+  - [x] 16.4 Check by hand (M9, states): `npm run dev`, play a camera-less session. Each monster is full size at the start of its zone; with brushing in camera mode it would shrink to a floor and turn to smoke when defeated, and in timer-only mode it turns to smoke on the last second of its zone. The smoke thins as it fades: fewer and smaller puffs, not only fainter
   - [x] 16.5 Run `npm run test:run` and `npm run build`: both pass. The game runs
   - _Requirements: 6.2, 6.5, 6.6, 11.1, 11.3, 11.5, 15.2_
   - Test file: `tests/session-screen-states.test.ts`
@@ -252,12 +252,12 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/leaving-copy.test.ts`
   - Files this task may change: `src/ui/session-screen.ts`, `src/ui/monster-art.css`, `tests/leaving-copy.test.ts`
 
-- [ ] 18. **Session presenter and wiring: zone ends reach the screen**
+- [x] 18. **Session presenter and wiring: zone ends reach the screen**
   - Mark: needed for the video (req 3.6, 6.3).
   - [x] 18.1 Create `src/ui/session-presenter.ts` with `createSessionPresenter(deps)` returning `update(state)` and `reset()`. It keeps the previous state; for each update it calls `toView(state)` and `zoneEndEvent(prev, state)` and then `screen.paint(view, zoneEnd)`. It passes no `zoneEnd` when the new phase is `ended` (the end card shows the fourth outcome, design section 5.4). It makes no game decision and uses no timer. `reset()` forgets the previous state
   - [x] 18.2 In `src/main.ts` replace the direct `screen.paint(toView(state))` call with `presenter.update(state)`, keeping the `showCamera(state)` call after it, and call `presenter.reset()` in `onEnded` and `onDropped`. No other change to `main.ts`
   - [x] 18.3 Test `sessionPresenterZoneEnds`, with a fake screen that records calls: over a whole session (any signals, either mode) the screen gets exactly three paints that carry a `zoneEnd` (zones one to three, in zone order) and none for the fourth; none on pause or resume; `reset()` clears the remembered state, so the first update after it carries no `zoneEnd`; the presenter file has no `setTimeout`, `setInterval`, `document` or `window`
-  - [ ] 18.4 Check by hand (M1 monster part, M9 states, M2 mood): `npm run dev`, play a timer-only session. When a zone ends, the monster of that zone is shown once, briefly, puffing into smoke, while the next zone's monster appears at once and the countdown does not stop or jump. Nothing appears suddenly, nothing flashes. If a trapped or fled monster can be reached (camera session with little brushing), it looks happy or slips away, never sad or hurt
+  - [x] 18.4 Check by hand (M1 monster part, M9 states, M2 mood): `npm run dev`, play a timer-only session. When a zone ends, the monster of that zone is shown once, briefly, puffing into smoke, while the next zone's monster appears at once and the countdown does not stop or jump. Nothing appears suddenly, nothing flashes. If a trapped or fled monster can be reached (camera session with little brushing), it looks happy or slips away, never sad or hurt
   - [x] 18.5 Run `npm run test:run` and `npm run build`: both pass. The game runs through to the end card
   - _Requirements: 3.6, 6.1, 6.3, 6.4, 15.2_
   - Test file: `tests/session-presenter.test.ts`
@@ -282,7 +282,7 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/audio-kit.test.ts`
   - Files this task may change: `src/audio/audio-kit.ts`, `src/main.ts`, `tests/audio-kit.test.ts`
 
-- [ ] 21. **Play the sound cues**
+- [x] 21. **Play the sound cues**
   - Mark: needed for the video (req 10.4, 10.6, 10.7).
   - [x] 21.1 In `src/ui/session-presenter.ts` add an optional `sounds` dependency (`Pick<Sounds, 'play'>`). On each update, for every cue in `cuesFor(prev, state)` call `sounds.play(cue.id, cue.delayMs)`. Nothing is played at the `ended` state, which `cuesFor` already guarantees
   - [x] 21.2 In `src/main.ts` pass `kit.sounds` to the presenter. No other change
@@ -313,13 +313,13 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/end-card-source.test.ts`
   - Files this task may change: `src/ui/end-card.ts`, `tests/end-card-source.test.ts`
 
-- [ ] 24. **End card styles and wiring**
+- [x] 24. **End card styles and wiring**
   - Mark: needed for the video (req 9, 11.3).
   - [x] 24.1 Create `src/ui/screens.css` with the end-card styles: both buttons visible at 360 x 640; the four monsters in a row or a 2 x 2 grid; a one-shot "into the Book" movement of `ONE_SHOT_MS.intoBook` (1200 ms) that `.fx-no-book` turns into a plain fade; the fled and trapped items use their small leaving style and look friendly; a fade-in. No colour is the only signal
   - [x] 24.2 Link `screens.css` from `index.html`, after the other `<link>` lines. Do not touch the Content-Security-Policy
   - [x] 24.3 In `src/main.ts` pass `state.monsters.map((m) => m.outcome)` as the second argument of `endCard.show`, and pass `kit.sounds` when the end card is created. No other change
   - [x] 24.4 The `cssGuards` test of task 12 now also reads `screens.css` and still passes
-  - [ ] 24.5 Check by hand (M3 end-card part, M2 mood): `npm run dev`, play a full session. The end card shows the four monsters going into the Book, says "Well done! Two minutes of brushing!" and then "Two minutes. Every corner.", with both captions visible, and plays a soft closing sound. At 360 x 640 in the browser dev tools the Done button is visible without scrolling. Nothing urges another game. Tap Done: the title screen shows and nothing glows
+  - [x] 24.5 Check by hand (M3 end-card part, M2 mood): `npm run dev`, play a full session. The end card shows the four monsters going into the Book, says "Well done! Two minutes of brushing!" and then "Two minutes. Every corner.", with both captions visible, and plays a soft closing sound. At 360 x 640 in the browser dev tools the Done button is visible without scrolling. Nothing urges another game. Tap Done: the title screen shows and nothing glows
   - [x] 24.6 Run `npm run test:run` and `npm run build`: both pass. The game runs through to the new end card
   - _Requirements: 9.1, 9.3, 9.4, 10.4, 11.1, 11.3, 11.5, 13.2_
   - Test file: none new (`cssGuards` and `endCardNoUrging` cover it)
@@ -359,7 +359,7 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/monster-book-screen.test.ts`
   - Files this task may change: `src/ui/monster-book-screen.ts`, `src/ui/screens.css`, `tests/monster-book-screen.test.ts`
 
-- [ ] 28. **Title panel: one large start button, a smaller Monster Book button, privacy line**
+- [x] 28. **Title panel: one large start button, a smaller Monster Book button, privacy line**
   - Mark: needed for the video (req 1). The parent control is later (task 38).
   - [x] 28.1 Create `src/ui/title-panel.ts` that builds the start panel from `titleControls()`: the game name, the large start button (existing icon, label "Brush!", accessible name and `start` line, all unchanged; `TAP_TARGETS.start`), the smaller Monster Book button (class `small-button`, icon, visible label `DISPLAY_TEXT['book-title']`, accessible name, `TAP_TARGETS.titleBook`), and the privacy line `DISPLAY_TEXT['privacy']` as a visible `<p>`, never spoken. The Monster Book button is created only when an `onOpenBook` handler is passed. Sizes are applied with `style.minWidth` and `style.minHeight`
   - [x] 28.2 The Book button's tap calls `speaker.unlock()` and then `onOpenBook`. It does not call `onStart`, the camera or a session. The start tap keeps its behaviour: it unlocks sound, says `start` and calls `onStart`. The panel has no form, no sign-up, no install prompt, no countdown, no sound before the first tap, and no mute control
@@ -367,26 +367,26 @@ opens and a timer-only session plays through to the end card.
   - [x] 28.4 In `src/ui/screens.css` add the title-panel styles: portrait single column, controls in the lower half, the smaller button clearly smaller than the start button, the privacy line readable on the dark background, a fade-in
   - [x] 28.5 Test `titlePanelSource` (design test 30, title part; source scan): `title-panel.ts` has no `getUserMedia`, `import(`, `beforeinstallprompt`, `setTimeout`, `setInterval`, `fetch`, `setItem`, `localStorage`, and no import from `src/tracking/`; its text comes from `DISPLAY_TEXT` and `lines.ts`; no string in it mentions mute, sound off or volume; it uses `titleControls` and `TAP_TARGETS`
   - [x] 28.6 The `cssGuards` test passes on the extended `screens.css`
-  - [ ] 28.7 Check by hand (M3, title part): `npm run dev`, at 360 x 640 in the browser dev tools. The title screen shows the name, the large start button and the privacy line "The camera stays on this phone. Nothing is saved or sent." without scrolling. The Monster Book button is not shown yet (no handler)
+  - [x] 28.7 Check by hand (M3, title part): `npm run dev`, at 360 x 640 in the browser dev tools. The title screen shows the name, the large start button and the privacy line "The camera stays on this phone. Nothing is saved or sent." without scrolling. The Monster Book button is not shown yet (no handler)
   - [x] 28.8 Run `npm run test:run` and `npm run build`: both pass. The game runs; the title screen now shows the privacy line
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 10.11, 11.4, 15.9_
   - Test file: `tests/title-panel.test.ts`
   - Files this task may change: `src/ui/title-panel.ts`, `src/ui/session-screen.ts`, `src/ui/screens.css`, `tests/title-panel.test.ts`
 
-- [ ] 29. **Open the Monster Book from the title screen and the end card**
+- [x] 29. **Open the Monster Book from the title screen and the end card**
   - Mark: needed for the video (req 7.8, 7.9, 1.8, 9.3).
   - [x] 29.1 In `src/main.ts` create the Book screen (`createMonsterBookScreen`) with `loadSessions: () => storage.loadSessions()` and `kit.speaker`. Write one `openBook(from)` function that remembers where the Book was opened from (`'title'` or `'end'`), hides that screen (`screen.hide()` or `endCard.hide()`) and calls `book.open()`. Pass `onOpenBook: () => openBook('title')` to the session screen and `onOpenBook: () => openBook('end')` to the end card. Both buttons already call `speaker.unlock()` in their own tap. Back returns to where the Book was opened from: `screen.showStart()` or `endCard.unhide()`. Do not pass `onOpenParent`
-  - [ ] 29.2 Check by hand (M3, M9, M5, M10): `npm run dev`. At 360 x 640, the title screen shows the large start button, the smaller Monster Book button and the privacy line without scrolling. Tap Monster Book: with no sessions you see twelve silhouettes with no names; the four rare ones carry a star; no padlock, cross or number. Tap a silhouette: nothing is said. Play one full session, tap Monster Book on the end card: the four monsters of that session show with their names. Tap one: its name is spoken and shown as a caption. Tap a second one quickly: the first name is replaced, not queued. Back from the Book opened from the end card shows the end card again and says nothing. Back from the Book opened from the title shows the title screen. In the browser Network panel, opening the title screen, the Book and the end card makes no request except the same-origin page files, and loads no model, font or image
+  - [x] 29.2 Check by hand (M3, M9, M5, M10): `npm run dev`. At 360 x 640, the title screen shows the large start button, the smaller Monster Book button and the privacy line without scrolling. Tap Monster Book: with no sessions you see twelve silhouettes with no names; the four rare ones carry a star; no padlock, cross or number. Tap a silhouette: nothing is said. Play one full session, tap Monster Book on the end card: the four monsters of that session show with their names. Tap one: its name is spoken and shown as a caption. Tap a second one quickly: the first name is replaced, not queued. Back from the Book opened from the end card shows the end card again and says nothing. Back from the Book opened from the title shows the title screen. In the browser Network panel, opening the title screen, the Book and the end card makes no request except the same-origin page files, and loads no model, font or image
   - [x] 29.3 Run `npm run test:run` and `npm run build`: both pass. The game runs: title, Book, session, end card, Book, back
   - _Requirements: 1.8, 7.8, 7.9, 7.10, 9.3, 1.5, 15.9_
   - Test file: none new (the model, speech and screen sources are tested in tasks 25 to 28; the privacy guard, `csp.test.ts` and `build-output.test.ts` must still pass)
   - Files this task may change: `src/main.ts`
 
-- [ ] 30. **Caption contrast**
+- [x] 30. **Caption contrast**
   - Mark: needed for the video (req 4.5, 11.7).
   - [x] 30.1 In `src/ui/screens.css` define `--caption-fg` and `--caption-bg` on `:root` as 6-digit hex colours with a contrast ratio of at least 4.5 to 1, and restyle `.caption` with them so that the caption sits on an opaque plate. `screens.css` loads after `styles.css`, so `styles.css` is not edited. The caption stays outside the frame and above the fog
   - [x] 30.2 Test `captionContrast` (design test 23): `--caption-fg` and `--caption-bg` are 6-digit hex values found in `screens.css`; their contrast ratio, computed with the standard relative-luminance formula, is at least 4.5
-  - [ ] 30.3 Check by hand (M2, legibility): `npm run dev`. During a session the caption is easy to read over the frame and fog, in all four zones, and the fog never covers the face or the monster
+  - [x] 30.3 Check by hand (M2, legibility): `npm run dev`. During a session the caption is easy to read over the frame and fog, in all four zones, and the fog never covers the face or the monster
   - [x] 30.4 Run `npm run test:run` and `npm run build`: both pass. The game runs with the new caption plate
   - _Requirements: 4.5, 11.7_
   - Test file: `tests/caption-contrast.test.ts`
@@ -416,8 +416,8 @@ opens and a timer-only session plays through to the end card.
   - [ ] 32.7 Check by hand (M6, reduced motion): turn on "reduce motion" in the device or browser settings, also while a session runs. The candle flicker, fog drift, smoke drift, leaving animations and the end-card movement stop. The lit corner and its candle remain, the monster still changes size with its health, and the smoke still thins
   - [ ] 32.8 Check by hand (M7, screen-reader part): with a screen reader on, the frame is silent and the caption of the active zone is read
   - [x] 32.9 Check by hand (M9, drawings): in the Book and on the cheek, all twelve monsters are easy to tell apart; none is scary; the four rare ones carry a star and a crest; a silhouette shows no name, padlock, cross or number
-  - [ ] 32.10 Check by hand (M10, network): with the browser Network panel open, play a full session and visit the Book. The only requests are the same-origin page, script and stylesheet files and, after the start tap in a camera session, the model and WASM files from this site. No request goes to another host, no cookie is set, and the only storage key is `foamtom:v1`
-  - [ ] 32.11 Read the 19 approved lines in `requirements.md` against what appears on screen and in speech. The new screens show or say nothing else. (The `rare-invite` line and the `Grown-ups` name come in tasks 33 to 38.)
+  - [x] 32.10 Check by hand (M10, network): with the browser Network panel open, play a full session and visit the Book. The only requests are the same-origin page, script and stylesheet files and, after the start tap in a camera session, the model and WASM files from this site. No request goes to another host, no cookie is set, and the only storage key is `foamtom:v1`
+  - [x] 32.11 Read the 19 approved lines in `requirements.md` against what appears on screen and in speech. The new screens show or say nothing else. (The `rare-invite` line and the `Grown-ups` name come in tasks 33 to 38.)
   - _Requirements: 1.6, 1.7, 3.1, 3.6, 4.2, 4.7, 5.3, 6.3, 6.4, 7.5, 9.3, 10.2, 10.3, 10.6, 11.1, 11.3, 11.6, 11.8, 13.5, 13.6, 14.1, 14.5_
   - Test file: none new (this task runs the whole suite and the manual checks; it changes no source file)
   - Files this task may change: `docs/review/TRACKING-TEST-RESULTS.md` (one dated row, section 7, words only, written by the person who ran the phone test)
@@ -537,7 +537,7 @@ screen values recorded once a second showed the monster did shrink (72 px to 29 
 monsters overlapping. Build these in the order 42, 43, 44, 45, 46, 47, before tasks 33 to 40.
 Tick nothing in tasks 1 to 41 again; they stay as they are.
 
-- [ ] 42. **Timer-only smoke: `TIMER_ONLY_DAMAGE` (core 8.5, 8.6)**
+- [x] 42. **Timer-only smoke: `TIMER_ONLY_DAMAGE` (core 8.5, 8.6)**
   - Mark: needed for the video (core 7.7, 7.8, 8.5, 8.6, 13.1; requirement 16.4).
   - [x] 42.1 In `src/logic/constants.ts` add `export const TIMER_ONLY_DAMAGE = DAMAGE_PER_SECOND;` (value 3), with a comment naming Dr. Yatin's decision of 21 Nov 2026. `UNTRACKED_DRAIN` stays 2
   - [x] 42.2 In `src/logic/session.ts` change `tick` as in the core design (section 5): in timer-only mode `damage = TIMER_ONLY_DAMAGE`, the untracked count and `progress` are as before; in camera mode a `null` signal still gives `UNTRACKED_DRAIN`. No other change under `src/logic/`, and no change to `toView`, its type, `toSessionResult` or any result field (timer-only results still record 30 brushed, 0 untracked, unverified)
@@ -549,7 +549,7 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
     - `tests/session-result.test.ts`: only the test label `timerOnlyDefeatsEveryMonsterAt30: ...` is renamed `timerOnlyDefeatsEveryMonsterAt20: ...`; its assertions (30 brushed, 0 untracked, unverified, outcome `defeated`) stay as they are
     - `tests/lines.test.ts` is not edited. It still passes (the smoke line is now also produced in timer-only mode); its comment 'monster defeated at 30 s only, so no smoke' is stale and is left alone by the mirror spec's rule that this file is not changed. Say so in the report
   - [x] 42.4 Run `npm run test:run`. If any other test fails because it asserted the old timer-only rule (defeat at 30 s, drain 2 in timer-only mode), list it by name in the report and update it the same way. If any test fails for another reason, stop and report. Do not weaken any test
-  - [ ] 42.5 Check by hand: `npm run dev`, a timer-only session. In the first zone the monster is full size at the start and turns to smoke at 20 s, the line 'Keep brushing! Brush the smoke away!' is spoken and captioned once, the smoke thins over the last 10 s, the zone still ends at 30 s, and the end card still shows four monsters. The frame glow stays on the zone all the time
+  - [x] 42.5 Check by hand: `npm run dev`, a timer-only session. In the first zone the monster is full size at the start and turns to smoke at 20 s, the line 'Keep brushing! Brush the smoke away!' is spoken and captioned once, the smoke thins over the last 10 s, the zone still ends at 30 s, and the end card still shows four monsters. The frame glow stays on the zone all the time
   - [x] 42.6 Run `npm run test:run` and `npm run build`: both pass
   - _Requirements: core 7.7, 7.8, 8.5, 8.6, 13.1; 16.4_
   - Test files: `tests/session.test.ts`, `tests/view.test.ts`, `tests/sound-cues.test.ts`, `tests/constants.test.ts`, `tests/session-result.test.ts` (label only)
