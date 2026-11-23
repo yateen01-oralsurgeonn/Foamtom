@@ -452,7 +452,7 @@ opens and a timer-only session plays through to the end card.
   - [x] 35.1 In `src/ui/monster-book-screen.ts` show the caption of `rare-invite` ("Brush morning AND night.", read from `lines.ts`) once, as visible text under the four rare cells, while `showRareInvitation` is true, and not at all when it is false. Make each rare silhouette a `<button>` (accessible name `DISPLAY_TEXT['not-met']`, `TAP_TARGETS.bookCell`, no visible name) whose tap runs the book speech with its action and shows the same words in the caption line. Common silhouettes stay non-interactive. The line is not repeated on each silhouette and carries no countdown, count, streak or "missed" wording
   - [x] 35.2 In `src/ui/screens.css` add the styles for the invitation text and the rare silhouette button
   - [x] 35.3 Extend `tests/monster-book-screen.test.ts` (source scan): the screen reads `showRareInvitation` and `getLine('rare-invite')`; rare silhouettes are created as buttons and common ones are not; the invitation text is created once, outside the loop over entries
-  - [x] 35.4 Check by hand (requirement 8): `npm run dev`. With no sessions saved, open the Monster Book: "Brush morning AND night." shows once under the four rare silhouettes. Tap a rare silhouette: the line is spoken and captioned. Tap a common silhouette: nothing is said. The line has no countdown and does not mention today. (That the line disappears when all four rares are owned is checked by the model test of task 34.)
+  - [x] 35.4 Check by hand (requirement 8): `npm run dev`. With no sessions saved, open the Monster Book: "Brush morning AND night." shows once under the four rare silhouettes. Tap a rare silhouette: the line is spoken and captioned. Tap a common silhouette: nothing is said. The line has no countdown and does not mention today. (That the line disappears when all four rares are owned is checked by the model test of task 34.) Note (23 Nov 2026): an empty dark plate under the line was found here and fixed by task 50
   - [x] 35.5 Run `npm run test:run` and `npm run build`: both pass. The game runs with the invitation in the Book
   - _Requirements: 7.5, 8.1, 8.2, 8.3, 8.4, 11.4_
   - Test file: `tests/monster-book-screen.test.ts` (extended)
@@ -502,7 +502,7 @@ opens and a timer-only session plays through to the end card.
 - [x] 40. **Final checks for the later items**
   - Mark: later (req 2, 8, 12).
   - [x] 40.1 Run `npm run test:run` and `npm run build` and report both results
-  - [x] 40.2 Check by hand (M7, keyboard part, requirement 12.3): on a desktop browser, Tab through the title screen, the Monster Book and the end card. Every control shows a visible focus mark and works with Enter and Space
+  - [x] 40.2 Check by hand (M7, keyboard part, requirement 12.3): on a desktop browser, Tab through the title screen, the Monster Book and the end card. Every control shows a visible focus mark and works with Enter and Space. Note (23 Nov 2026): an empty dark plate under the Monster Book caption line was found here and fixed by task 50
   - [x] 40.3 Check by hand (M8, requirement 12.1): rotate the phone sideways and open the game on a laptop. There is no rotate message, and the preview, caption, countdown, frame and buttons are not clipped
   - [x] 40.4 Check by hand (M3 and requirement 12.2): in a window too small to show the whole Monster Book, the grid reflows and the screen scrolls so that all twelve cells can be reached
   - [x] 40.5 Check by hand (requirement 8): the rare invitation shows once under the rare silhouettes and is spoken on a rare-silhouette tap, as in task 35. Read it once more against approved line 3
@@ -636,6 +636,16 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - _Requirements: 2.2, 2.3, 11.4, 14.1, 14.4_
   - Test file: `tests/display-text.test.ts` (extended), `tests/title-panel.test.ts` (extended), `tests/title-model.test.ts` (only if needed)
   - Files this task may change: `src/ui/display-text.ts`, `src/ui/title-panel.ts`, `src/ui/screens.css`, `tests/display-text.test.ts`, `tests/title-panel.test.ts`, `tests/title-model.test.ts` (only if needed), `tests/new-text-guard.test.ts` (only if needed)
+
+- [ ] 50. **No empty caption plate in the Monster Book**
+  - Mark: needed for the video (req 7.11). Dr. Yatin's decision of 23 Nov 2026, from the manual checks 35.4 and 40.2: `p.book__caption` has an opaque background (the plate of requirement 11.7) and `min-height: 2.6rem`, so an empty dark plate showed under the line "Brush morning AND night." No new wording.
+  - [ ] 50.1 In `src/ui/screens.css` add a rule `.book__caption:empty` that sets `background: transparent` (and removes the padding paint if needed), keeping the `min-height` of `.book__caption`
+  - [ ] 50.2 Add a test to `tests/css-guards.test.ts`: `screens.css` has a `.book__caption:empty` rule with a transparent background, and `.book__caption` still has a `min-height`
+  - [ ] 50.3 Run `npm run test:run` and `npm run build`: both pass
+  - [ ] 50.4 Check by hand (Dr. Yatin; requirement 7.11): open the Monster Book with no monsters: no dark empty plate under the caption line. Tap an owned monster: its name shows on the normal plate. Tap away: the plate disappears again and nothing jumps
+  - _Requirements: 7.11, 11.7_
+  - Test file: `tests/css-guards.test.ts` (extended)
+  - Files this task may change: `src/ui/screens.css`, `tests/css-guards.test.ts`
 
 ---
 

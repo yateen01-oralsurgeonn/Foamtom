@@ -731,6 +731,8 @@ section.book
   is the same whatever the sessions say about today: `monsterBookView` has no date input. It is
   hidden when all four rare monsters are owned. It states the rule in the words the rule uses
   and changes nothing about the rule (core req 10.6).
+- **Empty caption (req 7.11).** `.book__caption:empty` is transparent (the plate colour applies
+  only when the element has text); height stays reserved by `min-height`.
 - **Back (req 7.7).** One button, icon + "Back", sized from `TAP_TARGETS.bookBack`. `main.ts`
   remembers where the Book was opened from (`'title'` or `'end'`) and the handler returns
   there: `screen.showStart()` or `endCard.unhide()`.
@@ -1213,6 +1215,7 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 7.8 | needed for the video | `openBook(from)` from the title and the end card (5.7) | `titleModel`, `endCardNoUrging` (end card has the Book button); manual M3 |
 | 7.9 | needed for the video | Both tap handlers call `speaker.unlock()` (5.5, 5.7) | `bookSpeech` (unlock is called by the kit); manual M5 (names are spoken from either entry) |
 | 7.10 | needed for the video | No camera import, no frame in the Book screen (5.7) | `bookScreenIsReadOnly`; manual M10 |
+| 7.11 | needed for the video | `.book__caption:empty` is transparent; `min-height` keeps the space (5.7) | `css-guards.test.ts` (empty caption rule); manual: task 50.4 |
 | 8.1 | later | `invite` flag, `rare-invite` caption and tap (5.7) | `monsterBookView`, `bookSpeech` |
 | 8.2 | later | Line has no countdown, count or "missed" wording (5.7, 6) | `newTextGuard` |
 | 8.3 | later | `monsterBookView` has no date input; hidden when all four rares owned (5.7) | `monsterBookView` |

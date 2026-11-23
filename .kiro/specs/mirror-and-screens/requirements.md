@@ -405,6 +405,11 @@ are spoken whichever screen the child came from.
 7.10 THE Book SHALL NOT start the camera, SHALL NOT make a network request, and SHALL NOT
 show the frame glow (requirement 3.9).
 
+7.11 WHEN the caption under the grid holds no text, THE caption plate SHALL NOT be painted
+(no background), and the caption SHALL keep its reserved height, so that nothing jumps when
+text appears. WHEN it holds a monster name or the rare invitation line, the opaque plate
+(requirement 11.7) SHALL show as before.
+
 ---
 
 ### 8. Rare-monster invitation
@@ -795,6 +800,13 @@ these decisions.
    it showed only an icon. The control now shows the small word "Grown-ups" next to its icon,
    in text quieter than the Monster Book button's. The word is the line he already approved
    (row 18 of "Approved lines (21 Nov 2026)"); no new wording (requirement 2.2).
+
+10. **No empty caption plate in the Monster Book (23 Nov 2026).** During the manual checks
+   35.4 and 40.2, Dr. Yatin saw an empty dark rounded plate under the line "Brush morning
+   AND night." It is the caption element `p.book__caption`, which has an opaque background
+   (the caption plate of requirement 11.7) and a `min-height`, so the plate showed even with
+   no text. It looked like a bug. While the caption is empty the plate is not painted, but
+   its space stays reserved, so nothing jumps when a monster name appears (requirement 7.11).
 
 ---
 
