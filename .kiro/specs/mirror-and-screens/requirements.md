@@ -146,7 +146,9 @@ it belong to the `parent-screen` spec; this spec SHALL NOT build, mock or bypass
 2.2 THE control SHALL have a touch target of at least 48 px (requirement 11.4), SHALL NOT
 be a large button, and SHALL be smaller and quieter than both the start button and the
 Monster Book button (1.8), so that a child is not drawn to it. Its visible mark SHALL be an
-icon; its label is an accessible name (the line is in "Approved lines (21 Nov 2026)").
+icon followed by the small word "Grown-ups" (the approved line, in "Approved lines (21 Nov
+2026)"), in a text size and colour quieter than the Monster Book button's text, so that a
+parent can find it and a child is not drawn to it.
 
 2.3 THE control SHALL NOT be shown on the session screen or the end card.
 
@@ -788,6 +790,12 @@ these decisions.
    monster waits for the leaving copy (3.6, 6.3, 6.13, 15.12); (5) timer-only smoke: the
    timer-only monster loses 3 per second and is defeated at 20 s (core 8.5, 8.6; 16.4).
 
+9. **The parent control shows its word (23 Nov 2026).** During the parent-screen manual
+   check 38.5, Dr. Yatin could not find the parent entry control on the title screen because
+   it showed only an icon. The control now shows the small word "Grown-ups" next to its icon,
+   in text quieter than the Monster Book button's. The word is the line he already approved
+   (row 18 of "Approved lines (21 Nov 2026)"); no new wording (requirement 2.2).
+
 ---
 
 ## Approved lines (21 Nov 2026)
@@ -816,7 +824,7 @@ listed because they were approved (19 Nov 2026) and are unchanged. "Spoken" mean
 | 15 | Twilight Toffee Wraith | Spoken, and shown | Monster Book, owned cell, on tap. Spoken from `monsters.ts` like the other eleven (requirement 7.4; Decision 3). |
 | 16 | Monster Book | Shown | Heading of the Monster Book screen; label of the end-card button that opens it; label of the smaller button on the title screen (requirement 1.8). |
 | 17 | Back | Shown | Label of the Monster Book's back button. |
-| 18 | Grown-ups | Name only (the control shows an icon) | Title screen, the small parent entry control (requirement 2.2). |
+| 18 | Grown-ups | Shown, small, next to the icon (changed 23 Nov 2026) | Title screen, the small parent entry control (requirement 2.2). |
 | 19 | Not met yet | Name only | Monster Book, each silhouette. |
 
 The names in rows 4 to 15 are the names already approved on 14 Nov 2026 in the monster

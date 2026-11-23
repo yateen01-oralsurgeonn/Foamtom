@@ -623,8 +623,11 @@ titleControls(hasParentHandler: boolean): TitleControl[]
 - **No pressure (req 1.7).** No countdown, no animation faster than the table, no sound before
   the first tap (the player has no context until `unlock()`), no text about earlier sessions.
 - **Parent control (req 2).** `main.ts` passes `onOpenParent` only when the `parent-screen`
-  spec provides one. With a handler, the control is a small `quiet` icon button (a padlock-free
-  grown-up silhouette made in CSS) whose accessible name is "Grown-ups". It is absent from the
+  spec provides one. With a handler, the control is a small `quiet` button that holds the icon
+  (a padlock-free grown-up silhouette made in CSS) and the visible word "Grown-ups" after it, in
+  a text size and colour quieter than the Monster Book button's (decision of 23 Nov 2026).
+  The accessible name stays "Grown-ups"; the icon stays `aria-hidden`, so it is not read twice.
+  `DISPLAY_TEXT['grown-ups']` has kind `shown`. It is absent from the
   session screen and the end card because only the title panel creates it (req 2.3). This spec
   builds no gate (req 2.1).
 - **No mute (req 10.11).** `titleControls` has no such control, and no file adds one.
@@ -1025,7 +1028,7 @@ stops and the line goes to Dr. Yatin first (req 14.1).
 | 4 to 15 the twelve monster names | `monsters.ts` `name`, spoken with `sayText`, shown as caption |
 | 16 "Monster Book" | `DISPLAY_TEXT['book-title']` (heading, title button, end-card button) |
 | 17 "Back" | `DISPLAY_TEXT['back']` |
-| 18 "Grown-ups" | `DISPLAY_TEXT['grown-ups']` (name only) |
+| 18 "Grown-ups" | `DISPLAY_TEXT['grown-ups']` (kind `shown`, changed 23 Nov 2026) |
 | 19 "Not met yet" | `DISPLAY_TEXT['not-met']` (name only) |
 
 - **Existing lines (req 14.2).** `start`, the four `zone-` lines, `smoke` and `end` are not edited.
@@ -1162,7 +1165,7 @@ The mark is the requirement's mark (section 1.1): "needed for the video" or "lat
 | 1.7 | needed for the video | No countdown or sound before the tap; player has no context until `unlock()` (5.5, 5.8) | `titleModel`; manual M5: silence on the title screen |
 | 1.8 | needed for the video | `small` Monster Book control, `onOpenBook` handler (5.5) | `titleModel`, `tapTargets` |
 | 2.1 | later | Optional `onOpenParent` handler; no gate built (5.5) | `titleModel` |
-| 2.2 | later | `quiet` control, 48 x 48, icon with accessible name "Grown-ups" (5.5) | `tapTargets`, `titleModel` |
+| 2.2 | later | `quiet` control, 48 x 48, icon plus the visible word "Grown-ups" (kind `shown`); accessible name "Grown-ups", icon `aria-hidden` (5.5; changed 23 Nov 2026) | `tapTargets`, `titleModel` |
 | 2.3 | later | Only `title-panel.ts` creates it (5.5) | `titleModel`; manual M3: not on session or end card |
 | 3.1 | needed for the video | Frame, monster and line are the guidance; frame is a component of the session (5.1) | `glowMatchesLineAndMonster`; manual M1 |
 | 3.2 | needed for the video | Four regions, `ZONE_REGION` (5.1) | `frameGuidanceZones` |
