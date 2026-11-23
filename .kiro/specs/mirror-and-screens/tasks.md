@@ -502,12 +502,12 @@ opens and a timer-only session plays through to the end card.
 - [ ] 40. **Final checks for the later items**
   - Mark: later (req 2, 8, 12).
   - [ ] 40.1 Run `npm run test:run` and `npm run build` and report both results
-  - [ ] 40.2 Check by hand (M7, keyboard part, requirement 12.3): on a desktop browser, Tab through the title screen, the Monster Book and the end card. Every control shows a visible focus mark and works with Enter and Space
+  - [x] 40.2 Check by hand (M7, keyboard part, requirement 12.3): on a desktop browser, Tab through the title screen, the Monster Book and the end card. Every control shows a visible focus mark and works with Enter and Space
   - [ ] 40.3 Check by hand (M8, requirement 12.1): rotate the phone sideways and open the game on a laptop. There is no rotate message, and the preview, caption, countdown, frame and buttons are not clipped
-  - [ ] 40.4 Check by hand (M3 and requirement 12.2): in a window too small to show the whole Monster Book, the grid reflows and the screen scrolls so that all twelve cells can be reached
-  - [ ] 40.5 Check by hand (requirement 8): the rare invitation shows once under the rare silhouettes and is spoken on a rare-silhouette tap, as in task 35. Read it once more against approved line 3
+  - [x] 40.4 Check by hand (M3 and requirement 12.2): in a window too small to show the whole Monster Book, the grid reflows and the screen scrolls so that all twelve cells can be reached
+  - [x] 40.5 Check by hand (requirement 8): the rare invitation shows once under the rare silhouettes and is spoken on a rare-silhouette tap, as in task 35. Read it once more against approved line 3
   - [x] 40.6 The parent-control check of task 38.5 is done only when the `parent-screen` spec provides a handler. Leave it as it is until then
-  - [ ] 40.7 Read the 19 approved lines in `requirements.md` against what appears on screen and in speech. Nothing else is shown or said
+  - [x] 40.7 Read the 19 approved lines in `requirements.md` against what appears on screen and in speech. Nothing else is shown or said
   - _Requirements: 2.2, 2.3, 8.1, 12.1, 12.2, 12.3, 14.1_
   - Test file: none new (this task runs the whole suite and the manual checks; it changes no source file)
   - Files this task may change: none
