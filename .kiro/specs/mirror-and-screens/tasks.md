@@ -436,13 +436,13 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/display-text.test.ts` (extended), `tests/new-text-guard.test.ts` (extended)
   - Files this task may change: `src/audio/lines.ts`, `tests/display-text.test.ts`, `tests/new-text-guard.test.ts`
 
-- [ ] 34. **Rare invitation: model and speech**
+- [x] 34. **Rare invitation: model and speech**
   - Mark: later (req 8).
-  - [ ] 34.1 In `src/ui/book-model.ts` add `invite` to `BookEntry` (true exactly for rare entries that are not owned) and `showRareInvitation` to `BookView` (true exactly when some entry has `invite`). Add the `say-line` action (`lineId: 'rare-invite'`) to `BookTapAction`: `bookTapAction` gives it for a rare entry that is not owned and still gives `none` for a common one that is not owned. The model still takes no date and no time of day
-  - [ ] 34.2 In `src/ui/book-speech.ts` add the `say-line` branch: `speaker.stop()` and then `speaker.say('rare-invite')`
-  - [ ] 34.3 Extend `tests/book-model.test.ts` (design test 9, later part): `invite` is true exactly for rares that are not owned; `showRareInvitation` is true exactly when some rare is not owned and false when all four rares are owned; the result is the same whatever the dates and times of day on the sessions; `bookTapAction` is `say-line` for a rare not owned, `say-name` for an owned entry and `none` for a common not owned
-  - [ ] 34.4 Extend `tests/book-speech.test.ts`: a rare silhouette tap calls `stop` then `say('rare-invite')`; a common silhouette says nothing
-  - [ ] 34.5 Run `npm run test:run` and `npm run build`: both pass. The Book screen does not use the new fields yet, so the game is unchanged
+  - [x] 34.1 In `src/ui/book-model.ts` add `invite` to `BookEntry` (true exactly for rare entries that are not owned) and `showRareInvitation` to `BookView` (true exactly when some entry has `invite`). Add the `say-line` action (`lineId: 'rare-invite'`) to `BookTapAction`: `bookTapAction` gives it for a rare entry that is not owned and still gives `none` for a common one that is not owned. The model still takes no date and no time of day
+  - [x] 34.2 In `src/ui/book-speech.ts` add the `say-line` branch: `speaker.stop()` and then `speaker.say('rare-invite')`
+  - [x] 34.3 Extend `tests/book-model.test.ts` (design test 9, later part): `invite` is true exactly for rares that are not owned; `showRareInvitation` is true exactly when some rare is not owned and false when all four rares are owned; the result is the same whatever the dates and times of day on the sessions; `bookTapAction` is `say-line` for a rare not owned, `say-name` for an owned entry and `none` for a common not owned
+  - [x] 34.4 Extend `tests/book-speech.test.ts`: a rare silhouette tap calls `stop` then `say('rare-invite')`; a common silhouette says nothing
+  - [x] 34.5 Run `npm run test:run` and `npm run build`: both pass. The Book screen does not use the new fields yet, so the game is unchanged
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 15.3, 15.9_
   - Test file: `tests/book-model.test.ts` (extended), `tests/book-speech.test.ts` (extended)
   - Files this task may change: `src/ui/book-model.ts`, `src/ui/book-speech.ts`, `tests/book-model.test.ts`, `tests/book-speech.test.ts`

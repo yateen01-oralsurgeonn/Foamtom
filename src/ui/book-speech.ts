@@ -7,12 +7,17 @@ export interface BookSpeech {
   run(action: BookTapAction): void;
 }
 
-export function createBookSpeech(speaker: Pick<Speaker, 'stop'> & TextSpeaker): BookSpeech {
+export function createBookSpeech(
+  speaker: Pick<Speaker, 'stop' | 'say'> & TextSpeaker,
+): BookSpeech {
   return {
     run(action: BookTapAction): void {
       if (action.kind === 'say-name') {
         speaker.stop();
         speaker.sayText(action.text);
+      } else if (action.kind === 'say-line') {
+        speaker.stop();
+        speaker.say(action.lineId);
       }
     },
   };

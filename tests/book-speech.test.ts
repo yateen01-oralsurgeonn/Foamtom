@@ -52,9 +52,25 @@ describe('bookSpeech', () => {
         for (const entry of entriesFor(owned)) {
           if (!entry.owned) speech.run(bookTapAction(entry));
         }
-        expect(speaker.calls).toEqual([]);
+        expect(speaker.calls.some((c) => c.startsWith('sayText:'))).toBe(false);
       }),
     );
+  });
+
+  it('a rare silhouette tap calls stop then say(rare-invite)', () => {
+    const speaker = recordingSpeaker();
+    const speech = createBookSpeech(speaker);
+    const rare = entriesFor([]).find((e) => e.rare)!;
+    speech.run(bookTapAction(rare));
+    expect(speaker.calls).toEqual(['stop', 'say:rare-invite']);
+  });
+
+  it('a common silhouette tap says nothing', () => {
+    const speaker = recordingSpeaker();
+    const speech = createBookSpeech(speaker);
+    const common = entriesFor([]).find((e) => !e.rare)!;
+    speech.run(bookTapAction(common));
+    expect(speaker.calls).toEqual([]);
   });
 });
 

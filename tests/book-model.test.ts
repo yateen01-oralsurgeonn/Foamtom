@@ -119,17 +119,63 @@ describe('bookFromLoader', () => {
 });
 
 describe('bookTapAction', () => {
-  it('says the name for an owned entry and nothing for a not-owned entry', () => {
+  it('says the name for an owned entry, the invitation for a rare not owned, nothing for a common not owned', () => {
     fc.assert(
       fc.property(sessionsArb, (sessions) => {
         for (const e of monsterBookView(sessions).entries) {
           const action = bookTapAction(e);
           if (e.owned) {
             expect(action).toEqual({ kind: 'say-name', text: e.name });
+          } else if (e.rare) {
+            expect(action).toEqual({ kind: 'say-line', lineId: 'rare-invite' });
           } else {
             expect(action).toEqual({ kind: 'none' });
           }
         }
+      }),
+    );
+  });
+});
+
+describe('rare invitation (model)', () => {
+  it('invite is true exactly for rares that are not owned', () => {
+    fc.assert(
+      fc.property(sessionsArb, (sessions) => {
+        for (const e of monsterBookView(sessions).entries) {
+          expect(e.invite).toBe(e.rare && !e.owned);
+        }
+      }),
+    );
+  });
+
+  it('showRareInvitation is true exactly when some rare is not owned', () => {
+    fc.assert(
+      fc.property(sessionsArb, (sessions) => {
+        const view = monsterBookView(sessions);
+        const someRareNotOwned = view.entries.some((e) => e.rare && !e.owned);
+        expect(view.showRareInvitation).toBe(someRareNotOwned);
+      }),
+    );
+  });
+
+  it('showRareInvitation is false when all four rares are owned, and true with no sessions', () => {
+    const rareIds = MONSTERS.filter((m) => m.rarity === 'rare').map((m) => m.id);
+    expect(rareIds).toHaveLength(4);
+    const all = { monstersEarned: rareIds } as unknown as SessionResult;
+    expect(monsterBookView([all]).showRareInvitation).toBe(false);
+    expect(monsterBookView([]).showRareInvitation).toBe(true);
+  });
+
+  it('is the same whatever the dates and times of day on the sessions', () => {
+    fc.assert(
+      fc.property(sessionsArb, fc.constantFrom('morning', 'night', 'neither'), (sessions, tod) => {
+        const changed = sessions.map(
+          (s) => ({ ...s, timeOfDay: tod, date: '2030-01-01', startedAt: 0 }) as SessionResult,
+        );
+        const a = monsterBookView(sessions);
+        const b = monsterBookView(changed);
+        expect(b.showRareInvitation).toBe(a.showRareInvitation);
+        expect(b.entries.map((e) => e.invite)).toEqual(a.entries.map((e) => e.invite));
       }),
     );
   });
