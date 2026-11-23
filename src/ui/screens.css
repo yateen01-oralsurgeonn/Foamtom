@@ -184,8 +184,23 @@
 .book__rares {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
   gap: 10px 6px;
+}
+
+/* The Book scrolls when it is taller than the window. */
+.book {
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-y: auto;
+}
+
+/* Focus marks, in the pattern of .big-button:focus-visible. */
+.small-button:focus-visible,
+.icon-button:focus-visible,
+.book-cell:focus-visible {
+  outline: 4px solid #ffd966;
+  outline-offset: 4px;
 }
 
 .book-cell {

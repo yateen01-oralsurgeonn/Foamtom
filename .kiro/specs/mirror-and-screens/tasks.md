@@ -489,12 +489,12 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/title-panel.test.ts` (extended)
   - Files this task may change: `src/ui/title-panel.ts`, `src/ui/session-screen.ts`, `src/ui/screens.css`, `tests/title-panel.test.ts`
 
-- [ ] 39. **Landscape, desktop, reflowing Book and focus marks**
+- [x] 39. **Landscape, desktop, reflowing Book and focus marks**
   - Mark: later (req 12).
-  - [ ] 39.1 In `src/ui/effects.ts` add `ringLandscapePx` (20) to `FRAME_METRICS`. In `src/ui/frame.css` make the frame `width: min(100%, 480px)`, use the landscape ring in short landscape, and keep the preview at `max-height: 60dvh`. Nothing shows a "rotate your device" message and nothing clips the preview, caption, countdown or buttons
-  - [ ] 39.2 In `src/ui/screens.css` change the two Book grids to `grid-template-columns: repeat(auto-fit, minmax(72px, 1fr))` and let the Book screen scroll (`overflow-y: auto`) when it is taller than the window. Add a visible `:focus-visible` outline to `.small-button`, `.icon-button` and `.book-cell`, in the pattern of the existing `.big-button:focus-visible` rule
-  - [ ] 39.3 Extend `tests/css-guards.test.ts` (design test 25): every class among `big-button`, `small-button`, `icon-button`, `book-cell` that is defined in any of `styles.css`, `frame.css`, `monster-art.css` and `screens.css` has a `:focus-visible` rule; `FRAME_METRICS.ringLandscapePx` is smaller than `ringPx`; `screens.css` contains `auto-fit` for the Book grids
-  - [ ] 39.4 Run `npm run test:run` and `npm run build`: both pass. The existing `camera-preview.test.ts` passes unchanged. The game runs in portrait as before
+  - [x] 39.1 In `src/ui/effects.ts` add `ringLandscapePx` (20) to `FRAME_METRICS`. In `src/ui/frame.css` make the frame `width: min(100%, 480px)`, use the landscape ring in short landscape, and keep the preview at `max-height: 60dvh`. Nothing shows a "rotate your device" message and nothing clips the preview, caption, countdown or buttons
+  - [x] 39.2 In `src/ui/screens.css` change the two Book grids to `grid-template-columns: repeat(auto-fit, minmax(72px, 1fr))` and let the Book screen scroll (`overflow-y: auto`) when it is taller than the window. Add a visible `:focus-visible` outline to `.small-button`, `.icon-button` and `.book-cell`, in the pattern of the existing `.big-button:focus-visible` rule
+  - [x] 39.3 Extend `tests/css-guards.test.ts` (design test 25): every class among `big-button`, `small-button`, `icon-button`, `book-cell` that is defined in any of `styles.css`, `frame.css`, `monster-art.css` and `screens.css` has a `:focus-visible` rule; `FRAME_METRICS.ringLandscapePx` is smaller than `ringPx`; `screens.css` contains `auto-fit` for the Book grids
+  - [x] 39.4 Run `npm run test:run` and `npm run build`: both pass. The existing `camera-preview.test.ts` passes unchanged. The game runs in portrait as before
   - _Requirements: 12.1, 12.2, 12.3, 15.5_
   - Test file: `tests/css-guards.test.ts` (extended)
   - Files this task may change: `src/ui/effects.ts`, `src/ui/frame.css`, `src/ui/screens.css`, `tests/css-guards.test.ts`

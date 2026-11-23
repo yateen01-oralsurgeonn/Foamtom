@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { cycleVariableName } from '../src/ui/effects-host';
-import { LOOP_CYCLES_MS } from '../src/ui/effects';
+import { FRAME_METRICS, LOOP_CYCLES_MS } from '../src/ui/effects';
 import type { LoopId } from '../src/ui/effects';
 
 // The three stylesheets of this spec. The test reads whichever exist, so it keeps
@@ -84,6 +84,38 @@ describe('cssGuards', () => {
       }
     }
     expect(used).toBeGreaterThan(0);
+  });
+
+  it('every interactive class defined in the stylesheets has a :focus-visible rule', () => {
+    const files = ['src/ui/styles.css', ...existing];
+    const rules = files.flatMap((f) => leafRules(readCss(f)));
+    const selectorsOf = (r: CssRule): string[] => r.selector.split(',').map((s) => s.trim());
+    for (const name of ['big-button', 'small-button', 'icon-button', 'book-cell']) {
+      const defined = rules.some((r) => selectorsOf(r).some((s) => new RegExp(`\\.${name}(?![\\w-])`).test(s)));
+      if (!defined) continue;
+      const focused = rules.some((r) =>
+        selectorsOf(r).some((s) => new RegExp(`\\.${name}(?![\\w-])[^,]*:focus-visible`).test(s)),
+      );
+      expect(focused, `${name} has a :focus-visible rule`).toBe(true);
+    }
+  });
+
+  it('FRAME_METRICS.ringLandscapePx is smaller than ringPx', () => {
+    expect(FRAME_METRICS.ringLandscapePx).toBeLessThan(FRAME_METRICS.ringPx);
+  });
+
+  it('screens.css uses auto-fit for the Book grids', () => {
+    const rules = leafRules(readCss('src/ui/screens.css'));
+    for (const cls of ['.book__commons', '.book__rares']) {
+      const rule = rules.find((r) => r.selector.split(',').map((s) => s.trim()).includes(cls));
+      expect(rule, cls).toBeDefined();
+      expect(rule!.body, cls).toContain('auto-fit');
+    }
+  });
+
+  it('the Book screen scrolls when it is taller than the window', () => {
+    const rules = leafRules(readCss('src/ui/screens.css'));
+    expect(rules.some((r) => r.selector === '.book' && /overflow-y:\s*auto/.test(r.body))).toBe(true);
   });
 
   it('the rule reader finds nested and flat rules and skips keyframes', () => {

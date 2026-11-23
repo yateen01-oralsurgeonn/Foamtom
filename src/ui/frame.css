@@ -6,8 +6,7 @@
 .mirror-frame {
   --ring: 32px;
   position: relative;
-  width: 100%;
-  max-width: 480px;
+  width: min(100%, 480px);
   padding: var(--ring);
   border-radius: 28px;
   background: #2a2147;
@@ -21,6 +20,15 @@
   inset: 0;
   overflow: visible;
   pointer-events: none;
+}
+
+/* Short landscape: a thinner ring (FRAME_METRICS.ringLandscapePx). The preview inside the glass
+   keeps its max-height of 60dvh from styles.css, so nothing is clipped and nothing asks the
+   player to rotate. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .mirror-frame {
+    --ring: 20px;
+  }
 }
 
 /* The play area. Opaque and above every decoration, so nothing covers the picture,

@@ -43,9 +43,10 @@ export const REGION_LOOKS: Record<RegionLevel, RegionLook> = {
   off: { glowOpacity: 0, glowSizePx: 0, flame: false, flickerAmplitude: 0 },
 };
 
-/** The landscape ring size is added later (task 39). */
 export const FRAME_METRICS = {
   ringPx: 32,
+  /** The ring in short landscape (req 12.1). */
+  ringLandscapePx: 20,
 } as const;
 
 export interface Effects {
