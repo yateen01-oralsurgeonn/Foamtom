@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DISPLAY_TEXT } from '../src/ui/display-text';
 import { MONSTERS } from '../src/logic/monsters';
+import { getLine } from '../src/audio/lines';
 
 // Approved lines 1, 16, 17 and 19 of requirements.md (21 Nov 2026). Row 18 was added in task 36.
 const APPROVED = {
@@ -44,6 +45,13 @@ describe('displayTextPinned', () => {
     expect(DISPLAY_TEXT['grown-ups'].kind).toBe('shown');
     expect(DISPLAY_TEXT['grown-ups'].text).toBe('Grown-ups');
     expect(DISPLAY_TEXT['not-met'].kind).toBe('name-only');
+  });
+
+  it('lines.ts has rare-invite with text and caption "Brush morning AND night."', () => {
+    const line = getLine('rare-invite');
+    expect(line).toBeDefined();
+    expect(line?.text).toBe('Brush morning AND night.');
+    expect(line?.caption).toBe('Brush morning AND night.');
   });
 
   it('the monster names are the twelve approved ones, in order', () => {

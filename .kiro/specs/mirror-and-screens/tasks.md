@@ -426,12 +426,12 @@ opens and a timer-only session plays through to the end card.
 
 ## Group 2: later (after the video's needs are built)
 
-- [ ] 33. **Rare invitation line: `rare-invite`**
+- [x] 33. **Rare invitation line: `rare-invite`**
   - Mark: later (req 8.1, 14).
-  - [ ] 33.1 In `src/audio/lines.ts` add exactly one line, with a caption: `rare-invite`, "Brush morning AND night." The eight other lines are not touched. The pre-spec `tests/lines.test.ts` is not edited and passes
-  - [ ] 33.2 In `tests/display-text.test.ts` add the pin: `lines.ts` has `rare-invite` with text and caption "Brush morning AND night."
-  - [ ] 33.3 In `tests/new-text-guard.test.ts` add `rare-invite` to the checked texts. It passes the banned and urging lists ("morning" and "night" are not banned; the matcher is by whole word)
-  - [ ] 33.4 Run `npm run test:run` and `npm run build`: both pass. Nothing speaks `rare-invite` yet, so the game is unchanged
+  - [x] 33.1 In `src/audio/lines.ts` add exactly one line, with a caption: `rare-invite`, "Brush morning AND night." The eight other lines are not touched. The pre-spec `tests/lines.test.ts` is not edited and passes
+  - [x] 33.2 In `tests/display-text.test.ts` add the pin: `lines.ts` has `rare-invite` with text and caption "Brush morning AND night."
+  - [x] 33.3 In `tests/new-text-guard.test.ts` add `rare-invite` to the checked texts. It passes the banned and urging lists ("morning" and "night" are not banned; the matcher is by whole word)
+  - [x] 33.4 Run `npm run test:run` and `npm run build`: both pass. Nothing speaks `rare-invite` yet, so the game is unchanged
   - _Requirements: 8.1, 8.2, 10.9, 14.1, 14.3, 14.4, 14.5_
   - Test file: `tests/display-text.test.ts` (extended), `tests/new-text-guard.test.ts` (extended)
   - Files this task may change: `src/audio/lines.ts`, `tests/display-text.test.ts`, `tests/new-text-guard.test.ts`

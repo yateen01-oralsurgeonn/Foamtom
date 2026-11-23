@@ -50,6 +50,8 @@ const CHECKED_TEXTS: ReadonlyArray<readonly [string, string]> = [
   ...MONSTERS.map((m) => [`monster ${m.id}`, m.name] as const),
   ['line end-close text', getLine('end-close')?.text ?? ''],
   ['line end-close caption', getLine('end-close')?.caption ?? ''],
+  ['line rare-invite text', getLine('rare-invite')?.text ?? ''],
+  ['line rare-invite caption', getLine('rare-invite')?.caption ?? ''],
 ];
 
 describe('newTextGuard', () => {
@@ -62,7 +64,7 @@ describe('newTextGuard', () => {
   });
 
   it('the checked list holds every row, all twelve names and end-close', () => {
-    expect(CHECKED_TEXTS.length).toBe(Object.keys(DISPLAY_TEXT).length + 12 + 2);
+    expect(CHECKED_TEXTS.length).toBe(Object.keys(DISPLAY_TEXT).length + 12 + 4);
     expect(CHECKED_TEXTS.map(([label]) => label)).toContain('display-text grown-ups');
     for (const [label, text] of CHECKED_TEXTS) expect(text, label).not.toBe('');
   });

@@ -39,6 +39,7 @@ export const LINES: readonly VoiceLine[] = [
   },
   { id: 'end', text: 'Well done! Two minutes of brushing!', caption: 'Well done! Two minutes of brushing!' },
   { id: 'end-close', text: 'Two minutes. Every corner.', caption: 'Two minutes. Every corner.' },
+  { id: 'rare-invite', text: 'Brush morning AND night.', caption: 'Brush morning AND night.' },
 ];
 
 /** Finds a line by id; undefined if there is none. */
