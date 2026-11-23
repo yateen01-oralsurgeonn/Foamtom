@@ -77,7 +77,7 @@ export function createTitlePanel(handlers: TitlePanelHandlers, speaker: Speaker)
       });
       panel.append(button);
     } else if (control.id === 'parent') {
-      // Small and quiet: an icon only, with an accessible name. It builds no gate; the
+      // Small and quiet: an icon and a small word, with an accessible name. It builds no gate; the
       // parent-screen spec provides the handler and everything behind it.
       if (!onParentOpen) continue;
       const parentName = DISPLAY_TEXT['grown-ups'].text;
@@ -88,7 +88,10 @@ export function createTitlePanel(handlers: TitlePanelHandlers, speaker: Speaker)
       button.style.minHeight = `${target.minHeightPx}px`;
       const icon = el('span', 'icon-button__icon', '\u{1F9D1}');
       icon.setAttribute('aria-hidden', 'true');
-      button.append(icon);
+      // The small word next to the icon (decision of 23 Nov 2026). The icon is aria-hidden, so
+      // the name is read once, from aria-label.
+      const word = el('span', 'icon-button__word', parentName);
+      button.append(icon, word);
       button.addEventListener('click', () => onParentOpen());
       panel.append(button);
     }

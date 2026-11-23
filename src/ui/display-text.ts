@@ -20,6 +20,6 @@ export const DISPLAY_TEXT: Readonly<Record<DisplayTextId, DisplayText>> = {
   },
   'book-title': { id: 'book-title', text: 'Monster Book', kind: 'shown' },
   back: { id: 'back', text: 'Back', kind: 'shown' },
-  'grown-ups': { id: 'grown-ups', text: 'Grown-ups', kind: 'name-only' },
+  'grown-ups': { id: 'grown-ups', text: 'Grown-ups', kind: 'shown' },
   'not-met': { id: 'not-met', text: 'Not met yet', kind: 'name-only' },
 };

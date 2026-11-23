@@ -258,12 +258,22 @@ button.book-cell {
 .panel--start .icon-button--quiet {
   min-width: 48px;
   min-height: 48px;
-  padding: 4px;
+  padding: 4px 12px;
+  gap: 6px;
+  white-space: nowrap;
   border-width: 2px;
   border-color: #6d5a9c;
   background: transparent;
   color: #c9bde6;
   opacity: 0.8;
+}
+
+/* The small word: quieter than the Monster Book button's text (1.05rem, bold, white). */
+.panel--start .icon-button__word {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #c9bde6;
+  white-space: nowrap;
 }
 
 .panel--start .icon-button--quiet:focus-visible {

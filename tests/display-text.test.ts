@@ -37,11 +37,12 @@ describe('displayTextPinned', () => {
     }
   });
 
-  it('the kinds are shown, shown, shown, name-only and name-only', () => {
+  it('the kinds are shown, shown, shown, shown and name-only (grown-ups shown since 23 Nov 2026)', () => {
     expect(DISPLAY_TEXT.privacy.kind).toBe('shown');
     expect(DISPLAY_TEXT['book-title'].kind).toBe('shown');
     expect(DISPLAY_TEXT.back.kind).toBe('shown');
-    expect(DISPLAY_TEXT['grown-ups'].kind).toBe('name-only');
+    expect(DISPLAY_TEXT['grown-ups'].kind).toBe('shown');
+    expect(DISPLAY_TEXT['grown-ups'].text).toBe('Grown-ups');
     expect(DISPLAY_TEXT['not-met'].kind).toBe('name-only');
   });
 

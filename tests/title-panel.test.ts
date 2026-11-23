@@ -59,6 +59,17 @@ describe('titlePanelSource', () => {
     expect(source).toMatch(/TAP_TARGETS\[control\.target/);
   });
 
+  it('shows the word after an aria-hidden icon, and the accessible name is the grown-ups text', () => {
+    const branch = source.slice(source.indexOf("control.id === 'parent'"));
+    expect(branch).toMatch(/const parentName = DISPLAY_TEXT\['grown-ups'\]\.text/);
+    expect(branch).toMatch(/setAttribute\('aria-label', parentName\)/);
+    expect(branch).toMatch(/icon\.setAttribute\('aria-hidden', 'true'\)/);
+    expect(branch).toMatch(/el\('span', 'icon-button__word', parentName\)/);
+    expect(branch).toMatch(/button\.append\(icon, word\)/);
+    // the word is not inside the aria-hidden icon and comes after it
+    expect(branch.indexOf('icon-button__word')).toBeGreaterThan(branch.indexOf("'icon-button__icon'"));
+  });
+
   it('builds no bypass and no padlock in the parent control', () => {
     expect(source).not.toMatch(/bypass|padlock|\u{1F512}|\u{1F513}/iu);
   });
