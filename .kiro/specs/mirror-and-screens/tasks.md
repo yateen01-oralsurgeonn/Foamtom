@@ -447,7 +447,7 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/book-model.test.ts` (extended), `tests/book-speech.test.ts` (extended)
   - Files this task may change: `src/ui/book-model.ts`, `src/ui/book-speech.ts`, `tests/book-model.test.ts`, `tests/book-speech.test.ts`
 
-- [ ] 35. **Rare invitation: painted in the Monster Book**
+- [x] 35. **Rare invitation: painted in the Monster Book**
   - Mark: later (req 8).
   - [x] 35.1 In `src/ui/monster-book-screen.ts` show the caption of `rare-invite` ("Brush morning AND night.", read from `lines.ts`) once, as visible text under the four rare cells, while `showRareInvitation` is true, and not at all when it is false. Make each rare silhouette a `<button>` (accessible name `DISPLAY_TEXT['not-met']`, `TAP_TARGETS.bookCell`, no visible name) whose tap runs the book speech with its action and shows the same words in the caption line. Common silhouettes stay non-interactive. The line is not repeated on each silhouette and carries no countdown, count, streak or "missed" wording
   - [x] 35.2 In `src/ui/screens.css` add the styles for the invitation text and the rare silhouette button
@@ -499,11 +499,11 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/css-guards.test.ts` (extended)
   - Files this task may change: `src/ui/effects.ts`, `src/ui/frame.css`, `src/ui/screens.css`, `tests/css-guards.test.ts`
 
-- [ ] 40. **Final checks for the later items**
+- [x] 40. **Final checks for the later items**
   - Mark: later (req 2, 8, 12).
-  - [ ] 40.1 Run `npm run test:run` and `npm run build` and report both results
+  - [x] 40.1 Run `npm run test:run` and `npm run build` and report both results
   - [x] 40.2 Check by hand (M7, keyboard part, requirement 12.3): on a desktop browser, Tab through the title screen, the Monster Book and the end card. Every control shows a visible focus mark and works with Enter and Space
-  - [ ] 40.3 Check by hand (M8, requirement 12.1): rotate the phone sideways and open the game on a laptop. There is no rotate message, and the preview, caption, countdown, frame and buttons are not clipped
+  - [x] 40.3 Check by hand (M8, requirement 12.1): rotate the phone sideways and open the game on a laptop. There is no rotate message, and the preview, caption, countdown, frame and buttons are not clipped
   - [x] 40.4 Check by hand (M3 and requirement 12.2): in a window too small to show the whole Monster Book, the grid reflows and the screen scrolls so that all twelve cells can be reached
   - [x] 40.5 Check by hand (requirement 8): the rare invitation shows once under the rare silhouettes and is spoken on a rare-silhouette tap, as in task 35. Read it once more against approved line 3
   - [x] 40.6 The parent-control check of task 38.5 is done only when the `parent-screen` spec provides a handler. Leave it as it is until then
