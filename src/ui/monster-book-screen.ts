@@ -4,7 +4,8 @@
 import type { Speaker, TextSpeaker } from '../audio/speaker';
 import type { SessionResult } from '../logic/types';
 import { MONSTERS } from '../logic/monsters';
-import { bookTapAction, bookViewFromLoader, type BookEntry } from './book-model';
+import { getLine } from '../audio/lines';
+import { bookTapAction, bookViewFromLoader, type BookEntry, type BookTapAction } from './book-model';
 import { createBookSpeech } from './book-speech';
 import { DISPLAY_TEXT } from './display-text';
 import { drawMonster, drawSilhouette } from './monster-art';
@@ -72,8 +73,21 @@ export function createMonsterBookScreen(deps: MonsterBookScreenDeps): MonsterBoo
   caption.className = 'caption book__caption';
   caption.setAttribute('aria-live', 'polite');
 
-  section.append(header, commons, rares, caption);
+  // The rare invitation (req 8): created once, outside the loop over entries, and shown only
+  // while some rare monster is not owned. Its words are the `rare-invite` line's caption.
+  const inviteLine = getLine('rare-invite');
+  const invite = document.createElement('p');
+  invite.className = 'book__invite';
+  invite.textContent = inviteLine ? inviteLine.caption : '';
+  invite.hidden = true;
+
+  section.append(header, commons, rares, invite, caption);
   root.append(section);
+
+  function showTapped(action: BookTapAction): void {
+    if (action.kind === 'say-name') caption.textContent = action.text;
+    else if (action.kind === 'say-line') caption.textContent = inviteLine ? inviteLine.caption : '';
+  }
 
   function ownedCell(entry: BookEntry): HTMLElement {
     const def = MONSTERS.find((m) => m.id === entry.id);
@@ -90,18 +104,34 @@ export function createMonsterBookScreen(deps: MonsterBookScreenDeps): MonsterBoo
     cell.addEventListener('click', () => {
       const action = bookTapAction(entry);
       speech.run(action);
-      if (action.kind === 'say-name') caption.textContent = action.text;
+      showTapped(action);
     });
     return cell;
   }
 
   function unmetCell(entry: BookEntry): HTMLElement {
+    const silhouette = drawSilhouette(entry.rare ? 'rare' : 'common');
+    if (entry.rare) {
+      // A rare silhouette is a button: a tap speaks the invitation line (req 8.1).
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'book-cell book-cell--unmet book-cell--rare-unmet';
+      cell.setAttribute('aria-label', DISPLAY_TEXT['not-met'].text);
+      applySize(cell, TAP_TARGETS.bookCell);
+      cell.append(silhouette);
+      cell.addEventListener('click', () => {
+        const action = bookTapAction(entry);
+        speech.run(action);
+        showTapped(action);
+      });
+      return cell;
+    }
     const cell = document.createElement('div');
     cell.className = 'book-cell book-cell--unmet';
     cell.setAttribute('role', 'img');
     cell.setAttribute('aria-label', DISPLAY_TEXT['not-met'].text);
     applySize(cell, TAP_TARGETS.bookCell);
-    cell.append(drawSilhouette(entry.rare ? 'rare' : 'common'));
+    cell.append(silhouette);
     return cell;
   }
 
@@ -116,6 +146,7 @@ export function createMonsterBookScreen(deps: MonsterBookScreenDeps): MonsterBoo
       }
       commons.replaceChildren(...commonCells);
       rares.replaceChildren(...rareCells);
+      invite.hidden = !view.showRareInvitation;
       caption.textContent = '';
       section.hidden = false;
     },

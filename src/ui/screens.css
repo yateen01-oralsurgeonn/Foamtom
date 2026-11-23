@@ -220,6 +220,25 @@ button.book-cell {
   min-height: 2.6rem;
 }
 
+/* The rare invitation (task 35): one line under the four rare cells, no count, no countdown. */
+.book__invite {
+  margin: 0;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.book__invite[hidden] {
+  display: none;
+}
+
+/* A rare silhouette is a button; it looks like the plain silhouette cell. */
+button.book-cell--rare-unmet:focus-visible {
+  outline: 4px solid #ffd966;
+  outline-offset: 2px;
+}
+
 /* ---- Title panel (task 28): portrait single column; the controls sit in the lower half. ---- */
 .panel--start {
   min-height: min(560px, 80dvh);

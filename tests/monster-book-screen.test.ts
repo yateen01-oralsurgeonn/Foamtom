@@ -49,3 +49,31 @@ describe('bookScreenIsReadOnly', () => {
     expect(source).toMatch(/TAP_TARGETS\.bookCell/);
   });
 });
+
+describe('rareInvitationInBook', () => {
+  it('reads showRareInvitation and the rare-invite line', () => {
+    expect(source).toMatch(/showRareInvitation/);
+    expect(source).toMatch(/getLine\('rare-invite'\)/);
+  });
+
+  it('creates rare silhouettes as buttons and common ones as non-interactive elements', () => {
+    const unmet = source.slice(source.indexOf('function unmetCell'));
+    const rareBranch = unmet.slice(0, unmet.indexOf("const cell = document.createElement('div')"));
+    expect(rareBranch).toMatch(/if \(entry\.rare\)/);
+    expect(rareBranch).toMatch(/createElement\('button'\)/);
+    const commonBranch = unmet.slice(unmet.indexOf("createElement('div')"));
+    expect(commonBranch).toMatch(/role', 'img'/);
+    expect(commonBranch).not.toMatch(/createElement\('button'\)/);
+  });
+
+  it('creates the invitation text once, outside the loop over entries', () => {
+    expect(source.match(/className = 'book__invite'/g)?.length).toBe(1);
+    const open = source.slice(source.indexOf('open(): void {'));
+    expect(open).not.toMatch(/createElement/);
+    expect(open).not.toMatch(/book__invite/);
+  });
+
+  it('has no countdown, count, streak or missed wording', () => {
+    expect(source).not.toMatch(/countdown|streak|missed|today/i);
+  });
+});
