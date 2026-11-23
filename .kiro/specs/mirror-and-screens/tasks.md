@@ -637,12 +637,12 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - Test file: `tests/display-text.test.ts` (extended), `tests/title-panel.test.ts` (extended), `tests/title-model.test.ts` (only if needed)
   - Files this task may change: `src/ui/display-text.ts`, `src/ui/title-panel.ts`, `src/ui/screens.css`, `tests/display-text.test.ts`, `tests/title-panel.test.ts`, `tests/title-model.test.ts` (only if needed), `tests/new-text-guard.test.ts` (only if needed)
 
-- [ ] 50. **No empty caption plate in the Monster Book**
+- [x] 50. **No empty caption plate in the Monster Book**
   - Mark: needed for the video (req 7.11). Dr. Yatin's decision of 23 Nov 2026, from the manual checks 35.4 and 40.2: `p.book__caption` has an opaque background (the plate of requirement 11.7) and `min-height: 2.6rem`, so an empty dark plate showed under the line "Brush morning AND night." No new wording.
   - [x] 50.1 In `src/ui/screens.css` add a rule `.book__caption:empty` that sets `background: transparent` (and removes the padding paint if needed), keeping the `min-height` of `.book__caption`
   - [x] 50.2 Add a test to `tests/css-guards.test.ts`: `screens.css` has a `.book__caption:empty` rule with a transparent background, and `.book__caption` still has a `min-height`
   - [x] 50.3 Run `npm run test:run` and `npm run build`: both pass
-  - [ ] 50.4 Check by hand (Dr. Yatin; requirement 7.11): open the Monster Book with no monsters: no dark empty plate under the caption line. Tap an owned monster: its name shows on the normal plate. Tap away: the plate disappears again and nothing jumps
+  - [x] 50.4 Check by hand (Dr. Yatin; requirement 7.11): open the Monster Book with no monsters: no dark empty plate under the caption line. Tap an owned monster: its name shows on the normal plate. Tap away: the plate disappears again and nothing jumps
   - _Requirements: 7.11, 11.7_
   - Test file: `tests/css-guards.test.ts` (extended)
   - Files this task may change: `src/ui/screens.css`, `tests/css-guards.test.ts`
