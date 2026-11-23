@@ -159,17 +159,17 @@ build, mock or bypass that control, and adds no URL flag, hidden key or demo hoo
   - Test file: `tests/parent-main-wiring.test.ts`
   - May change: `src/main.ts`, `tests/parent-main-wiring.test.ts`
 
-- [ ] 16. **Manual checks on a phone and on a laptop**
-  - [ ] 16.1 No code or test changes in this task. Run `npm run test:run` and `npm run build` first, then `npm run dev`. Real sessions on Dr. Yatin's phone, or a typed `foamtom:v1` value in DevTools, are the only data sources: the build has no demo hook
-  - [ ] 16.2 **M1 Gate on a phone.** Touch and hold the gate button. Look at: the ring fills and the dots fill one by one; at 3 seconds the contents appear. Lift at 2 seconds: the mark empties and nothing is said. Slide the finger off the button while holding: the mark empties. A long press opens no menu and selects no text. Three 1-second holds do not open it
-  - [ ] 16.3 **M2 Layout.** Portrait at 360 x 640: Back and "Clear all data" are reachable with one hand and by scrolling, with no sideways scroll. Rotate the phone, and open it on a laptop: still usable
-  - [ ] 16.4 **M3 Keyboard and screen reader.** On a desktop, Tab to the gate and hold Space for 3 seconds, then again with Enter: the contents open, focus is visible, and focus lands on the "Grown-ups" heading. With a screen reader before the gate is passed, only "Grown-ups", the instruction, the gate and Back are read; no fact, no disclosure line and no clear button. After the gate, headings and named sections can be jumped between
-  - [ ] 16.5 **M4 Network, camera, sound.** Open the screen with the Network panel open: no request is made. The camera light stays off. No sound plays and nothing is spoken
-  - [ ] 16.6 **M5 Clear all data, for real.** In DevTools, Application, Local Storage: `foamtom:v1` is there. Press "Clear all data", then "Keep": nothing changes. Press it again and clear: the key is gone, the screen shows "No sessions yet." and the six disclosure lines, the Monster Book shows twelve silhouettes, and the title screen still works
-  - [ ] 16.7 **M6 Wording read-through.** Put the screen next to "Lines for Dr. Yatin to approve": every line matches. The nudge matches `dental-rules.md` word for word. No line says anything was "missed", and none claims which side or which teeth were brushed. Dr. Yatin signs this off
-  - [ ] 16.8 **M7 Entry control.** The small control on the title screen opens the gate; Back returns to the title screen; the control is not on the session screen or the end card
-  - [ ] 16.9 **M8 Colour and motion.** View the gate in grayscale: the progress is still clear. Turn on reduce-motion in the device settings: the ring is replaced by three steps
-  - [ ] 16.10 Record any line found no longer true against the code as an open question for Dr. Yatin. Do not reword it
+- [x] 16. **Manual checks on a phone and on a laptop**
+  - [x] 16.1 No code or test changes in this task. Run `npm run test:run` and `npm run build` first, then `npm run dev`. Real sessions on Dr. Yatin's phone, or a typed `foamtom:v1` value in DevTools, are the only data sources: the build has no demo hook
+  - [x] 16.2 **M1 Gate on a phone.** Touch and hold the gate button. Look at: the ring fills and the dots fill one by one; at 3 seconds the contents appear. Lift at 2 seconds: the mark empties and nothing is said. Slide the finger off the button while holding: the mark empties. A long press opens no menu and selects no text. Three 1-second holds do not open it
+  - [x] 16.3 **M2 Layout.** Portrait at 360 x 640: Back and "Clear all data" are reachable with one hand and by scrolling, with no sideways scroll. Rotate the phone, and open it on a laptop: still usable
+  - [x] 16.4 **M3 Keyboard and screen reader.** On a desktop, Tab to the gate and hold Space for 3 seconds, then again with Enter: the contents open, focus is visible, and focus lands on the "Grown-ups" heading. With a screen reader before the gate is passed, only "Grown-ups", the instruction, the gate and Back are read; no fact, no disclosure line and no clear button. After the gate, headings and named sections can be jumped between
+  - [x] 16.5 **M4 Network, camera, sound.** Open the screen with the Network panel open: no request is made. The camera light stays off. No sound plays and nothing is spoken
+  - [x] 16.6 **M5 Clear all data, for real.** In DevTools, Application, Local Storage: `foamtom:v1` is there. Press "Clear all data", then "Keep": nothing changes. Press it again and clear: the key is gone, the screen shows "No sessions yet." and the six disclosure lines, the Monster Book shows twelve silhouettes, and the title screen still works
+  - [x] 16.7 **M6 Wording read-through.** Put the screen next to "Lines for Dr. Yatin to approve": every line matches. The nudge matches `dental-rules.md` word for word. No line says anything was "missed", and none claims which side or which teeth were brushed. Dr. Yatin signs this off
+  - [x] 16.8 **M7 Entry control.** The small control on the title screen opens the gate; Back returns to the title screen; the control is not on the session screen or the end card
+  - [x] 16.9 **M8 Colour and motion.** View the gate in grayscale: the progress is still clear. Turn on reduce-motion in the device settings: the ring is replaced by three steps
+  - [x] 16.10 Record any line found no longer true against the code as an open question for Dr. Yatin. Do not reword it
   - _Requirements: 1.1–1.5, 2.3–2.5, 2.7–2.9, 5.6, 7.1, 7.7, 7.8, 8.1, 9.2, 9.4, 9.6, 10.1–10.6, 12.1–12.5_
   - Test file: none (manual)
   - May change: no files

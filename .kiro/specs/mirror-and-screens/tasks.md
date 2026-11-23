@@ -483,7 +483,7 @@ opens and a timer-only session plays through to the end card.
   - [x] 38.2 In `src/ui/session-screen.ts` add an optional `onOpenParent` to `SessionScreenHandlers` and pass it to the title panel. `main.ts` passes nothing, so the control is not shown until the `parent-screen` spec provides a handler
   - [x] 38.3 In `src/ui/screens.css` add the quiet control's styles: smaller and quieter than both the start and the Monster Book buttons
   - [x] 38.4 Extend `tests/title-panel.test.ts` (source scan): the parent control is created only inside a branch that needs the handler; `title-panel.ts` still has no `getUserMedia`, `import(`, `fetch`, `setItem` or `localStorage`; `session-screen.ts` creates no parent control
-  - [ ] 38.5 Check by hand (requirement 2.2, 2.3): this cannot be seen until the `parent-screen` spec passes a handler. Leave this sub-task unticked now. When that handler exists, look at the title screen: the control is small, quiet and at least 48 px, with a visible icon, and it is not on the session screen or the end card. Note (23 Nov 2026): the visible word "Grown-ups" was added by task 49
+  - [x] 38.5 Check by hand (requirement 2.2, 2.3): this cannot be seen until the `parent-screen` spec passes a handler. Leave this sub-task unticked now. When that handler exists, look at the title screen: the control is small, quiet and at least 48 px, with a visible icon, and it is not on the session screen or the end card. Note (23 Nov 2026): the visible word "Grown-ups" was added by task 49
   - [x] 38.6 Run `npm run test:run` and `npm run build`: both pass. The game runs and looks the same
   - _Requirements: 2.1, 2.2, 2.3, 11.4_
   - Test file: `tests/title-panel.test.ts` (extended)
@@ -506,7 +506,7 @@ opens and a timer-only session plays through to the end card.
   - [ ] 40.3 Check by hand (M8, requirement 12.1): rotate the phone sideways and open the game on a laptop. There is no rotate message, and the preview, caption, countdown, frame and buttons are not clipped
   - [ ] 40.4 Check by hand (M3 and requirement 12.2): in a window too small to show the whole Monster Book, the grid reflows and the screen scrolls so that all twelve cells can be reached
   - [ ] 40.5 Check by hand (requirement 8): the rare invitation shows once under the rare silhouettes and is spoken on a rare-silhouette tap, as in task 35. Read it once more against approved line 3
-  - [ ] 40.6 The parent-control check of task 38.5 is done only when the `parent-screen` spec provides a handler. Leave it as it is until then
+  - [x] 40.6 The parent-control check of task 38.5 is done only when the `parent-screen` spec provides a handler. Leave it as it is until then
   - [ ] 40.7 Read the 19 approved lines in `requirements.md` against what appears on screen and in speech. Nothing else is shown or said
   - _Requirements: 2.2, 2.3, 8.1, 12.1, 12.2, 12.3, 14.1_
   - Test file: none new (this task runs the whole suite and the manual checks; it changes no source file)
@@ -625,14 +625,14 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - Test files: `tests/aggregate-second.test.ts`, `tests/constants.test.ts`, `tests/session.test.ts`, `tests/thresholds.test.ts`, `tests/tracking-source-rules.test.ts`
   - Files this task may change: `src/tracking/thresholds.ts`, `src/logic/constants.ts`, the five test files above, and any other test that fails only because it asserted the old values (named in the report), not in this file: `parent-screen` (the adult gate and the screen behind the small parent control, requirement 2). `hand-tracking` and `core-brushing-loop` are separate specs with their own task lists.
 
-- [ ] 49. **Parent control shows the small word "Grown-ups" next to its icon**
+- [x] 49. **Parent control shows the small word "Grown-ups" next to its icon**
   - Mark: later (req 2.2). Dr. Yatin's decision of 23 Nov 2026, from the manual check 38.5: he could not find the control because it showed only an icon. The word is row 18 of "Approved lines (21 Nov 2026)"; no new wording.
   - [x] 49.1 In `src/ui/display-text.ts` change the kind of `DISPLAY_TEXT['grown-ups']` from `name-only` to `shown`. The text stays "Grown-ups"
   - [x] 49.2 In `src/ui/title-panel.ts` add a text span after the icon in the parent button, with its own CSS class (for example `icon-button__word`), filled from `DISPLAY_TEXT['grown-ups'].text`. The icon stays `aria-hidden`, so the accessible name is read once, as "Grown-ups". The control is still created only inside the branch that needs the handler, so it stays absent from the session screen and the end card
   - [x] 49.3 In `src/ui/screens.css` style the word: a text size and colour quieter than the Monster Book button's text, on one line (no wrapping), and the button keeps at least 48 x 48 px and stays smaller and quieter than both the start and the Monster Book buttons
   - [x] 49.4 Update the tests that pinned the old kind and the icon-only look: `tests/display-text.test.ts` (`grown-ups` is `shown`, text unchanged), `tests/title-panel.test.ts` (source scan: the word span comes after the icon, the icon is `aria-hidden`, the accessible name is the `grown-ups` text, the control is still created only inside the handler branch, `session-screen.ts` still creates no parent control), and `tests/title-model.test.ts` only if it pinned the icon-only look. Every other assertion keeps its strength. `tests/new-text-guard.test.ts` changes only if it needs the kind
   - [x] 49.5 Run `npm run test:run` and `npm run build`: both pass
-  - [ ] 49.6 Check by hand (Dr. Yatin; requirement 2.2, 2.3): `npm run dev`, title screen at 360 x 640 with a parent handler. The word "Grown-ups" is readable next to the icon, is quieter than the Monster Book button's text, and fits without wrapping. The control is not on the session screen or the end card
+  - [x] 49.6 Check by hand (Dr. Yatin; requirement 2.2, 2.3): `npm run dev`, title screen at 360 x 640 with a parent handler. The word "Grown-ups" is readable next to the icon, is quieter than the Monster Book button's text, and fits without wrapping. The control is not on the session screen or the end card
   - _Requirements: 2.2, 2.3, 11.4, 14.1, 14.4_
   - Test file: `tests/display-text.test.ts` (extended), `tests/title-panel.test.ts` (extended), `tests/title-model.test.ts` (only if needed)
   - Files this task may change: `src/ui/display-text.ts`, `src/ui/title-panel.ts`, `src/ui/screens.css`, `tests/display-text.test.ts`, `tests/title-panel.test.ts`, `tests/title-model.test.ts` (only if needed), `tests/new-text-guard.test.ts` (only if needed)
