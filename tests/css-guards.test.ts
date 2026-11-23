@@ -118,6 +118,16 @@ describe('cssGuards', () => {
     expect(rules.some((r) => r.selector === '.book' && /overflow-y:\s*auto/.test(r.body))).toBe(true);
   });
 
+  it('the empty Book caption has no plate and keeps its height', () => {
+    const rules = leafRules(readCss('src/ui/screens.css'));
+    const empty = rules.find((r) => r.selector === '.book__caption:empty');
+    expect(empty).toBeDefined();
+    expect(empty!.body).toMatch(/background:\s*transparent/);
+    const plain = rules.find((r) => r.selector === '.book__caption');
+    expect(plain).toBeDefined();
+    expect(plain!.body).toMatch(/min-height:\s*[\d.]+rem/);
+  });
+
   it('the rule reader finds nested and flat rules and skips keyframes', () => {
     const rules = leafRules('@media (a) { .x { color: red; } } @keyframes k { 0% { opacity: 0; } } .y { top: 0; }');
     expect(rules.map((r) => r.selector)).toEqual(['.x', '.y']);

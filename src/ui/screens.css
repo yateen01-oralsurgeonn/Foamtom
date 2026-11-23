@@ -235,6 +235,11 @@ button.book-cell {
   min-height: 2.6rem;
 }
 
+/* Empty caption (task 50, req 7.7/7.11): no plate is painted; min-height keeps the space. */
+.book__caption:empty {
+  background: transparent;
+}
+
 /* The rare invitation (task 35): one line under the four rare cells, no count, no countdown. */
 .book__invite {
   margin: 0;
