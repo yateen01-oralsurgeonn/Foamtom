@@ -405,7 +405,7 @@ opens and a timer-only session plays through to the end card.
   - Test file: `tests/mirror-screens-guards.test.ts`
   - Files this task may change: `tests/mirror-screens-guards.test.ts`
 
-- [ ] 32. **Final checks for the video**
+- [x] 32. **Final checks for the video**
   - Mark: needed for the video (req 1.6, 1.7, 3.1, 3.6, 4.2, 4.7, 5.3, 6.3, 6.4, 7.5, 9.3, 10, 11, 13.5, 13.6, 14).
   - [x] 32.1 Run `npm run test:run` and `npm run build` and report both results. Confirm that the built `dist/` title screen still loads no model or WASM file (`cameraCodeIsLazy` and `firstLoadUnder5MB` pass)
   - [x] 32.2 Check by hand (M1, whole): play one timer-only and one camera session end to end. In each zone the lit corner, the lit candle, the spoken line, its caption and the monster agree; covering the face changes nothing about the glow
@@ -414,7 +414,7 @@ opens and a timer-only session plays through to the end card.
   - [x] 32.5 Check by hand (M4, speed): on a 2022 mid-range Android phone in Chrome, play a camera session with all effects on and read the frame rate. It must be 20 frames per second or more. Dr. Yatin, or the person who runs the test, writes one dated row in words in `docs/review/TRACKING-TEST-RESULTS.md`, section 7 (words only: no image, frame or landmark value). The agent does not invent a measurement. If the rate is below 20, stop and report; leave this sub-task unticked
   - [x] 32.6 Check by hand (M5, sounds): at medium volume nothing is sharp or loud; the voice is clear over the effects; the title screen is silent until the first tap; sound stops on pause and at the end; with the volume off every event still shows
   - [x] 32.7 Check by hand (M6, reduced motion): turn on "reduce motion" in the device or browser settings, also while a session runs. The candle flicker, fog drift, smoke drift, leaving animations and the end-card movement stop. The lit corner and its candle remain, the monster still changes size with its health, and the smoke still thins
-  - [ ] 32.8 Check by hand (M7, screen-reader part): with a screen reader on, the frame is silent and the caption of the active zone is read
+  - [x] 32.8 Check by hand (M7, screen-reader part): with a screen reader on, the frame is silent and the caption of the active zone is read
   - [x] 32.9 Check by hand (M9, drawings): in the Book and on the cheek, all twelve monsters are easy to tell apart; none is scary; the four rare ones carry a star and a crest; a silhouette shows no name, padlock, cross or number
   - [x] 32.10 Check by hand (M10, network): with the browser Network panel open, play a full session and visit the Book. The only requests are the same-origin page, script and stylesheet files and, after the start tap in a camera session, the model and WASM files from this site. No request goes to another host, no cookie is set, and the only storage key is `foamtom:v1`
   - [x] 32.11 Read the 19 approved lines in `requirements.md` against what appears on screen and in speech. The new screens show or say nothing else. (The `rare-invite` line and the `Grown-ups` name come in tasks 33 to 38.)
