@@ -5,6 +5,10 @@ parts of the mouth. The child brushes for two minutes, one part at a time, and e
 monster dissolves into smoke when its part has been brushed. The game speaks every
 instruction aloud and shows it as a caption.
 
+- **Play it:** https://yateen01-oralsurgeonn.github.io/Foamtom/ (free, in a phone or
+  computer browser; no install, no sign-up).
+- **Demo video:** VIDEO_LINK
+
 Brush for two minutes. Don't forget the back teeth. Brush morning and night.
 
 The game uses the front camera, when the player allows it, to see where the toothbrush hand
@@ -17,6 +21,14 @@ The camera stays on this phone. Nothing is saved or sent.
 
 The game has no accounts, no ads, no analytics and no cookies, and it loads nothing from
 other websites.
+
+## Testing it (for judges)
+
+- No login is needed.
+- Allow the camera to play with camera checking. Refuse it to play in guided-timer mode.
+- It works in a phone browser and on a computer with a webcam.
+- A full game is two minutes.
+- The Monster Book and the Grown-ups screen fill up after a few games.
 
 ## Run it
 
@@ -36,6 +48,32 @@ The `dist/` folder is a static site and works from any sub-path, including GitHu
 Pushing to `main` runs the tests, builds the site and publishes it with the workflow in
 `.github/workflows/pages.yml`. In the repository settings, set Pages > Source to
 "GitHub Actions".
+
+## Built with Kiro
+
+Foamtom was made for the Kiroween 2026 hackathon (Costume Contest). Kiro wrote every spec and
+every line of code.
+
+- `.kiro/steering/` holds the dentist's rules and the kid-safety rules.
+- `.kiro/specs/` holds five specs: core-brushing-loop, hand-tracking, mirror-and-screens,
+  parent-screen and video-title-card.
+- `.kiro/hooks/` holds three hooks. They only report; they never change code.
+- `docs/hackathon/07-how-we-used-kiro.md` tells the full story.
+
+An AI assistant (Claude) helped put the rules into steering files, reviewed the specs and ran the Kiro CLI; every spec and every line of code was written by Kiro.
+
+## Third-party and pre-existing work
+
+The only pre-existing work used is:
+
+- The MediaPipe Tasks Vision library (`@mediapipe/tasks-vision`, Apache-2.0).
+- Three MediaPipe model files in `public/models/`: `hand_landmarker.task`,
+  `blaze_face_short_range.tflite` and `face_landmarker.task` (Apache-2.0, see
+  `public/models/NOTICE.txt`).
+- The standard dev tools in `package.json`: Vite, TypeScript, Vitest and fast-check.
+
+Spoken lines use the voices already on the player's device. Everything else was built during
+the hackathon, from 14 Nov 2026.
 
 ## Licence
 
