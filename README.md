@@ -11,13 +11,12 @@ instruction aloud and shows it as a caption.
 
 Brush for two minutes. Don't forget the back teeth. Brush morning and night.
 
-The game uses the front camera, when the player allows it, to see where the toothbrush hand
-is. When the camera is not allowed or not available, the game works in guided-timer mode: a
+The game uses the front camera, when the player allows it, to see whether a hand is brushing at the mouth. When the camera is not allowed or not available, the game works in guided-timer mode: a
 two-minute timer walks through four parts of the mouth, 30 seconds each.
 
 ## Privacy
 
-The camera stays on this phone. Nothing is saved or sent.
+The camera picture stays on this phone. It is never saved or sent. Only brushing times are kept, on this device.
 
 The game has no accounts, no ads, no analytics and no cookies, and it loads nothing from
 other websites.
