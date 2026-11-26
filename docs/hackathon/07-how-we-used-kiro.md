@@ -77,8 +77,7 @@ hidden code patch, and the parent screen now says so in plain words.
 The rules a parent cares about are checked with fast-check against hundreds of random brushing
 sessions on every run, not a few hand-picked examples:
 
-- A monster only loses health while its own part of the mouth is brushed, and health never
-  goes up.
+- Only the current turn's monster ever loses health, and health never goes up.
 - Every session is exactly 120 ticks, whatever the child does. The test counts the ticks; it
   never reads a constant back.
 - A rare monster appears only on a day with a morning and a night brush.
@@ -86,8 +85,8 @@ sessions on every run, not a few hand-picked examples:
   count as checked by the camera.
 - Saving and loading return the same sessions, and nothing else is stored.
 
-Guard tests protect the promises in the steering: a **privacy guard** fails the build if any
-source file could send data, save a camera frame or set a cookie; a **wording guard** fails if a
+Guard tests protect the promises in the steering: a **privacy guard** scans every source file and
+fails the build if it finds a way to send data, save a camera frame or set a cookie; a **wording guard** fails if a
 child-facing line uses a banned word (for example "cure", "missed", "lost"); a **build guard**
 proves the debug and video pages never reach the published site.
 
