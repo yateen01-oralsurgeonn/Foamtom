@@ -48,13 +48,13 @@ adds it to the build.
 
 - [ ] 3. **Check both cards by eye (left for Dr. Yatin)**
   - [ ] 3.1 No code or test changes in this task. Run `npm run test:run` and `npm run build` first. Then run `npm run dev -- --port 5180 --strictPort` and use a browser window or DevTools device size of exactly 1920 x 1080
-  - [ ] 3.2 **M1 Both cards.** Open `http://localhost:5180/promo/title-card.html?card=start` and `http://localhost:5180/promo/title-card.html?card=end`. Look at: the mirror centred and filling most of the height; all four candles lit; one friendly blue-white monster in the glass; the text below the mirror and not cut off; start card shows `FOAMTOM` and `The Haunted Mirror`; end card shows `FOAMTOM`, `Free · in your phone's browser`, `Built with Kiro` and `github.com/yateen01-oralsurgeonn/Foamtom`; no clinic name, no person's name, no health claim
+  - [x] 3.2 **M1 Both cards.** Open `http://localhost:5180/promo/title-card.html?card=start` and `http://localhost:5180/promo/title-card.html?card=end`. Look at: the mirror centred and filling most of the height; all four candles lit; one friendly blue-white monster in the glass; the text below the mirror and not cut off; start card shows `FOAMTOM` and `The Haunted Mirror`; end card shows `FOAMTOM`, `Free · in your phone's browser`, `Built with Kiro` and `github.com/yateen01-oralsurgeonn/Foamtom`; no clinic name, no person's name, no health claim
   - [ ] 3.3 **M2 Animation.** Reload each card and watch: black, then the mirror fades up (1 s), the lights come on (1 s), the monster fades in (1 s), the text fades in (1 s). Then watch for 10 seconds: nothing flickers, drifts or moves
   - [ ] 3.4 **M3 Still image.** Open `?card=start&still=1` and `?card=end&still=1`. Each shows the final frame at once and looks the same as the card 10 seconds after its animation
   - [ ] 3.5 **M4 Wrong value.** Open `?card=banana`: the start card shows
   - [ ] 3.6 **M5 Network and console.** With DevTools open: only same-origin requests (no font, no model, no image from another site); no error in the console
   - [ ] 3.7 **M6 Not in the site.** Run `npm run build`, then look in `dist/`: no `promo` folder, no `title-card` file
-  - [ ] 3.8 Write down anything about the look (sizes, spacing, colours) that Dr. Yatin wants changed, as a note for a later run. Do not edit the layout numbers in this task. A change to the card text goes to Dr. Yatin first
+  - [x] 3.8 Write down anything about the look (sizes, spacing, colours) that Dr. Yatin wants changed, as a note for a later run. Do not edit the layout numbers in this task. A change to the card text goes to Dr. Yatin first
   - _Requirements: 11.1, 11.2 (and by eye: 3, 5, 6, 7, 8)_
   - Test file: none (manual)
   - May change: no files
