@@ -80,3 +80,30 @@ export const BRUSH_HEAD_START_LANDMARK = 5;
  * knuckle). Unit: hand landmark index. Follows the MediaPipe hand landmark order. Fixed by the library.
  */
 export const BRUSH_HEAD_BACK_LANDMARK = 17;
+
+
+/**
+ * How many of the nearest learned frames vote on the zone in the per-child calibration
+ * experiment. Unit: frames. A starting value for the debug page, not a dental rule.
+ * The game does not use it.
+ */
+export const CALIBRATION_K = 7;
+
+/**
+ * How long each zone is brushed while the debug page learns the child's hand. Unit: seconds.
+ * A starting value for the debug page, not a dental rule. The game does not use it.
+ */
+export const CALIBRATION_SECONDS_PER_ZONE = 5;
+
+/**
+ * Countdown before each zone is learned, so the child can get the brush into place.
+ * Unit: seconds. A starting value for the debug page, not a dental rule. The game does not use it.
+ */
+export const CALIBRATION_LEAD_IN_SECONDS = 3;
+
+/**
+ * Hand landmarks the calibration experiment measures: wrist, index knuckle, middle knuckle,
+ * little-finger knuckle, middle fingertip. Unit: hand landmark indices. Follows the MediaPipe
+ * hand landmark order. Fixed by the library, not tuned. The game does not use it.
+ */
+export const CALIBRATION_LANDMARKS: readonly number[] = [0, 5, 9, 17, 12];

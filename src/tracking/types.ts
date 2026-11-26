@@ -18,6 +18,8 @@ export interface FaceInput {
 // One hand: the 21 MediaPipe hand landmarks, in the library's order.
 export interface HandInput {
   readonly landmarks: readonly Point[];
+  // MediaPipe's handedness label when it gives one. Only the debug page's calibration reads it.
+  readonly handedness?: 'Left' | 'Right';
 }
 
 // What one camera frame gives the classifier. Plain numbers only (req 3.1).

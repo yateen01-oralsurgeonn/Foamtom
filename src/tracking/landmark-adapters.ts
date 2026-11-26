@@ -32,6 +32,8 @@ export interface MeshResultLike {
 /** Shape of a MediaPipe hand landmarker result (only the parts used). */
 export interface HandResultLike {
   readonly landmarks: readonly (readonly Point[])[];
+  /** One list of categories per detected hand, in the same order as `landmarks`. Optional. */
+  readonly handedness?: readonly (readonly { readonly categoryName: string }[])[];
 }
 
 function plain(p: Point): Point {
@@ -73,12 +75,19 @@ export function adaptMeshFaces(result: MeshResultLike | null | undefined): FaceI
   return faces;
 }
 
-/** Hands from the hand landmarker. A hand without all 21 landmarks is dropped. Handedness is not read. */
+/**
+ * Hands from the hand landmarker. A hand without all 21 landmarks is dropped. The handedness
+ * label ('Left' or 'Right') is added when MediaPipe gives one; the game never reads it.
+ */
 export function adaptHands(result: HandResultLike | null | undefined): HandInput[] {
   const hands: HandInput[] = [];
-  for (const landmarks of result?.landmarks ?? []) {
+  const all = result?.landmarks ?? [];
+  for (let index = 0; index < all.length; index++) {
+    const landmarks = all[index];
     if (landmarks.length < HAND_LANDMARK_COUNT || !landmarks.every(isPoint)) continue;
-    hands.push({ landmarks: landmarks.slice(0, HAND_LANDMARK_COUNT).map(plain) });
+    const label = result?.handedness?.[index]?.[0]?.categoryName;
+    const base = { landmarks: landmarks.slice(0, HAND_LANDMARK_COUNT).map(plain) };
+    hands.push(label === 'Left' || label === 'Right' ? { ...base, handedness: label } : base);
   }
   return hands;
 }

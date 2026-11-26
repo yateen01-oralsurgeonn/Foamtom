@@ -566,6 +566,32 @@ Dr. Yatin's idea of 26 Nov 2026. This is a hypothesis, not a decision.
 5. **Results** go in the section "Brush-head experiment (26 Nov 2026)" of
    `docs/review/TRACKING-TEST-RESULTS.md`. Only Dr. Yatin can say whether it works.
 
+## Experiment 2, 26 Nov 2026
+
+Dr. Yatin's decision of 26 Nov 2026, after his test with eight screenshots. This is a hypothesis,
+not a decision about the game.
+
+1. **The brush-head estimate failed.** With the same-side hand, palm side and level were right in
+   8 of 8. But `side` reports which hand is at the mouth, not which teeth: a right hand reaching
+   across to the left teeth still reads `right`. The brush-head point lands beside the knuckles,
+   not on the brush, because in a real grip the brush leaves along the fingers. Every child holds
+   the brush differently. The estimate's code stays; its point is no longer drawn.
+2. **Per-child calibration, on the debug page only.** The child first brushes each zone for a few
+   seconds (`CALIBRATION_SECONDS_PER_ZONE`, after a `CALIBRATION_LEAD_IN_SECONDS` countdown) while
+   the page learns how that child's hand looks for that zone: any hand, any grip, across the face
+   included. During brushing the page compares each frame with what it learned (the
+   `CALIBRATION_K` nearest learned frames vote) and shows the zone it looks like. The constants
+   are starting values, not dental rules.
+3. **Camera data stays in memory only.** The learned frames are plain numbers (hand landmark
+   positions relative to the mouth, and handedness), kept in memory on the debug page. Nothing is
+   stored, sent, logged or exported. They are dropped when Reset is pressed or the tab closes.
+4. **The game is unchanged** until Dr. Yatin's test decides. `HAND_POINT` stays `'palm'`,
+   `REQUIRE_SIDE_MATCH` and `REQUIRE_LEVEL_MATCH` stay `false`, and the game does not import
+   `src/tracking/calibration.ts`.
+5. **Pass rule.** In every cross-face row of section 10 of
+   `docs/review/TRACKING-TEST-RESULTS.md`, the calibrated zone is right on at least 2 of 3 tries.
+   Only Dr. Yatin can say whether it works.
+
 ## Decision 3, 21 Nov 2026
 
 Dr. Yatin decided this on 21 Nov 2026, after the browser check of `mirror-and-screens`

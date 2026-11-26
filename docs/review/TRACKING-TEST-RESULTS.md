@@ -174,3 +174,29 @@ Level check (3 tries each):
 |---|---|---|---|---|---|---|---|---|
 | | Right hand | Upper right | Chewing | | | | | |
 | | Right hand | Lower right | Chewing | | | | | |
+
+
+Result 26 Nov 2026: failed: the orange point lands beside the knuckles, not on the brush (8 screenshots, same-side hand).
+
+## 10. Calibration experiment (26 Nov 2026)
+
+Dr. Yatin's decision: the debug page learns how each child's hand looks for each zone, then says which zone a frame looks like. This is a hypothesis on the debug page only; the game does not change. Nothing is stored or sent: the learned numbers stay in memory until you press Reset or close the tab.
+
+How to run it:
+
+1. Open the debug page (`npm run dev`, then `/debug/tracking-debug.html`) and allow the camera.
+2. Press **Calibrate**. For each zone in the game's order (upper right, upper left, lower left, lower right) the page shows "Get ready: brush ...", counts down, then shows "Brushing ..." for a few seconds. Brush that zone the way you normally do, with the hand you want to test. Cross-face is allowed.
+3. To teach the page another hand, press **Calibrate** again and repeat with the other hand. Press **Reset** to start again.
+4. Then test: brush each row below three times. The big text shows the calibrated zone and how many frames of the last second agree (for example "UPPER LEFT 6/7"), next to the palm side and level.
+5. Write the three codes (R, W, U, N as above) for the calibrated zone and for the palm side. Result: Pass if at least 2 of 3 calibrated-zone codes are R. For the four cross-face rows (the first four) the experiment passes only if every one of them passes.
+
+| Date | Calibration (hands used) | Brush hand | Zone | Surface | Calibrated zone (3 tries) | Palm side (3 tries) | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| | | Right hand | Upper left | Outer | | | | |
+| | | Right hand | Lower left | Outer | | | | |
+| | | Left hand | Upper right | Outer | | | | |
+| | | Left hand | Lower right | Outer | | | | |
+| | | Right hand | Upper right | Outer | | | | |
+| | | Right hand | Lower right | Chewing | | | | |
+| | | Left hand | Lower left | Outer | | | | |
+| | | Left hand | Upper left | Chewing | | | | |

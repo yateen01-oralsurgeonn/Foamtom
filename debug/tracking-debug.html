@@ -10,9 +10,15 @@
     <title>FOAMTOM-TRACKING-DEBUG (developer page, not part of the game)</title>
   </head>
   <body>
-    <div id="stage"></div>
-    <pre id="readout"></pre>
-    <pre id="points"></pre>
+    <div id="layout">
+      <div id="stage"></div>
+      <div id="side">
+        <div id="buttons"></div>
+        <pre id="calibration"></pre>
+        <pre id="readout"></pre>
+        <pre id="points"></pre>
+      </div>
+    </div>
     <script type="module" src="./tracking-debug.ts"></script>
   </body>
 </html>
