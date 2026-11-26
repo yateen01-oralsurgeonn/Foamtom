@@ -16,9 +16,9 @@ An AI assistant (Claude) helped me put my rules into steering files, reviewed th
 ran the Kiro CLI for me; every spec and every line of code was written by Kiro.
 
 **In numbers (14-26 Nov 2026):** 5 steering files · 5 specs (68 requirements, 95 tasks) ·
-3 agent hooks · 684 tests in 84 files, 38 of them property-based · 219 commits, 160 of them
-labelled as Kiro's work · Kiro CLI for almost every run, the Kiro IDE for the README task, the
-hooks and the final check.
+3 agent hooks · 684 tests in 84 files (38 files use property-based tests) · 219 commits, 160 of them
+labelled as Kiro's work · Kiro CLI for almost every run, the Kiro IDE for the README task and to
+watch the hooks fire.
 
 ## 1. Steering: my rules, written once
 
@@ -100,7 +100,7 @@ Three hooks in `.kiro/hooks/`, all "report only, never change code":
 - Save anything in `src/` → run the privacy guard.
 - Save a voice line or a screen → check the wording against my dental and kid-safety rules.
 
-In the Kiro IDE they fire on save (the demo video shows the test hook firing). Most of the
+In the Kiro IDE they fire on save (we recorded the test hook firing on 25 Nov). Most of the
 build ran through the Kiro CLI, where IDE hooks do not run, so the same checks also ran as a
 script after every CLI run (below).
 
@@ -110,7 +110,8 @@ script after every CLI run (below).
   allowed. After every run a script checked: tests and build pass, the spec was not touched
   (only task ticks), no files outside the allowed folders, no network calls, no randomness in
   game logic. Only then one commit. A failed check meant no commit.
-- **Kiro IDE** for the README task, the hooks and the final checks.
+- **Kiro IDE** for the README task (hand-tracking task 11) and to check that the hooks fire on
+  save.
 - **Credits:** about 17 bonus credits for the first complete spec (15 runs); about 2.4 per
   build task at first and about 6 per camera-tracking run. Total used by submission:
   **[FILL IN: read from app.kiro.dev/account/usage]** of the 4,000 hackathon credits.
