@@ -1,0 +1,138 @@
+/* Developer-only title card, 1920 x 1080. Four opacity fades, then everything holds still.
+   The sizes are starting values to be tuned by eye. */
+
+html,
+body {
+  margin: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+
+.title-card {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  flex: none;
+  overflow: hidden;
+  background: #1c1530;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ---- Mirror ---- */
+.title-card__mirror {
+  position: absolute;
+  top: 32px;
+  left: calc(50% - 240px);
+  width: 480px;
+  transform: scale(1.2);
+  transform-origin: top center;
+  animation: tc-fade-in var(--tc-mirror-duration) ease-out var(--tc-mirror-delay) both;
+}
+
+.title-card .mirror-frame {
+  animation: none;
+}
+
+.title-card .mirror-frame__glass {
+  height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-card__monster {
+  --u: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tc-fade-in var(--tc-monster-duration) ease-out var(--tc-monster-delay) both;
+}
+
+/* ---- Lights ---- */
+.title-card .frame-glow {
+  animation: tc-glow-in var(--tc-lights-duration) ease-out var(--tc-lights-delay) both;
+}
+
+.title-card .frame-flame {
+  animation: tc-fade-in var(--tc-lights-duration) ease-out var(--tc-lights-delay) both;
+}
+
+/* ---- Text ---- */
+.title-card__text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 812px;
+  height: 236px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: tc-fade-in var(--tc-text-duration) ease-out var(--tc-text-delay) both;
+}
+
+.title-card__line {
+  margin: 0;
+}
+
+.title-card__line--title {
+  font-size: 84px;
+  line-height: 96px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #f4eefc;
+}
+
+.title-card__line--subtitle {
+  font-size: 40px;
+  line-height: 52px;
+  color: #b8a6e0;
+}
+
+.title-card__line--tagline,
+.title-card__line--credit {
+  font-size: 32px;
+  line-height: 44px;
+  color: #b8a6e0;
+}
+
+.title-card__line--address {
+  font-size: 32px;
+  line-height: 44px;
+  color: #ffd966;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Fades: opacity only. Each last keyframe is the element's normal style. ---- */
+@keyframes tc-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes tc-glow-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: var(--glow-opacity);
+  }
+}
+
+/* ---- Still image: the final frame at once ---- */
+.title-card--still,
+.title-card--still *,
+.title-card--still *::before,
+.title-card--still *::after {
+  animation: none !important;
+}
