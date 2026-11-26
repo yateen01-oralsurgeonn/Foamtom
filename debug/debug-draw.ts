@@ -16,6 +16,7 @@ const POINT_COLOURS: Record<HandPointKind, string> = {
   palm: 'yellow',
   wrist: 'cyan',
   fingertips: 'magenta',
+  'brush-head': 'orange',
 };
 
 function dot(ctx: CanvasRenderingContext2D, p: Point, radius: number, colour: string): void {
@@ -41,6 +42,7 @@ export function drawLandmarks(
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const aspect = size.width / size.height;
 
   for (const face of faces) {
     ctx.strokeStyle = FACE_COLOUR;
@@ -56,7 +58,7 @@ export function drawLandmarks(
 
   for (const hand of hands) {
     for (const landmark of hand.landmarks) dot(ctx, landmark, DOT_RADIUS, LANDMARK_COLOUR);
-    for (const kind of kinds) dot(ctx, selectHandPoint(hand, kind), HAND_POINT_RADIUS, POINT_COLOURS[kind]);
+    for (const kind of kinds) dot(ctx, selectHandPoint(hand, kind, aspect), HAND_POINT_RADIUS, POINT_COLOURS[kind]);
   }
 }
 

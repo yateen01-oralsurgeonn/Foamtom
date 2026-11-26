@@ -545,6 +545,27 @@ Dr. Yatin decided this on 21 Nov 2026, after the level check (requirement 1.12) 
    hand, both hands, second person and poor light.
 
 
+## Experiment, 26 Nov 2026
+
+Dr. Yatin's idea of 26 Nov 2026. This is a hypothesis, not a decision.
+
+1. **Why.** The side check failed on 21 Nov because `side` comes from the palm, and the palm
+   stays right of the mouth when the right hand reaches across the face to the lower left
+   teeth. In a fist grip the toothbrush comes out of the thumb side of the hand, so the brush
+   head may be estimated better than the palm.
+2. **The estimate.** A fourth hand point, `'brush-head'`: start at the index knuckle
+   (landmark 5) and go further along the line from the little-finger knuckle (landmark 17) to
+   the index knuckle, by `BRUSH_HEAD_REACH` (1.0) knuckle widths. The arithmetic is done in the
+   one unit of requirement 3.2 (x times aspect).
+3. **Debug page only.** The estimate is shown on the debug page next to palm, wrist and
+   fingertips (its `handNearMouth`, `side` and `level`), and its point is drawn on the preview
+   in its own colour. The game does not use it.
+4. **Nothing in the game changes.** `HAND_POINT` stays `'palm'`, `REQUIRE_SIDE_MATCH` stays
+   `false` and `REQUIRE_LEVEL_MATCH` stays `false`, until Dr. Yatin's brushing test decides.
+   `BRUSH_HEAD_REACH` is a starting value, not a dental rule.
+5. **Results** go in the section "Brush-head experiment (26 Nov 2026)" of
+   `docs/review/TRACKING-TEST-RESULTS.md`. Only Dr. Yatin can say whether it works.
+
 ## Decision 3, 21 Nov 2026
 
 Dr. Yatin decided this on 21 Nov 2026, after the browser check of `mirror-and-screens`

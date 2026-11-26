@@ -1,4 +1,4 @@
-# Tracking test results
+﻿# Tracking test results
 
 This file is filled in by Dr. Yatin during the feasibility test of the hand-tracking spec. It is an empty template until then.
 
@@ -151,3 +151,26 @@ Failed for the chewing surface of the upper right teeth (WUW; the palm hangs bel
 | 2026-11-21 | NOTICE.txt | 1069 | Final build, npm run measure-assets |
 | 2026-11-21 | total of public/models | 26810856 | Final build, npm run measure-assets |
 | 2026-11-21 | first load (dist without models and lazy camera chunks) | 23121 | 6 files; camera code and models load only after tapping start |
+
+
+## 9. Brush-head experiment (26 Nov 2026)
+
+Dr. Yatin's idea: in a fist grip the toothbrush comes out of the thumb side of the hand, so the debug page also estimates the brush head (a fourth hand point, `brush-head`, drawn in orange). This is a hypothesis; the game still uses the palm. Brush three times per row. Write the three codes (R, W, U, N as above) for the side the debug page shows. For the level rows, write the codes for `level`. Result: Pass if at least 2 of 3 codes are R.
+
+Side check (3 tries each):
+
+| Date | Brush hand | Zone | Surface | Palm side | Brush-head side | Brush-head level | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| | Right hand | Lower left | Outer | | | | | |
+| | Right hand | Upper left | Outer | | | | | |
+| | Left hand | Lower right | Outer | | | | | |
+| | Left hand | Upper right | Outer | | | | | |
+| | Right hand | Lower right | Outer (same-side control) | | | | | |
+| | Left hand | Lower left | Outer (same-side control) | | | | | |
+
+Level check (3 tries each):
+
+| Date | Brush hand | Zone | Surface | Palm side | Brush-head side | Brush-head level | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| | Right hand | Upper right | Chewing | | | | | |
+| | Right hand | Lower right | Chewing | | | | | |

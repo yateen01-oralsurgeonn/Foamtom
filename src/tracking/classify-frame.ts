@@ -3,6 +3,9 @@
 // is the call to rawToChildSide. Every number comes from thresholds.ts.
 import {
   FINGERTIP_LANDMARKS,
+  BRUSH_HEAD_BACK_LANDMARK,
+  BRUSH_HEAD_REACH,
+  BRUSH_HEAD_START_LANDMARK,
   HAND_POINT,
   LEVEL_DEAD_ZONE,
   NEAR_MOUTH_FACE_WIDTHS,
@@ -50,8 +53,24 @@ function meanOf(landmarks: readonly Point[], indices: readonly number[]): Point 
   return { x: sumX / indices.length, y: sumY / indices.length };
 }
 
-/** One point of a hand: palm centre, wrist, or the mean of the fingertips (design 5.2). */
-export function selectHandPoint(hand: HandInput, kind: HandPointKind): Point {
+/**
+ * One point of a hand: palm centre, wrist, the mean of the fingertips (design 5.2), or the
+ * estimated brush head (debug experiment, requirements "Experiment, 26 Nov 2026").
+ * `aspect` (image width / height) is used only by 'brush-head': the direction is worked out in
+ * the one unit (x times aspect) and the point is returned in raw coordinates.
+ */
+export function selectHandPoint(hand: HandInput, kind: HandPointKind, aspect = 1): Point {
+  if (kind === 'brush-head') {
+    const start = hand.landmarks[BRUSH_HEAD_START_LANDMARK];
+    const back = hand.landmarks[BRUSH_HEAD_BACK_LANDMARK];
+    const startX = start.x * aspect; // the one unit: x times aspect, y as it is
+    const backX = back.x * aspect;
+    const headX = startX + BRUSH_HEAD_REACH * (startX - backX);
+    return {
+      x: headX / aspect, // back to raw coordinates
+      y: start.y + BRUSH_HEAD_REACH * (start.y - back.y),
+    };
+  }
   if (kind === 'wrist') return hand.landmarks[WRIST_LANDMARK];
   if (kind === 'fingertips') return meanOf(hand.landmarks, FINGERTIP_LANDMARKS);
   return meanOf(hand.landmarks, PALM_LANDMARKS);
@@ -79,7 +98,7 @@ export function classifyFrame(input: FrameInput, handPoint: HandPointKind = HAND
 
   const hands = input.hands
     .map((hand) => {
-      const point = inUnit(selectHandPoint(hand, handPoint));
+      const point = inUnit(selectHandPoint(hand, handPoint, aspect));
       return { point, d: Math.hypot(point.x - mouth.x, point.y - mouth.y) / width };
     })
     .sort((p, q) => p.d - q.d);

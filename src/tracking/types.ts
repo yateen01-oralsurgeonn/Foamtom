@@ -27,7 +27,7 @@ export interface FrameInput {
   readonly hands: readonly HandInput[]; // 0 to 2
 }
 
-export type HandPointKind = 'palm' | 'wrist' | 'fingertips';
+export type HandPointKind = 'palm' | 'wrist' | 'fingertips' | 'brush-head';
 
 // What one frame says. Lives in memory for at most one second (req 4.7).
 export interface FrameResult {

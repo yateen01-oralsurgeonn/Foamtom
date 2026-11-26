@@ -59,3 +59,24 @@ export const WRIST_LANDMARK = 0;
  * Follows the MediaPipe hand landmark order. Fixed by the library, not tuned.
  */
 export const FINGERTIP_LANDMARKS: readonly number[] = [4, 8, 12, 16, 20];
+
+
+/**
+ * How far past the index knuckle the 'brush-head' hand point is estimated, along the line from
+ * the little-finger knuckle to the index knuckle. Unit: the hand's knuckle width (the distance
+ * from landmark 17 to landmark 5). A starting value for the debug page experiment of 26 Nov 2026,
+ * not a dental rule. The game does not use it: HAND_POINT stays 'palm'.
+ */
+export const BRUSH_HEAD_REACH = 1.0;
+
+/**
+ * Hand landmark the 'brush-head' estimate starts from (the index knuckle). Unit: hand landmark index.
+ * Follows the MediaPipe hand landmark order. Fixed by the library, not tuned.
+ */
+export const BRUSH_HEAD_START_LANDMARK = 5;
+
+/**
+ * Hand landmark that gives the 'brush-head' direction with the start landmark (the little-finger
+ * knuckle). Unit: hand landmark index. Follows the MediaPipe hand landmark order. Fixed by the library.
+ */
+export const BRUSH_HEAD_BACK_LANDMARK = 17;

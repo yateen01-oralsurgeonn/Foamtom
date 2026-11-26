@@ -11,7 +11,7 @@ import { FACE_MODEL, HAND_POINT, TRACK_MIN_INTERVAL_MS, WINDOW_MS } from '../src
 import type { FrameInput, HandPointKind, TimedFrame } from '../src/tracking/types';
 import { clearDrawing, drawLandmarks } from './debug-draw';
 
-const KINDS: readonly HandPointKind[] = ['palm', 'wrist', 'fingertips'];
+const KINDS: readonly HandPointKind[] = ['palm', 'wrist', 'fingertips', 'brush-head'];
 
 function byId(id: string): HTMLElement {
   const element = document.getElementById(id);
@@ -68,7 +68,7 @@ let stream: MediaStream | null = null;
 let trackers: Trackers | null = null;
 let cancelPump: (() => void) | null = null;
 let lastSentMs = Number.NEGATIVE_INFINITY;
-const lists: Record<HandPointKind, TimedFrame[]> = { palm: [], wrist: [], fingertips: [] };
+const lists: Record<HandPointKind, TimedFrame[]> = { palm: [], wrist: [], fingertips: [], 'brush-head': [] };
 
 function header(): string {
   return `face model: ${faceModel}   hand point: ${HAND_POINT}\n`;
@@ -95,7 +95,7 @@ function show(nowMs: number): void {
   readout.textContent = header() + signalText(signals[HAND_POINT]);
   points.textContent = KINDS.map((kind) => {
     const s = signals[kind];
-    return `${kind}:  side: ${s ? s.side : 'null'}   level: ${s ? s.level : 'null'}`;
+    return `${kind}:  near: ${s ? s.handNearMouth : 'null'}   side: ${s ? s.side : 'null'}   level: ${s ? s.level : 'null'}`;
   }).join('\n');
 }
 
