@@ -113,8 +113,8 @@ script after every CLI run (below).
   save.
 - **Credits:** about 17 bonus credits for the first complete spec (15 runs); about 2.4 per
   build task at first and about 6 per camera-tracking run. Total used (Kiro account page,
-  26 Nov 2026): **484 of the 4,000 hackathon bonus credits**, plus 27 of the 50 monthly
-  Kiro Free credits.
+  27 Nov 2026): **about 510 of the 4,000 hackathon bonus credits** (509.59), plus 27 of the
+  50 monthly Kiro Free credits.
 
 ## 6. Not used
 
