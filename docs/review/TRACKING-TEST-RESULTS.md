@@ -271,3 +271,19 @@ Run 2 (27 Nov 2026, 17:16, `?interval=50`, measured 15-18 fps, same rows, same c
 | 27 Nov 2026 | 50 | Right hand | Lower right | Chewing surface, short back-and-forth (information only) | U S S | 15-16 | Info | |
 
 Run 2 reading: doubling the frame rate (9 to 16 fps) did not rescue it. Circles read CIRCLES on 4 of 12 tries (run 1: 0 of 12), scrubbing read SCRUB on 3 of 12, one scrub try read CIRCLES, and only one row of eight passes. Roundness overlaps completely between circles (0.26-0.78) and scrubbing (0.12-0.83). **Decision gate: stroke-shape detection FAILS.** By the dental rule of 27 Nov the game does not check technique; it teaches small circles with the approved voice lines and pictures, the demo video shows small circles, and stroke detection goes to "What's next" with this table. `stroke-shape.ts` stays on the debug page only.
+
+Run 3 (27 Nov 2026, 17:53, `?interval=50`, measured 15-17 fps, same rows, same codes). Before it: one minute of practice watching the live readout, and the instruction to lock the wrist and move the forearm so the palm point travels. Each try also saved a 3-second screen clip (kept on the laptop only, not in the repo).
+
+| Date | Interval (ms) | Brush hand | Zone | How brushed | Shape (3 tries) | fps | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| 27 Nov 2026 | 50 | Right hand | Upper right | Small circles | U U U | 15-16 | Fail | round 0.36-0.64 |
+| 27 Nov 2026 | 50 | Right hand | Upper right | Side-to-side scrub | U U R | 16 | Fail | |
+| 27 Nov 2026 | 50 | Left hand | Lower left | Small circles | U R U | 15-17 | Fail | angle 60-73°: circles looked up-and-down |
+| 27 Nov 2026 | 50 | Left hand | Lower left | Side-to-side scrub | R U W | 16-17 | Fail | try 3 read CIRCLES |
+| 27 Nov 2026 | 50 | Right hand | Front teeth | Small circles | W R U | 15-16 | Fail | try 3: 0 points, the palm did not move past the noise step |
+| 27 Nov 2026 | 50 | Right hand | Front teeth | Side-to-side scrub | U U U | 16 | Fail | 3-7 points only |
+| 27 Nov 2026 | 50 | Right hand | Upper left (cross-face) | Small circles | U U W | 16-17 | Fail | try 3 read SCRUB |
+| 27 Nov 2026 | 50 | Right hand | Upper left (cross-face) | Side-to-side scrub | R U U | 15-16 | Fail | |
+| 27 Nov 2026 | 50 | Right hand | Lower right | Chewing surface, short back-and-forth (information only) | S U S | 15-17 | Info | |
+
+Run 3 reading: circles read CIRCLES on 2 of 12 tries, scrubbing read SCRUB on 3 of 12, two tries read the other shape, and no row passes. The clips show why: in every try the back of the hand stays almost still against the mouth while the brush moves from the wrist and fingers, so the palm point travels only a few pixels, whatever the stroke. Natural brushing, even after a practice minute, does not move the palm enough for its path to show the stroke. **Run 3 confirms the run 2 decision: stroke-shape detection from the palm point FAILS.** A future try would need a point that follows the brush (fingertips or the brush head itself), which is the "What's next" item.
