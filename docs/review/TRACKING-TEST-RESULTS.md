@@ -192,11 +192,39 @@ How to run it:
 
 | Date | Calibration (hands used) | Brush hand | Zone | Surface | Calibrated zone (3 tries) | Palm side (3 tries) | Result | Note |
 |---|---|---|---|---|---|---|---|---|
-| | | Right hand | Upper left | Outer | | | | |
-| | | Right hand | Lower left | Outer | | | | |
-| | | Left hand | Upper right | Outer | | | | |
-| | | Left hand | Lower right | Outer | | | | |
-| | | Right hand | Upper right | Outer | | | | |
-| | | Right hand | Lower right | Chewing | | | | |
-| | | Left hand | Lower left | Outer | | | | |
-| | | Left hand | Upper left | Chewing | | | | |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Right hand | Upper left | Outer | NNR | WUR | Not valid | try 1 taken while calibration was still running; try 2 hand away from mouth |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Right hand | Lower left | Outer | RWW | WWW | Fail | try 1: palm said right, calibration said LOWER LEFT (right). Tries 2-3 looked the same but read LOWER RIGHT and UPPER RIGHT 9/9 |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Left hand | Upper right | Outer | WWW | WWW | Not valid | left hand was never calibrated; all read UPPER LEFT |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Left hand | Lower right | Outer | WRN | WWU | Not valid | left hand was never calibrated; try 3 hand away from mouth |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Right hand | Upper right | Outer | NNW | UUW | Fail | tries 1-2 brush held away from the mouth; try 3 read LOWER RIGHT, palm left |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Right hand | Lower right | Chewing | RRR | RRR | Pass | LOWER RIGHT 9/9, 8/8, 9/9 |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Left hand | Lower left | Outer | WWW | RRR | Not valid | left hand never calibrated: all read LOWER RIGHT; palm side correct (left) every time |
+| 27 Nov 2026 | 1 round only (4 zones, 156 frames; done while the screenshot script ran; left hand never learned) | Left hand | Upper left | Chewing | WWW | RRR | Not valid | left hand never calibrated: all read LOWER RIGHT; palm side correct (left) every time (palm level said lower) |
+
+Run 2, 27 Nov 2026 14:51: no calibration was loaded (learned frames 0 in all 24 screenshots, page said "calibrate first"), so it gives the PALM baseline only. Palm side, cross-face rows 1-4: wrong 12 of 12 (right hand on the left teeth read right; left hand on the right teeth read left). Same-side rows 5-8: right 11 of 12 (one unknown). This confirms that the palm reports which hand, not which teeth.
+
+**Run 3, 27 Nov 2026 15:58 (valid calibration, both hands).**
+
+| Date | Calibration (hands used) | Brush hand | Zone | Surface | Calibrated zone (3 tries) | Palm side (3 tries) | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Right hand | Upper left | Outer | RRR | UWW | Pass | UPPER LEFT 2/3, 9/9, 7/8 |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Right hand | Lower left | Outer | RWR | WWW | Pass | LOWER LEFT, UPPER LEFT, LOWER LEFT |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Left hand | Upper right | Outer | RRR | WWW | Pass | UPPER RIGHT 8/8, 6/6, 8/8 |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Left hand | Lower right | Outer | WWW | WWW | Fail | all read UPPER RIGHT: side right, level wrong |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Right hand | Upper right | Outer | WWW | RRR | Fail | all read UPPER LEFT: side wrong |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Right hand | Lower right | Chewing | WWW | RRR | Fail | all read LOWER LEFT: side wrong |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Left hand | Lower left | Outer | WRR | RRR | Pass | UPPER LEFT, LOWER LEFT, LOWER LEFT |
+| 27 Nov 2026 | 2 rounds: right hand, then left (UR 81, UL 82, LL 81, LR 81) | Left hand | Upper left | Chewing | RRR | RRR | Pass | UPPER LEFT 8/8, 8/8, 9/9 |
+
+Run 3 reading: cross-face rows 3 of 4 pass, so the experiment FAILS the pass rule (row 4). Side only (ignoring upper/lower): the LEFT hand was right on 12 of 12 tries; the RIGHT hand said "left" on 12 of 12 tries whatever was brushed, so its cross-face passes are not real discrimination. Palm side: cross-face 0 of 12 right, same-side 12 of 12.
+
+**Run 4 (right-hand retry), 27 Nov 2026 16:10.** Dr. Yatin made the cross-face grip clearly different (elbow up, wrist near the chin middle) and calibrated the right hand twice.
+
+| Date | Calibration (hands used) | Brush hand | Zone | Surface | Calibrated zone (3 tries) | Palm side (3 tries) | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| 27 Nov 2026 | Reset; right hand twice, left hand once (UR 117, UL 122, LL 122, LR 122) | Right hand | Upper left | Outer | WWW | WWW | Fail | all UPPER RIGHT 9/9 |
+| 27 Nov 2026 | Reset; right hand twice, left hand once (UR 117, UL 122, LL 122, LR 122) | Right hand | Lower left | Outer | WWW | WWW | Fail | all UPPER RIGHT |
+| 27 Nov 2026 | Reset; right hand twice, left hand once (UR 117, UL 122, LL 122, LR 122) | Right hand | Upper right | Outer | NNW | UUU | Fail | tries 1-2 no hand at the mouth; try 3 LOWER RIGHT 1/1 |
+| 27 Nov 2026 | Reset; right hand twice, left hand once (UR 117, UL 122, LL 122, LR 122) | Right hand | Lower right | Chewing | RRR | RRR | Pass | LOWER RIGHT 9/9 x3 |
+
+Run 4 reading: the right hand now said "right" on every answered try, whatever was brushed (run 3 said "left" every time). The right-hand answer flips with each calibration instead of following the brush. **Decision gate: calibration with the current hand-position features FAILS for the right hand.** The game stays as it is (REQUIRE_SIDE_MATCH false); side detection goes to "What's next".
