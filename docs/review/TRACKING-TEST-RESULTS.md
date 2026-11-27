@@ -244,12 +244,30 @@ How to run it:
 
 | Date | Interval (ms) | Brush hand | Zone | How brushed | Shape (3 tries) | fps | Result | Note |
 |---|---|---|---|---|---|---|---|---|
-| | | Right hand | Upper right | Small circles | | | | |
-| | | Right hand | Upper right | Side-to-side scrub | | | | |
-| | | Left hand | Lower left | Small circles | | | | |
-| | | Left hand | Lower left | Side-to-side scrub | | | | |
-| | | Right hand | Front teeth | Small circles | | | | |
-| | | Right hand | Front teeth | Side-to-side scrub | | | | |
-| | | Right hand | Upper left (cross-face) | Small circles | | | | |
-| | | Right hand | Upper left (cross-face) | Side-to-side scrub | | | | |
-| | | Right hand | Lower right | Chewing surface, short back-and-forth (information only) | | | | |
+| 27 Nov 2026 | 100 | Right hand | Upper right | Small circles | W W U | 9 | Fail | SCRUB, SCRUB, UNCLEAR; round 0.47-0.73 |
+| 27 Nov 2026 | 100 | Right hand | Upper right | Side-to-side scrub | U U R | 8-9 | Fail | angle 59-81° (up-down), not side to side |
+| 27 Nov 2026 | 100 | Left hand | Lower left | Small circles | U W U | 9 | Fail | round 0.33-0.70 |
+| 27 Nov 2026 | 100 | Left hand | Lower left | Side-to-side scrub | R R W | 8-9 | Pass | try 3 read CIRCLES (round 0.42, rev 0.14); angle 89° on tries 1-2 |
+| 27 Nov 2026 | 100 | Right hand | Front teeth | Small circles | U U U | 8-9 | Fail | only 2, 4, 5 points: palm barely moves for small circles |
+| 27 Nov 2026 | 100 | Right hand | Front teeth | Side-to-side scrub | W U W | 9 | Fail | read CIRCLES twice (round 0.70, 0.52) |
+| 27 Nov 2026 | 100 | Right hand | Upper left (cross-face) | Small circles | W W U | 8-9 | Fail | SCRUB, SCRUB, UNCLEAR; round 0.11-0.34 |
+| 27 Nov 2026 | 100 | Right hand | Upper left (cross-face) | Side-to-side scrub | R R R | 9 | Pass | angle 20-24°, rev 0.50-0.71 |
+| 27 Nov 2026 | 100 | Right hand | Lower right | Chewing surface, short back-and-forth (information only) | U S U | 9 | Info | round 0.22-0.38 |
+
+Run 1 reading (27 Nov 2026, 17:05, interval 100 ms, about 9 fps, dry brush, no calibration): **FAILS the pass rule.** Small circles were never read as CIRCLES (0 of 12 circles tries); the only two CIRCLES readings came from scrub rows. Only the cross-face scrub row (and, just, the lower-left scrub row) passed. The palm point moves very little when the brush makes small circles (the wrist and fingers do the work), so at 9 frames a second the last second holds 2-9 points that look like noise, not a loop. Side-to-side scrubbing at the lower left also read as up-down (angle 89°), so the palm path does not follow the brush head. Next, if Dr. Yatin wants it: one retry at `?interval=50`; if that also fails, circles stay as teaching only (voice lines, pictures, demo video) and stroke detection goes to "What's next".
+
+Run 2 (27 Nov 2026, 17:16, `?interval=50`, measured 15-18 fps, same rows, same codes):
+
+| Date | Interval (ms) | Brush hand | Zone | How brushed | Shape (3 tries) | fps | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| 27 Nov 2026 | 50 | Right hand | Upper right | Small circles | U U U | 15-16 | Fail | try 1 hand not near mouth (3 points) |
+| 27 Nov 2026 | 50 | Right hand | Upper right | Side-to-side scrub | U R U | 15-16 | Fail | |
+| 27 Nov 2026 | 50 | Left hand | Lower left | Small circles | R U U | 16 | Fail | |
+| 27 Nov 2026 | 50 | Left hand | Lower left | Side-to-side scrub | U U W | 16-18 | Fail | try 3 read CIRCLES |
+| 27 Nov 2026 | 50 | Right hand | Front teeth | Small circles | U R U | 16 | Fail | 5-11 points only |
+| 27 Nov 2026 | 50 | Right hand | Front teeth | Side-to-side scrub | U U R | 15-16 | Fail | 3-6 points only |
+| 27 Nov 2026 | 50 | Right hand | Upper left (cross-face) | Small circles | R U R | 15-16 | Pass | |
+| 27 Nov 2026 | 50 | Right hand | Upper left (cross-face) | Side-to-side scrub | U U U | 16 | Fail | round 0.50-0.53: scrub looked round |
+| 27 Nov 2026 | 50 | Right hand | Lower right | Chewing surface, short back-and-forth (information only) | U S S | 15-16 | Info | |
+
+Run 2 reading: doubling the frame rate (9 to 16 fps) did not rescue it. Circles read CIRCLES on 4 of 12 tries (run 1: 0 of 12), scrubbing read SCRUB on 3 of 12, one scrub try read CIRCLES, and only one row of eight passes. Roundness overlaps completely between circles (0.26-0.78) and scrubbing (0.12-0.83). **Decision gate: stroke-shape detection FAILS.** By the dental rule of 27 Nov the game does not check technique; it teaches small circles with the approved voice lines and pictures, the demo video shows small circles, and stroke detection goes to "What's next" with this table. `stroke-shape.ts` stays on the debug page only.
