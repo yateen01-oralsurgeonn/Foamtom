@@ -7,7 +7,7 @@ every instruction aloud and shows it as a caption.
 
 - **Play it:** https://yateen01-oralsurgeonn.github.io/Foamtom/ (free, in a phone or
   computer browser; no install, no sign-up).
-- **Demo video:** https://youtu.be/TQwEwnyls5o
+- **Demo video:** https://youtu.be/51kjUYiEgPs
 
 Brush for two minutes. Don't forget the back teeth. Brush morning and night.
 
