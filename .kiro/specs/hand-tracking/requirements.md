@@ -592,6 +592,35 @@ not a decision about the game.
    `docs/review/TRACKING-TEST-RESULTS.md`, the calibrated zone is right on at least 2 of 3 tries.
    Only Dr. Yatin can say whether it works.
 
+## Experiment 3, 27 Nov 2026
+
+Dr. Yatin's decision of 27 Nov 2026. This is a hypothesis, not a decision about the game.
+
+1. **Why.** Children aged 5-9 are taught small, gentle circles on the outer surfaces of the teeth;
+   long back-and-forth scrubbing along the gum line is the habit to change (`dental-rules.md`,
+   "Brushing technique"). `moving` is only the path length of the hand in one second, so a scrub
+   counts exactly like circles. Each frame already carries `handRel`, so the shape of the last
+   second's path can be measured without new tracking.
+2. **What is measured.** From the non-null `handRel` values of the last second (palm point), after
+   steps shorter than `MOVE_JITTER_STEP` are dropped: `roundness` (square root of smaller over
+   larger eigenvalue of the covariance; 1 = round, 0 = a line), `axisAngleDeg` (long axis against
+   the face's x axis, 0 to 90) and `reversalShare` (share of turns between consecutive steps that
+   change direction by more than `STROKE_REVERSAL_DEG`). From these `strokeShape` says `circles`,
+   `scrub` or `unclear`. The six constants are starting values, not dental rules.
+3. **Debug page only, memory only.** The result is shown on the debug page every frame, with the
+   measured tracking rate (`fps`), and the last second of the palm point is drawn as a fading
+   trail. The page also takes `?interval=NN` (33 to 100 ms) to try a faster tracking rate. Nothing
+   is stored, sent, logged or exported. No child-facing or parent-facing text is added.
+4. **The game is unchanged** until Dr. Yatin's test decides. `src/tracking/stroke-shape.ts` is not
+   imported by the game. `MOVING_MIN_TRAVEL`, `REQUIRE_SIDE_MATCH`, `REQUIRE_LEVEL_MATCH`,
+   `HAND_POINT` and `TRACK_MIN_INTERVAL_MS` do not change. Until a debug-page test has proven the
+   check and Dr. Yatin has approved it, the game never tells the child or the parent that the
+   camera saw the technique.
+5. **Pass rule.** In section 11 of `docs/review/TRACKING-TEST-RESULTS.md`, every circles row and
+   every scrub row reads the right shape on at least 2 of 3 tries, and no scrub row reads CIRCLES
+   more than once. The chewing-surface row is information only: it shows what the game must NOT
+   nag about. Only Dr. Yatin can say whether it works.
+
 ## Decision 3, 21 Nov 2026
 
 Dr. Yatin decided this on 21 Nov 2026, after the browser check of `mirror-and-screens`

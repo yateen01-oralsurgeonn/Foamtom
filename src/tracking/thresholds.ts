@@ -107,3 +107,54 @@ export const CALIBRATION_LEAD_IN_SECONDS = 3;
  * hand landmark order. Fixed by the library, not tuned. The game does not use it.
  */
 export const CALIBRATION_LANDMARKS: readonly number[] = [0, 5, 9, 17, 12];
+
+
+/**
+ * Fewest points that must remain, after camera noise is dropped, before the stroke shape is
+ * judged. Unit: points. A starting value for the debug page experiment of 27 Nov 2026, not a
+ * dental rule. The game does not use it.
+ */
+export const STROKE_MIN_POINTS = 5;
+
+/**
+ * A turn between two steps counts as a reversal when the direction changes by more than this.
+ * Unit: degrees. A starting value for the debug page experiment of 27 Nov 2026, not a dental
+ * rule. The game does not use it.
+ */
+export const STROKE_REVERSAL_DEG = 135;
+
+/**
+ * The path counts as circles only when its roundness is at least this. Unit: ratio, 0 (a line)
+ * to 1 (a round cloud). A starting value for the debug page experiment of 27 Nov 2026, not a
+ * dental rule. The game does not use it.
+ */
+export const CIRCLE_MIN_ROUNDNESS = 0.4;
+
+/**
+ * The path counts as circles only when the share of reversing turns is below this. Unit: share of
+ * turns, 0 to 1. A starting value for the debug page experiment of 27 Nov 2026, not a dental
+ * rule. The game does not use it.
+ */
+export const CIRCLE_MAX_REVERSAL_SHARE = 0.3;
+
+/**
+ * A path whose roundness is below this counts as scrubbing. Unit: ratio, 0 (a line) to 1 (a round
+ * cloud). A starting value for the debug page experiment of 27 Nov 2026, not a dental rule. The
+ * game does not use it.
+ */
+export const SCRUB_MAX_ROUNDNESS = 0.25;
+
+/**
+ * A path whose share of reversing turns is at least this counts as scrubbing. Unit: share of
+ * turns, 0 to 1. A starting value for the debug page experiment of 27 Nov 2026, not a dental
+ * rule. The game does not use it.
+ */
+export const SCRUB_MIN_REVERSAL_SHARE = 0.5;
+
+/**
+ * Shortest and longest least-time-between-frames that the debug page's `?interval=` option
+ * accepts. Unit: milliseconds. Debug page only, not a dental rule; the game keeps
+ * TRACK_MIN_INTERVAL_MS and does not use these.
+ */
+export const DEBUG_INTERVAL_MIN_MS = 33;
+export const DEBUG_INTERVAL_MAX_MS = 100;

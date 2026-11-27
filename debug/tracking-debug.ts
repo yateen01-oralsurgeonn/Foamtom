@@ -12,21 +12,24 @@ import {
   type CalibrationVote,
   type ZoneId,
 } from '../src/tracking/calibration';
-import { classifyFrame } from '../src/tracking/classify-frame';
+import { classifyFrame, pickLargestFace, selectHandPoint } from '../src/tracking/classify-frame';
 import { framesInLastSecond } from '../src/tracking/frame-window';
 import { adaptDetectorFaces, adaptHands, adaptMeshFaces } from '../src/tracking/landmark-adapters';
 import { loadTrackers, type Trackers } from '../src/tracking/mediapipe-loader';
+import { strokeShape } from '../src/tracking/stroke-shape';
 import {
   CALIBRATION_K,
   CALIBRATION_LEAD_IN_SECONDS,
   CALIBRATION_SECONDS_PER_ZONE,
+  DEBUG_INTERVAL_MAX_MS,
+  DEBUG_INTERVAL_MIN_MS,
   FACE_MODEL,
   HAND_POINT,
   TRACK_MIN_INTERVAL_MS,
   WINDOW_MS,
 } from '../src/tracking/thresholds';
-import type { FrameInput, HandPointKind, TimedFrame } from '../src/tracking/types';
-import { clearDrawing, drawLandmarks } from './debug-draw';
+import type { FrameInput, HandPointKind, Point, TimedFrame } from '../src/tracking/types';
+import { clearDrawing, drawLandmarks, drawTrail } from './debug-draw';
 
 const KINDS: readonly HandPointKind[] = ['palm', 'wrist', 'fingertips', 'brush-head'];
 // The brush-head estimate failed (26 Nov 2026): its code stays, but its point is no longer drawn.
@@ -43,6 +46,7 @@ const stage = byId('stage');
 const side = byId('side');
 const buttons = byId('buttons');
 const calibrationText = byId('calibration');
+const strokeText = byId('stroke');
 const readout = byId('readout');
 const points = byId('points');
 
@@ -87,6 +91,10 @@ calibrationText.style.fontSize = '2.2rem';
 calibrationText.style.lineHeight = '1.15';
 calibrationText.style.margin = '6px 0';
 calibrationText.style.whiteSpace = 'pre-wrap';
+strokeText.style.fontSize = '1.4rem';
+strokeText.style.lineHeight = '1.15';
+strokeText.style.margin = '6px 0';
+strokeText.style.whiteSpace = 'pre-wrap';
 readout.style.fontSize = '1.1rem';
 readout.style.lineHeight = '1.15';
 readout.style.margin = '6px 0';
@@ -98,12 +106,21 @@ points.style.margin = '6px 0';
 const faceParam = new URLSearchParams(window.location.search).get('face');
 const faceModel: 'detector' | 'mesh' = faceParam === 'mesh' || faceParam === 'detector' ? faceParam : FACE_MODEL;
 
+// Debug page only: ?interval=NN (ms) replaces the least time between frames. Clamped; the game keeps
+// TRACK_MIN_INTERVAL_MS. A missing or non-numeric value keeps the default.
+const intervalParam = Number(new URLSearchParams(window.location.search).get('interval') ?? Number.NaN);
+const trackIntervalMs = Number.isFinite(intervalParam)
+  ? Math.min(DEBUG_INTERVAL_MAX_MS, Math.max(DEBUG_INTERVAL_MIN_MS, intervalParam))
+  : TRACK_MIN_INTERVAL_MS;
+
 let generation = 0;
 let stream: MediaStream | null = null;
 let trackers: Trackers | null = null;
 let cancelPump: (() => void) | null = null;
 let lastSentMs = Number.NEGATIVE_INFINITY;
 const lists: Record<HandPointKind, TimedFrame[]> = { palm: [], wrist: [], fingertips: [], 'brush-head': [] };
+// The palm point in image coordinates for the last second (the hand nearest the mouth), for the trail.
+let trail: { t: number; p: Point }[] = [];
 
 // ---- calibration experiment (memory only: dropped by Reset or when the tab closes) ----
 interface CalibrationStep {
@@ -196,6 +213,7 @@ function header(): string {
 function showStatus(text: string): void {
   readout.textContent = header() + text;
   calibrationText.textContent = '';
+  strokeText.textContent = '';
   points.textContent = '';
 }
 
@@ -232,10 +250,22 @@ function signalText(signal: BrushingSignal | null): string {
   );
 }
 
+function strokeReadout(nowMs: number): string {
+  const frames = framesInLastSecond(lists.palm, nowMs);
+  const rel: Point[] = [];
+  for (const frame of frames) if (frame.handRel !== null) rel.push(frame.handRel);
+  const shape = strokeShape(rel);
+  return (
+    `${shape.kind.toUpperCase()}  round ${shape.roundness.toFixed(2)}  angle ${shape.axisAngleDeg.toFixed(0)}°  ` +
+    `rev ${shape.reversalShare.toFixed(2)}  pts ${shape.points}  fps ${frames.length}`
+  );
+}
+
 function show(nowMs: number): void {
   const signals = {} as Record<HandPointKind, BrushingSignal | null>;
   for (const kind of KINDS) signals[kind] = aggregateSecond(framesInLastSecond(lists[kind], nowMs));
   calibrationText.textContent = calibrationReadout(nowMs, signals[HAND_POINT]);
+  strokeText.textContent = strokeReadout(nowMs);
   readout.textContent = header() + signalText(signals[HAND_POINT]);
   points.textContent = KINDS.map((kind) => {
     const s = signals[kind];
@@ -245,7 +275,7 @@ function show(nowMs: number): void {
 
 function step(nowMs: number): void {
   if (!trackers || video.videoWidth === 0 || video.videoHeight === 0) return;
-  if (nowMs - lastSentMs < TRACK_MIN_INTERVAL_MS) return;
+  if (nowMs - lastSentMs < trackIntervalMs) return;
   lastSentMs = nowMs;
   try {
     const faces =
@@ -259,6 +289,25 @@ function step(nowMs: number): void {
       kept.push({ t: nowMs, frame: classifyFrame(input, kind) });
       lists[kind] = kept;
     }
+
+    // Trail: the palm point of the hand nearest the mouth, while that hand is near the mouth.
+    const face = pickLargestFace(faces, input.aspect);
+    const palm = lists.palm[lists.palm.length - 1].frame;
+    let nearest: Point | null = null;
+    if (face !== null && palm.handNearMouth) {
+      let best = Number.POSITIVE_INFINITY;
+      for (const hand of hands) {
+        const p = selectHandPoint(hand, 'palm', input.aspect);
+        const d = Math.hypot((p.x - face.mouth.x) * input.aspect, p.y - face.mouth.y);
+        if (d < best) {
+          best = d;
+          nearest = p;
+        }
+      }
+    }
+    const keptTrail = trail.filter((entry) => entry.t > nowMs - WINDOW_MS);
+    if (nearest !== null) keptTrail.push({ t: nowMs, p: nearest });
+    trail = keptTrail;
 
     // Calibration: learn while a guided round brushes a zone, otherwise compare with what was learned.
     advanceRound(nowMs);
@@ -277,6 +326,7 @@ function step(nowMs: number): void {
     }
 
     drawLandmarks(canvas, { width: video.videoWidth, height: video.videoHeight }, faces, hands, DRAWN_KINDS);
+    drawTrail(canvas, trail.map((entry) => entry.p));
     show(nowMs);
   } catch {
     // This frame is skipped, as the game does.
@@ -313,6 +363,7 @@ function stop(): void {
   video.srcObject = null;
   clearDrawing(canvas);
   for (const kind of KINDS) lists[kind] = [];
+  trail = [];
   // A round in progress is dropped (its frames were only staged); what was learned stays in memory.
   round = null;
   live = [];

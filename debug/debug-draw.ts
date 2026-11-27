@@ -67,3 +67,25 @@ export function clearDrawing(canvas: HTMLCanvasElement): void {
   const ctx = canvas.getContext('2d');
   if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+const TRAIL_COLOUR = 'yellow';
+
+/**
+ * Draws the last second of one hand point as a thin line that fades toward the oldest end, so
+ * circles and scrubbing can be told apart by eye. `trail` is in raw image coordinates, oldest
+ * first. Call after drawLandmarks (which clears the canvas). Nothing is kept or exported.
+ */
+export function drawTrail(canvas: HTMLCanvasElement, trail: readonly Point[]): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx || trail.length < 2) return;
+  ctx.strokeStyle = TRAIL_COLOUR;
+  ctx.lineWidth = 1;
+  for (let i = 1; i < trail.length; i++) {
+    ctx.globalAlpha = i / trail.length; // oldest segment is faintest
+    ctx.beginPath();
+    ctx.moveTo(trail[i - 1].x * canvas.width, trail[i - 1].y * canvas.height);
+    ctx.lineTo(trail[i].x * canvas.width, trail[i].y * canvas.height);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}

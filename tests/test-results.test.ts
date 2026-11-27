@@ -45,6 +45,7 @@ const LABEL_HEADERS = [
   'Brush hand',
   'Zone',
   'Surface',
+  'How brushed',
   'Hand point',
   'Check',
   'Case',

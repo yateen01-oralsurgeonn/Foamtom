@@ -1,4 +1,4 @@
-﻿# Tracking test results
+# Tracking test results
 
 This file is filled in by Dr. Yatin during the feasibility test of the hand-tracking spec. It is an empty template until then.
 
@@ -228,3 +228,28 @@ Run 3 reading: cross-face rows 3 of 4 pass, so the experiment FAILS the pass rul
 | 27 Nov 2026 | Reset; right hand twice, left hand once (UR 117, UL 122, LL 122, LR 122) | Right hand | Lower right | Chewing | RRR | RRR | Pass | LOWER RIGHT 9/9 x3 |
 
 Run 4 reading: the right hand now said "right" on every answered try, whatever was brushed (run 3 said "left" every time). The right-hand answer flips with each calibration instead of following the brush. **Decision gate: calibration with the current hand-position features FAILS for the right hand.** The game stays as it is (REQUIRE_SIDE_MATCH false); side detection goes to "What's next".
+
+
+## 11. Circles or scrubbing (27 Nov 2026)
+
+Dr. Yatin's decision: the debug page tells small circles from back-and-forth scrubbing by the shape of the palm's path in the last second. This is a hypothesis on the debug page only; the game does not change and no child-facing or parent-facing text is added. Nothing is stored or sent.
+
+How to run it:
+
+1. Open the debug page (`npm run dev`, then `/debug/tracking-debug.html`) and allow the camera. To try a faster tracking rate add `?interval=50` (milliseconds, 33 to 100) to the address, and write it in the Interval column.
+2. The line under the calibration result reads, for example, `CIRCLES  round 0.62  angle 12°  rev 0.10  pts 9  fps 8`. It starts with CIRCLES, SCRUB or UNCLEAR. `pts` is how many frames of the last second were used. `fps` is how many frames were sent to the tracker in the last second. A thin yellow trail on the picture shows the last second of the palm.
+3. Brush each row below for 4 seconds, then take the screenshot while still brushing. Do three tries per row.
+4. Write the three codes for the shape: R = read what was brushed, W = read the other one, U = unclear, N = null (no hand at the mouth). For the chewing-surface row write what it read (C = CIRCLES, S = SCRUB, U, N).
+5. Pass rule: every circles row and every scrub row is R on at least 2 of 3 tries, and no scrub row reads CIRCLES more than once. The chewing-surface row is information only (it shows what the game must NOT nag about).
+
+| Date | Interval (ms) | Brush hand | Zone | How brushed | Shape (3 tries) | fps | Result | Note |
+|---|---|---|---|---|---|---|---|---|
+| | | Right hand | Upper right | Small circles | | | | |
+| | | Right hand | Upper right | Side-to-side scrub | | | | |
+| | | Left hand | Lower left | Small circles | | | | |
+| | | Left hand | Lower left | Side-to-side scrub | | | | |
+| | | Right hand | Front teeth | Small circles | | | | |
+| | | Right hand | Front teeth | Side-to-side scrub | | | | |
+| | | Right hand | Upper left (cross-face) | Small circles | | | | |
+| | | Right hand | Upper left (cross-face) | Side-to-side scrub | | | | |
+| | | Right hand | Lower right | Chewing surface, short back-and-forth (information only) | | | | |
