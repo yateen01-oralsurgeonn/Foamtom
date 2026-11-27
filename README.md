@@ -61,6 +61,18 @@ every line of code.
 
 An AI assistant (Claude) helped put the rules into steering files, reviewed the specs and ran the Kiro CLI; every spec and every line of code was written by Kiro.
 
+## What's next
+
+Dr. Yatin's own camera tests showed two things the camera can't do yet: tell which side of the
+mouth is being brushed, and tell small circles from scrubbing. Both need a point that follows the
+brush rather than the palm, such as fingertip tracking or a brightly coloured brush handle. The
+test page (`debug/tracking-debug.html`, development only) and the measured results
+(`docs/review/TRACKING-TEST-RESULTS.md`, sections 10 and 11) are in this repo for that work.
+
+Then: spoken "small circles" reminders with pictures, Marathi and Hindi voices, short trials with
+families of young patients (with the parents' consent), and a printable brushing chart that pairs
+with the Monster Book.
+
 ## Third-party and pre-existing work
 
 The only pre-existing work used is:
