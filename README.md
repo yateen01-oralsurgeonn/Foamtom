@@ -2,8 +2,8 @@
 
 A free browser game for children aged 5 to 9. Cute-spooky cavity monsters hide over four
 parts of the mouth. The child brushes for two minutes, one part at a time, and each
-monster dissolves into smoke when its part has been brushed. The game speaks every
-instruction aloud and shows it as a caption.
+monster dissolves into smoke as the child keeps brushing during its turn. The game speaks
+every instruction aloud and shows it as a caption.
 
 - **Play it:** https://yateen01-oralsurgeonn.github.io/Foamtom/ (free, in a phone or
   computer browser; no install, no sign-up).
