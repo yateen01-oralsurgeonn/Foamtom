@@ -278,6 +278,7 @@ if (app) {
     source,
     visibility,
     wakeLock: createWakeLock(),
+    onWaiting: (waiting) => screen.showWaiting(waiting),
     createSession: (mode) => {
       const now = new Date(); // the clock is read once per session
       return startSession({

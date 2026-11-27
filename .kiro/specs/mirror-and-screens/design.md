@@ -16,7 +16,7 @@ This spec changes only how things look and sound. It reuses, and does not redefi
 things from `core-brushing-loop` and `hand-tracking`: `BrushingSignal`, `SignalSource`,
 `SessionResult`, `SessionState`, `View` and `toView`, the tick rule, every constant in
 `src/logic/constants.ts`, the storage schema `foamtom:v1`, `GAIN_LEVEL`, `GAIN_STEP_PER_MS` and
-`rampGain` (`src/audio/speaker.ts`), `drawMonster`'s signature, `monsterAnchor`, the 8-second
+`rampGain` (`src/audio/speaker.ts`), `drawMonster`'s signature, `monsterAnchor`, the 15-second
 start limit, and the CSP in `index.html`. Nothing under `src/logic/` changes, with one
 exception: the timer-only monster rule of core requirement 8.5 (task 42, requirement 16.4,
 Decision 8 of 21 Nov 2026), which touches `src/logic/constants.ts` and `src/logic/session.ts`

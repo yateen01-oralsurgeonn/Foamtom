@@ -70,6 +70,11 @@ export interface SessionScreen {
    * plain session screen again. Never called in guided-timer mode.
    */
   attachPreview(preview: CameraPreview | null): void;
+  /**
+   * While the camera starts: `true` shows the waiting line as the start caption and speaks it
+   * once; `false` puts the start caption back. Does nothing once a session is showing.
+   */
+  showWaiting(waiting: boolean): void;
 }
 
 export function createSessionScreen(
@@ -248,6 +253,7 @@ export function createSessionScreen(
       removeLeaving();
       lastView = null;
       titlePanel.enableStart();
+      titlePanel.setCaption(null);
       spokenLineId = null;
       frame.paint(frameGuidance(null)); // a new session never starts with a lit region
       speaker.stop();
@@ -307,6 +313,11 @@ export function createSessionScreen(
 
     hide(): void {
       screen.hidden = true;
+    },
+
+    showWaiting(waiting: boolean): void {
+      titlePanel.setCaption(waiting ? 'waiting' : null);
+      if (waiting) speaker.say('waiting'); // once: the loop calls this once per start
     },
 
     attachPreview(preview: CameraPreview | null): void {

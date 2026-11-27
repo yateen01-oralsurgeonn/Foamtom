@@ -246,7 +246,7 @@ SHALL thin the smoke (requirement 8.5), because every second is a timer second.
 all four zones, so that I still get a full brush.**
 
 8.1 IF camera permission is refused, or the camera is unavailable, or the camera is not
-ready within 8 seconds of the start tap, THE SYSTEM SHALL run the session in guided-timer
+ready within 15 seconds of the start tap, THE SYSTEM SHALL run the session in guided-timer
 mode. The mode SHALL be fixed for the whole session. Poor tracking during a camera-mode
 session SHALL be handled second by second (requirements 6.3 and 9.3), not by changing
 mode.
@@ -273,6 +273,14 @@ health lost per second in guided-timer mode (requirement 8.5). Since 21 Nov 2026
 longer equal to `DAMAGE_PER_SECOND` (4, requirement 7.2) and SHALL NOT be defined as
 `DAMAGE_PER_SECOND`, so that the two rules can be read and tested apart and a change to
 one cannot move the other.
+
+8.7 WHILE the camera is starting after the start tap, and it is not ready after 1 second,
+THE SYSTEM SHALL show the caption 'Getting the mirror ready...' and speak the same words
+once. The line SHALL disappear when the session starts, in either mode. (Added 27 Nov 2026
+with the 15-second limit of requirement 8.1; see "Decision (2026-11-27)" below. The number
+8.7 is used because 8.5 and 8.6 are taken.) The line is the `waiting` line of
+`src/audio/lines.ts`. It SHALL NOT appear when the camera is refused or ready within 1
+second, and SHALL be shown at most once per start tap.
 
 ---
 
@@ -694,3 +702,25 @@ camera mode.
 
 The tests that pinned the old values are updated in the same task (mirror-and-screens task
 48). Changing a test to a rule Dr. Yatin changed is not weakening it.
+
+
+## Decision (2026-11-27): camera start limit 15 s
+
+Dr. Yatin Shinde decided this on 27 November 2026, option B, after a cold-start test on the live
+GitHub Pages site. He measured the time from the start tap until the camera and models were
+ready, with an empty cache: about 5 s on a 20 Mbit/s connection, about 10 s on 10 Mbit/s and
+about 18 s on 5 Mbit/s (his own phone on mobile data: 4-6 s). Below about 10 Mbit/s the session
+fell into guided-timer mode before the camera was ready, because the limit was 8 s.
+
+1. **The limit is 15 seconds** (requirement 8.1; it was 8 seconds). It is `START_TIMEOUT_MS` in
+   `src/ui/game-loop.ts`.
+2. **Requirement 6.3 of the hand-tracking spec does not change.** Nothing camera-related loads
+   before the start tap, so a family that never starts a game downloads nothing.
+3. **The child is told what is happening** (requirement 8.7): after 1 second
+   (`CAMERA_WAIT_LINE_DELAY_MS`) the caption and voice line 'Getting the mirror ready...' show
+   once, and go when the session starts. The line is shown through the same caption and
+   speaker paths as every other line. Reason: a wait of up to 15 s with a silent screen looks
+   like a broken game to a 5-year-old.
+4. **Unchanged:** the order and start of the model downloads, `camera-source.ts`,
+   `mediapipe-loader.ts`, `thresholds.ts`, and hand-tracking requirements 6.3 and 10.3 and
+   mirror-and-screens requirement 13.6.

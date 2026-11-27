@@ -13,7 +13,7 @@ This spec **only produces the signal**. It does not define or change anything th
 - the `BrushingSignal` shape (core requirement 5.1),
 - what `null` means (core requirements 5.2 and 5.6),
 - the `SignalSource` interface and its three operations (core requirement 15.3),
-- the 8-second camera start limit and the fixed mode per session (core requirement 8.1),
+- the 15-second camera start limit and the fixed mode per session (core requirement 8.1),
 - the tick rule, health maths and benefit of the doubt (core requirements 6, 7 and 14).
 
 Where this spec says "the signal", it means exactly the `BrushingSignal` of core
@@ -295,7 +295,7 @@ little light, tracker not ready, or the camera restarting.
 tracker. IF `stop()` is called while `start()` is still waiting for the camera, the camera
 SHALL be released as soon as it arrives.
 
-6.6 IF `start()` has not answered when the 8-second limit of core requirement 8.1 is
+6.6 IF `start()` has not answered when the 15-second limit of core requirement 8.1 is
 reached, the game plays that session in guided-timer mode. THE camera source SHALL then
 release the camera and SHALL NOT affect that session.
 

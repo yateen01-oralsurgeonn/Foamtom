@@ -10,7 +10,9 @@ import type { SignalSource } from '../tracking/signal-source';
 /** How often the scheduler wakes the loop to look at the clock. */
 const POLL_MS = 250;
 /** The camera must be ready within this long of the start tap, else timer-only (req 8.1). */
-const START_TIMEOUT_MS = 8000;
+const START_TIMEOUT_MS = 15000;
+/** The waiting line shows when the camera is still not ready this long after the start tap (req 8.7). */
+const CAMERA_WAIT_LINE_DELAY_MS = 1000;
 /** A session hidden for longer than this is dropped (req 2.7). */
 const HIDDEN_DROP_MS = 60000;
 
@@ -42,8 +44,13 @@ export interface GameLoopDeps {
   source: SignalSource;
   visibility: VisibilitySource;
   wakeLock: WakeLockHelper;
-  /** Builds the session once the mode is known (after start() answers, or after 8 s). */
+  /** Builds the session once the mode is known (after start() answers, or after 15 s). */
   createSession: (mode: SessionMode) => SessionState;
+  /**
+   * `true` once, when the camera is still starting 1 s after the start tap; `false` once, when
+   * the mode is known. Never called if the source answers within 1 s (req 8.7).
+   */
+  onWaiting?: (waiting: boolean) => void;
   onState: (state: SessionState) => void;
   onEnded: (state: SessionState) => void;
   /** The session was hidden for more than 60 s: nothing is saved. */
@@ -59,15 +66,33 @@ export function createGameLoop(deps: GameLoopDeps): GameLoop {
   const { clock, scheduler, source, visibility, wakeLock } = deps;
   let busy = false;
 
-  /** Asks the source once; falls back to timer-only after 8 s (req 8.1, 8.3). */
+  /**
+   * Asks the source once; falls back to timer-only after 15 s (req 8.1, 8.3). If the source has
+   * not answered after 1 s, the waiting line is shown once; it is hidden before the mode is
+   * known, so before the session starts, in either mode (req 8.7).
+   */
   function decideMode(): Promise<SessionMode> {
     return new Promise<SessionMode>((resolve) => {
       let settled = false;
+      let waitingShown = false;
+      const cancelWait = scheduler.after(CAMERA_WAIT_LINE_DELAY_MS, () => {
+        if (settled || waitingShown) return;
+        waitingShown = true;
+        deps.onWaiting?.(true);
+      });
+      function settle(mode: SessionMode): void {
+        settled = true;
+        cancelWait();
+        if (waitingShown) {
+          waitingShown = false;
+          deps.onWaiting?.(false);
+        }
+        resolve(mode);
+      }
       const cancelTimeout = scheduler.after(START_TIMEOUT_MS, () => {
         if (settled) return;
-        settled = true;
         source.stop();
-        resolve('timer-only');
+        settle('timer-only');
       });
       let answer: Promise<'ready' | 'unavailable'>;
       try {
@@ -78,18 +103,16 @@ export function createGameLoop(deps: GameLoopDeps): GameLoop {
       answer.then(
         (result) => {
           if (settled) {
-            source.stop(); // answered after the 8 s: release a late camera
+            source.stop(); // answered after the 15 s: release a late camera
             return;
           }
-          settled = true;
           cancelTimeout();
-          resolve(result === 'ready' ? 'camera' : 'timer-only');
+          settle(result === 'ready' ? 'camera' : 'timer-only');
         },
         () => {
           if (settled) return;
-          settled = true;
           cancelTimeout();
-          resolve('timer-only');
+          settle('timer-only');
         },
       );
     });

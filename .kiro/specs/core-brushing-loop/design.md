@@ -595,7 +595,7 @@ Stored sessions are `SessionResult` values (section 4). Storage imports its type
 | Condition | Behaviour | Requirement |
 |-----------|-----------|-------------|
 | **Camera permission refused / unavailable** (no device, API missing) | Switch to timer-only mode. No prompt, no nag, no retry. Session runs fully. A page not served over HTTPS counts as unavailable. | 8.1, 8.3, kid-safety |
-| **Camera not ready within 8 s of the start tap** (permission box left open, slow model load) | The session starts in timer-only mode. No second request in that session. | 8.1 |
+| **Camera not ready within 15 s of the start tap** (permission box left open, slow model load) | The session starts in timer-only mode. No second request in that session. From 1 s after the tap the caption and voice line 'Getting the mirror ready...' show once (`onWaiting` of the loop, the `waiting` line) and go when the session starts. | 8.1, 8.7 |
 | **Poor light / no face / child out of frame** | The signal is `null` for those seconds. The tick rule drains 2 per second and counts them as untracked. A zone with more than 10 untracked seconds is saved as unverified. Nothing is said to the child. | 6.3, 9.3 |
 | **Tab hidden** (`document.hidden`) | Camera stream stops. Session pauses (`pause`). On return within 60 s it resumes from the same second. After more than 60 s hidden the session is dropped, not saved, and the app shows the start screen. | 2.6, 2.7, 11.6 |
 | **`localStorage` full or blocked** | Save and load are wrapped in try/catch. On failure the game plays on and nothing is saved. No in-memory copy, no message to the child. | 9.4, kid-safety |

@@ -10,7 +10,7 @@ on the cheek, and the tests that guard all of it.
 This spec only produces the signal. It reuses, and does not redefine, these things from
 `core-brushing-loop`: `BrushingSignal` (`src/logic/types.ts`), the `SignalSource` interface
 and `nullSignalSource` (`src/tracking/signal-source.ts`), `SessionResult`, the tick rule, the
-8-second start limit and fixed mode (`game-loop.ts`), `REQUIRE_LEVEL_MATCH`, and the privacy
+15-second start limit and fixed mode (`game-loop.ts`), `REQUIRE_LEVEL_MATCH`, and the privacy
 guard test. Nothing under `src/logic/` changes. One small change to `src/ui/game-loop.ts` is
 needed (section 6.3, "Restart on resume").
 
@@ -403,7 +403,7 @@ stateDiagram-v2
 - If `stop()` is called while `start()` waits, a generation counter is bumped. When the
   camera or trackers arrive, the start sees that its generation is old, releases them at
   once and answers `'unavailable'` (req 6.5, 6.6). This is also what happens after the loop's
-  8-second limit, since the loop calls `stop()` then (req 6.6).
+  15-second limit, since the loop calls `stop()` then (req 6.6).
 - `latest()` returns `null` unless the state is `running`. Otherwise it returns
   `aggregateSecond(framesInLastSecond(frames, now()))` and then empties the frame list (req
   4.7, 6.4, 7.4). While restarting the state is `starting`, so it returns `null`.
@@ -460,9 +460,9 @@ shown (req 7.5).
 > `stop()` releases the tracker, and holding a GPU model while the screen is off wastes
 > battery. The cost is a few untracked seconds after a tab switch.
 
-### 6.4 The 8-second limit and what "ready" means (req 6.6)
+### 6.4 The 15-second limit and what "ready" means (req 6.6)
 
-The 8-second limit is the loop's (`START_TIMEOUT_MS` in `game-loop.ts`; not redefined here).
+The 15-second limit is the loop's (`START_TIMEOUT_MS` in `game-loop.ts`; not redefined here).
 Camera permission, stream start and loading all the model and WASM bytes must finish inside
 it. The sizes in section 8 decide whether that is realistic on a slow connection. If it is
 not met, the session is timer-only, which is a correct, fully working game (core req 8.1).
@@ -793,7 +793,7 @@ prints it.
 |-----------|-----------|-----|
 | Permission refused, no camera, not a secure context | `start()` answers `'unavailable'`; timer-only for the session; nothing shown, never asked again | 7.1, 6.1 |
 | Models or WASM fail to load, or blocked by CSP | `start()` answers `'unavailable'`; timer-only | 6.1 |
-| Camera plays but loading takes more than 8 s | The loop falls back to timer-only and calls `stop()`; the late camera is released on arrival | 6.5, 6.6 |
+| Camera plays but loading takes more than 15 s | The loop falls back to timer-only and calls `stop()`; the late camera is released on arrival | 6.5, 6.6 |
 | GPU delegate cannot be created | Loader retries with the CPU delegate; if that fails too, `'unavailable'` | 8.4 |
 | No face, or face too small to measure | Frame has `faceSeen: false`; if fewer than half the frames in a second see a face, `latest()` is `null`; nothing shown | 4.3, 6.4, 7.5 |
 | Too dark to track | Same as no face. Seconds counted as untracked by the core rules | 6.4 |

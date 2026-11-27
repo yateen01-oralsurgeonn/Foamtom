@@ -19,6 +19,8 @@ export interface TitlePanelHandlers {
 
 export interface TitlePanel {
   readonly element: HTMLElement;
+  /** Shows the caption of this line under the button; `null` puts the start caption back. */
+  setCaption(lineId: string | null): void;
   /** Re-enables the start button when the title screen is shown again. */
   enableStart(): void;
 }
@@ -104,6 +106,9 @@ export function createTitlePanel(handlers: TitlePanelHandlers, speaker: Speaker)
 
   return {
     element: panel,
+    setCaption(lineId: string | null): void {
+      startCaption.textContent = getLine(lineId ?? 'start')?.caption ?? '';
+    },
     enableStart(): void {
       if (startButton) startButton.disabled = false;
     },

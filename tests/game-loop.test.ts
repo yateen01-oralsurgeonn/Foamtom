@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
 import { createGameLoop } from '../src/ui/game-loop';
+import { getLine } from '../src/audio/lines';
 import type { SignalSource } from '../src/tracking/signal-source';
 import { startSession } from '../src/logic/session';
 import type { BrushingSignal, SessionMode, SessionState } from '../src/logic/types';
 
-// Design test 15 (gameLoopExactTicks) plus the task 6 tests on start(), stop() and the 8 s limit.
+// Design test 15 (gameLoopExactTicks) plus the task 6 tests on start(), stop() and the 15 s limit, and the waiting line (req 8.7).
 // The fakes below live in this file on purpose: there is no shared helper file.
 
 type Timer = { due: number; every: number | null; cb: () => void };
@@ -139,14 +140,21 @@ function makeLoop(
   let ended = 0;
   let dropped = 0;
   let endedState: SessionState | null = null;
+  const waiting: boolean[] = [];
+  const order: string[] = [];
   const loop = createGameLoop({
     clock: world.clock,
     scheduler: world.scheduler,
     source,
     visibility,
     wakeLock,
+    onWaiting: (value) => {
+      waiting.push(value);
+      order.push(value ? 'waiting-on' : 'waiting-off');
+    },
     createSession: (mode) => {
       modes.push(mode);
+      order.push('session');
       return startSession({
         mode,
         startedAt: 0,
@@ -172,6 +180,8 @@ function makeLoop(
     modes,
     states,
     loop,
+    waiting,
+    order,
     get ended() {
       return ended;
     },
@@ -395,13 +405,13 @@ describe('game loop: SignalSource stop()', () => {
   });
 });
 
-describe('game loop: 8 s start limit', () => {
-  it('a source that is not ready within 8 s gives a timer-only session', async () => {
+describe('game loop: 15 s start limit', () => {
+  it('a source that is not ready within 15 s gives a timer-only session', async () => {
     const h = makeLoop('never');
     const begun = h.loop.begin();
-    h.world.advance(7999);
+    h.world.advance(14900);
     expect(h.modes).toEqual([]); // still waiting
-    h.world.advance(1);
+    h.world.advance(100);
     await begun;
     expect(h.modes).toEqual(['timer-only']);
     expect(h.source.startCalls).toBe(1); // no second request
@@ -410,10 +420,10 @@ describe('game loop: 8 s start limit', () => {
     expect(h.last.ticksDone).toBe(30);
   });
 
-  it('a camera that answers ready after 8 s is stopped and the session stays timer-only', async () => {
+  it('a camera that answers ready after 15 s is stopped and the session stays timer-only', async () => {
     const h = makeLoop('late');
     const begun = h.loop.begin();
-    h.world.advance(8000);
+    h.world.advance(15000);
     await begun;
     const stopsBefore = h.source.stopCalls;
     h.source.answerLate('ready');
@@ -424,10 +434,10 @@ describe('game loop: 8 s start limit', () => {
     expect(h.source.startCalls).toBe(1);
   });
 
-  it('a source that answers in time gives a camera session and the 8 s timer is cancelled', async () => {
+  it('a source that answers in time gives a camera session and the 15 s timer is cancelled', async () => {
     const h = makeLoop('late');
     const begun = h.loop.begin();
-    h.world.advance(5000);
+    h.world.advance(12000);
     h.source.answerLate('ready');
     await begun;
     expect(h.modes).toEqual(['camera']);
@@ -440,6 +450,108 @@ describe('game loop: 8 s start limit', () => {
     const h = makeLoop('rejects');
     await h.loop.begin();
     expect(h.modes).toEqual(['timer-only']);
+  });
+});
+
+describe('game loop: waiting line (req 8.7)', () => {
+  it('appears after 1 s when the source has not answered, and not before', async () => {
+    const h = makeLoop('never');
+    const begun = h.loop.begin();
+    h.world.advance(999);
+    expect(h.waiting).toEqual([]);
+    h.world.advance(1);
+    expect(h.waiting).toEqual([true]);
+    h.world.advance(14000);
+    await begun;
+  });
+
+  it('is shown once and stays up until the 15 s limit, then is gone before the session starts', async () => {
+    const h = makeLoop('never');
+    const begun = h.loop.begin();
+    h.world.advance(14999);
+    expect(h.waiting).toEqual([true]); // once, not repeated
+    h.world.advance(1);
+    await begun;
+    expect(h.waiting).toEqual([true, false]);
+    expect(h.order).toEqual(['waiting-on', 'waiting-off', 'session']);
+  });
+
+  it('is gone before a camera session starts when the camera answers ready after 1 s', async () => {
+    const h = makeLoop('late');
+    const begun = h.loop.begin();
+    h.world.advance(4000);
+    expect(h.waiting).toEqual([true]);
+    h.source.answerLate('ready');
+    await begun;
+    expect(h.modes).toEqual(['camera']);
+    expect(h.order).toEqual(['waiting-on', 'waiting-off', 'session']);
+  });
+
+  it('is gone when a late answer is unavailable, and the session is timer-only', async () => {
+    const h = makeLoop('late');
+    const begun = h.loop.begin();
+    h.world.advance(2000);
+    h.source.answerLate('unavailable');
+    await begun;
+    expect(h.modes).toEqual(['timer-only']);
+    expect(h.order).toEqual(['waiting-on', 'waiting-off', 'session']);
+  });
+
+  it('never appears when the source answers ready within 1 s', async () => {
+    const h = makeLoop('ready');
+    await h.loop.begin();
+    h.world.advance(5000);
+    expect(h.waiting).toEqual([]);
+    expect(h.order).toEqual(['session']);
+  });
+
+  it('never appears when the source answers unavailable within 1 s (camera refused)', async () => {
+    const h = makeLoop('unavailable');
+    await h.loop.begin();
+    h.world.advance(5000);
+    expect(h.waiting).toEqual([]);
+    expect(h.order).toEqual(['session']);
+  });
+
+  it('never appears when the source rejects within 1 s', async () => {
+    const h = makeLoop('rejects');
+    await h.loop.begin();
+    h.world.advance(5000);
+    expect(h.waiting).toEqual([]);
+  });
+
+  it('is not shown again during the session, nor on a resume', async () => {
+    const h = makeLoop('never');
+    const begun = h.loop.begin();
+    h.world.advance(15000);
+    await begun;
+    h.world.advance(5000);
+    h.visibility.set(true);
+    h.visibility.set(false);
+    h.world.advance(5000);
+    expect(h.waiting).toEqual([true, false]);
+  });
+
+  it('is shown at most once per start, across two starts', async () => {
+    const h = makeLoop('late');
+    const first = h.loop.begin();
+    h.world.advance(3000);
+    h.source.answerLate('ready');
+    await first;
+    expect(h.waiting).toEqual([true, false]);
+    h.world.advance(125000); // the session ends and the loop is free again
+    expect(h.ended).toBe(1);
+    const second = h.loop.begin();
+    h.world.advance(3000);
+    h.source.answerLate('ready');
+    await second;
+    expect(h.waiting).toEqual([true, false, true, false]);
+  });
+
+  it('has a line in the voice table, with the exact text and caption', () => {
+    const line = getLine('waiting');
+    expect(line?.text).toBe('Getting the mirror ready...');
+    expect(line?.caption).toBe('Getting the mirror ready...');
   });
 });
 
