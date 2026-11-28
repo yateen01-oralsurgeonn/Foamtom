@@ -693,11 +693,11 @@ the `video-title-card` spec (its tasks 4 and 5).
   - Test file: `tests/index-head.test.ts` (extended)
   - Files this task may change: `index.html`, `tests/index-head.test.ts`
 
-- [ ] 55. **Check by hand (Dr. Yatin)**
+- [x] 55. **Check by hand (Dr. Yatin)**
   - Mark: needed for the video (req 17.5, 17.8, 17.10).
-  - [ ] 55.1 Check by hand: `npm run dev`, title screen at 360 x 640 (DevTools device size). The subtitle sits under the name and is clearly smaller; the three steps sit in one row with no horizontal scroll; the start button, the Monster Book button and the privacy line are all visible without scrolling; the icons are easy to understand (brush, monster on a tooth, smoke and sparkle). Also at 320 px and in landscape
-  - [ ] 55.2 Check by hand: the browser tab shows the toothbrush favicon and the new title; the console shows no 404 for a favicon
-  - [ ] 55.3 After the assistant adds `public/share-card.png` (from `promo/title-card.html?card=share&still=1`) and the site is published: send the link in WhatsApp and check that the preview shows the card, the title and the description
+  - [x] 55.1 Check by hand: `npm run dev`, title screen at 360 x 640 (DevTools device size). The subtitle sits under the name and is clearly smaller; the three steps sit in one row with no horizontal scroll; the start button, the Monster Book button and the privacy line are all visible without scrolling; the icons are easy to understand (brush, monster on a tooth, smoke and sparkle). Also at 320 px and in landscape
+  - [x] 55.2 Check by hand: the browser tab shows the toothbrush favicon and the new title; the console shows no 404 for a favicon
+  - [x] 55.3 After the assistant adds `public/share-card.png` (from `promo/title-card.html?card=share&still=1`) and the site is published: send the link in WhatsApp and check that the preview shows the card, the title and the description
   - _Requirements: 17.5, 17.8, 17.10_
   - Test file: none (manual)
   - Files this task may change: none

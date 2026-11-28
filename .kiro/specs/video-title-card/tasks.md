@@ -76,9 +76,9 @@ start and end cards. Task 5 is left for Dr. Yatin and his assistant.
   - Test files: `tests/title-card-model.test.ts`, `tests/title-card-page.test.ts`
   - May change: `promo/title-card-model.ts`, `promo/title-card.ts`, `promo/title-card.html`, `promo/title-card.css`, `tests/title-card-model.test.ts`, `tests/title-card-page.test.ts`
 
-- [ ] 5. **Check the share card by eye and capture it (left for Dr. Yatin and his assistant)**
-  - [ ] 5.1 No code changes. `npm run dev -- --port 5180 --strictPort`, window exactly 1200 x 630: `http://localhost:5180/promo/title-card.html?card=share&still=1`. The mirror with a monster on a tooth, a toothbrush, `Foamtom` and `The 2-minute toothbrushing game`, all readable when the picture is shrunk to a thumbnail about 300 px wide
-  - [ ] 5.2 Capture the still card as `public/share-card.png` (1200 x 630) and commit it. This is the file `og:image` of `mirror-and-screens` requirement 17.9 points to
+- [x] 5. **Check the share card by eye and capture it (left for Dr. Yatin and his assistant)**
+  - [x] 5.1 No code changes. `npm run dev -- --port 5180 --strictPort`, window exactly 1200 x 630: `http://localhost:5180/promo/title-card.html?card=share&still=1`. The mirror with a monster on a tooth, a toothbrush, `Foamtom` and `The 2-minute toothbrushing game`, all readable when the picture is shrunk to a thumbnail about 300 px wide
+  - [x] 5.2 Capture the still card as `public/share-card.png` (1200 x 630) and commit it. This is the file `og:image` of `mirror-and-screens` requirement 17.9 points to
   - _Requirements: 12.2, 12.5, 12.6, 12.7_
   - Test file: none (manual)
   - May change: `public/share-card.png` (added by the assistant, not by the code run)
