@@ -58,3 +58,27 @@ adds it to the build.
   - _Requirements: 11.1, 11.2 (and by eye: 3, 5, 6, 7, 8)_
   - Test file: none (manual)
   - May change: no files
+
+
+## Share card for link previews (added 28 Nov 2026, requirement 12, design 9)
+
+Tasks 4 and 5 were added on 28 Nov 2026 (mirror-and-screens Decision 11). Task 4 depends on task
+52 of `mirror-and-screens` (it provides `src/ui/howto-icons.ts`). They change nothing about the
+start and end cards. Task 5 is left for Dr. Yatin and his assistant.
+
+- [x] 4. **The share card: model, page, styles, tests**
+  - [x] 4.1 In `promo/title-card-model.ts` add `'share'` to `CardId`, the frozen share card (`Foamtom`, `The 2-minute toothbrushing game`), `SHARE_STAGE` (1200 x 630) and make `titleCardModel('share')` return it (exact string only). Do not change `STAGE`, `TIMELINE`, `isStill`, the start card or the end card
+  - [x] 4.2 In `tests/title-card-model.test.ts` add `shareCardText`, `shareCardIsOnlyForShare` and `shareCardWording` (design 16 to 18). Make the one change that `unknownCardIsStart` needs: its generated strings also exclude `share`. No assertion about the start or end card is weakened
+  - [x] 4.3 In `promo/title-card.ts` draw the share variant (tooth with the monster, the toothbrush) only when the card is `share`. In `promo/title-card.html` add one `<link rel="stylesheet" href="/src/ui/screens.css" />`. In `promo/title-card.css` add the `.title-card--share` rules of design 9. The start and end cards look exactly as before
+  - [x] 4.4 In `tests/title-card-page.test.ts` add `../src/ui/howto-icons` to the allowed imports and add `sharePageParts` (design 19). Keep every other assertion
+  - [x] 4.5 Run `npm run test:run` and `npm run build`. Both pass. Do not create `public/share-card.png`. Open `/promo/title-card.html?card=share&still=1` in the dev server for a quick look, and check that `?card=start` and `?card=end` are unchanged
+  - _Requirements: 12.1 to 12.9_
+  - Test files: `tests/title-card-model.test.ts`, `tests/title-card-page.test.ts`
+  - May change: `promo/title-card-model.ts`, `promo/title-card.ts`, `promo/title-card.html`, `promo/title-card.css`, `tests/title-card-model.test.ts`, `tests/title-card-page.test.ts`
+
+- [ ] 5. **Check the share card by eye and capture it (left for Dr. Yatin and his assistant)**
+  - [ ] 5.1 No code changes. `npm run dev -- --port 5180 --strictPort`, window exactly 1200 x 630: `http://localhost:5180/promo/title-card.html?card=share&still=1`. The mirror with a monster on a tooth, a toothbrush, `Foamtom` and `The 2-minute toothbrushing game`, all readable when the picture is shrunk to a thumbnail about 300 px wide
+  - [ ] 5.2 Capture the still card as `public/share-card.png` (1200 x 630) and commit it. This is the file `og:image` of `mirror-and-screens` requirement 17.9 points to
+  - _Requirements: 12.2, 12.5, 12.6, 12.7_
+  - Test file: none (manual)
+  - May change: `public/share-card.png` (added by the assistant, not by the code run)

@@ -4,6 +4,7 @@ import { MONSTERS } from '../src/logic/monsters';
 import { MONSTER_LOOKS } from '../src/ui/monster-looks';
 import {
   CARD_MONSTER_ID,
+  SHARE_STAGE,
   STAGE,
   TIMELINE,
   isStill,
@@ -51,12 +52,54 @@ describe('unknownCardIsStart', () => {
   it('gives the start card for any string that is neither start nor end', () => {
     fc.assert(
       fc.property(
-        fc.string().filter((s) => s !== 'start' && s !== 'end'),
+        fc.string().filter((s) => s !== 'start' && s !== 'end' && s !== 'share'),
         (s) => {
           expect(titleCardModel(s)).toEqual(start);
         },
       ),
     );
+  });
+});
+
+describe('shareCardText', () => {
+  it('has exactly the name and the approved subtitle, on a 1200 x 630 stage', () => {
+    const m = titleCardModel('share');
+    expect(m.card).toBe('share');
+    expect(m.lines).toEqual([
+      { role: 'title', text: 'Foamtom' },
+      { role: 'subtitle', text: 'The 2-minute toothbrushing game' },
+    ]);
+    expect(SHARE_STAGE).toEqual({ widthPx: 1200, heightPx: 630 });
+    expect(STAGE).toEqual({ widthPx: 1920, heightPx: 1080 });
+  });
+});
+
+describe('shareCardIsOnlyForShare', () => {
+  it('gives the start card for near misses and keeps start and end as they were', () => {
+    const start = titleCardModel('start');
+    for (const v of [null, undefined, '', 'Share', 'SHARE', 'share ', 'shared', 'banana']) {
+      expect(titleCardModel(v)).toEqual(start);
+    }
+    expect(titleCardModel('start').lines).toHaveLength(2);
+    expect(titleCardModel('end').lines).toHaveLength(4);
+    expect(titleCardModel('share')).not.toEqual(start);
+  });
+});
+
+describe('shareCardWording', () => {
+  const BANNED = /(^|[^a-z])(clinic|registr|cure|prevent|guarantee)/;
+  const lines = titleCardModel('share').lines;
+
+  it('holds no banned word start, person name, phone-like number, @ or http', () => {
+    for (const l of lines) {
+      const t = l.text.toLowerCase();
+      expect(BANNED.test(t)).toBe(false);
+      expect(t).not.toMatch(/yatin|shinde|dr\./);
+      expect(/\d{7,}/.test(l.text)).toBe(false);
+      expect(l.text).not.toContain('@');
+      expect(t).not.toContain('http');
+      expect(l.text).toBe(l.text.trim());
+    }
   });
 });
 

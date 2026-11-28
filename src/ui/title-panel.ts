@@ -5,8 +5,10 @@
 import { getLine } from '../audio/lines';
 import type { Speaker } from '../audio/speaker';
 import { DISPLAY_TEXT } from './display-text';
+import { drawSmokeAndSparkle, drawToothbrush, drawToothWithMonster } from './howto-icons';
 import { TAP_TARGETS } from './tap-targets';
-import { titleControls } from './title-model';
+import { HOWTO_STEPS, titleControls } from './title-model';
+import type { HowtoStep } from './title-model';
 
 export interface TitlePanelHandlers {
   /** The large start button was tapped. */
@@ -36,10 +38,35 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+const STEP_ICONS: Readonly<Record<HowtoStep['icon'], () => HTMLElement>> = {
+  toothbrush: drawToothbrush,
+  'tooth-monster': () => drawToothWithMonster(),
+  smoke: drawSmokeAndSparkle,
+};
+
+/** Three steps in one row: a drawn icon and a few words each. Icons are hidden from screen readers. */
+function howtoStrip(): HTMLElement {
+  const list = el('ol', 'howto');
+  list.setAttribute('role', 'list');
+  for (const step of HOWTO_STEPS) {
+    const item = el('li', `howto__step howto__step--${step.id}`);
+    const icon = el('span', 'howto__icon');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.append(STEP_ICONS[step.icon]());
+    item.append(icon, el('span', 'howto__text', DISPLAY_TEXT[step.textId].text));
+    list.append(item);
+  }
+  return list;
+}
+
 export function createTitlePanel(handlers: TitlePanelHandlers, speaker: Speaker): TitlePanel {
   const panel = el('div', 'panel panel--start');
   const title = el('h1', 'title', 'Foamtom: The Haunted Mirror');
   panel.append(title);
+
+  // First sight (requirement 17): what the game is, right under the name. Shown, never spoken.
+  const subtitle = el('p', 'title-subtitle', DISPLAY_TEXT.subtitle.text);
+  panel.append(subtitle, howtoStrip());
 
   let startButton: HTMLButtonElement | null = null;
 

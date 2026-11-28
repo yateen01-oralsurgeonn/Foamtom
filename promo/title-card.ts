@@ -5,6 +5,7 @@ import { REGION_LOOKS } from '../src/ui/effects';
 import { REGION_ORDER } from '../src/ui/frame-guidance';
 import type { FrameGuidance } from '../src/ui/frame-guidance';
 import { createMirrorFrame } from '../src/ui/mirror-frame';
+import { drawToothWithMonster, drawToothbrush } from '../src/ui/howto-icons';
 import { drawMonster } from '../src/ui/monster-art';
 import { CARD_MONSTER_ID, TIMELINE, isStill, titleCardModel } from './title-card-model';
 
@@ -50,7 +51,9 @@ const def = MONSTERS.find((m) => m.id === CARD_MONSTER_ID);
 if (!def) throw new Error('monster missing');
 
 const monsterBox = div('title-card__monster');
-monsterBox.append(drawMonster(def));
+// The share card (requirement 12.4) puts the monster on a tooth; the video cards are unchanged.
+const isShare = model.card === 'share';
+monsterBox.append(isShare ? drawToothWithMonster(def) : drawMonster(def));
 frame.glass.append(monsterBox);
 
 const mirrorBox = div('title-card__mirror');
@@ -65,3 +68,9 @@ for (const line of model.lines) {
 }
 
 stage.append(mirrorBox, textBox);
+
+if (isShare) {
+  const brushBox = div('title-card__brush');
+  brushBox.append(drawToothbrush());
+  stage.append(brushBox);
+}

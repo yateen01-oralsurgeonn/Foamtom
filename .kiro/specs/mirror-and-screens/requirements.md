@@ -82,6 +82,7 @@ puts every "needed for the video" requirement first.
 | 14 | Wording of new lines | needed for the video |
 | 15 | Tests | needed for the video |
 | 16 | Looks and sounds only | needed for the video |
+| 17 | First sight: a stranger sees a toothbrushing game for children | needed for the video |
 
 ---
 
@@ -761,6 +762,98 @@ stay as they are.
 
 ---
 
+### 17. First sight: a stranger sees that this is a toothbrushing game for children
+
+**Tag: needed for the video.** Added 28 Nov 2026 (Decision 11).
+
+**As someone who gets the link (a parent, a dentist, a teacher), I want the first thing I see
+to say "toothbrushing game for children", so that I know what it is without playing it.**
+
+The name "Foamtom: The Haunted Mirror" stays (Kiroween theme). Requirement 17 adds words and
+pictures around it. It changes no spoken line, no game rule and no stored value.
+
+17.1 **Subtitle.** THE title screen SHALL show, directly under the game name (the `h1`) and
+above everything else, the line "The 2-minute toothbrushing game" (approved line 20). It is
+shown, not spoken, and it is a plain description, not an instruction. Its text SHALL be clearly
+smaller than the game name and SHALL be readable on a phone (at least 1 rem).
+
+17.2 **How-to strip.** THE title screen SHALL show, under the subtitle and above the start
+button, three small steps in one row, each a simple drawn icon with a few words, in this
+order: (a) a toothbrush, "Pick up your brush"; (b) a monster on a tooth, using the existing
+monster art, "Monsters hide on your teeth"; (c) the monster turning to smoke or sparkle,
+"Brush them away!" (approved lines 21 to 23). The words are shown, not spoken.
+
+17.3 **The strip is an explanation, not the instructions of the game.** Every instruction a
+child needs during a brush stays spoken and captioned (kid-safety-privacy, Content). The strip
+tells a first-time viewer what the game is; it adds no spoken line, and the spoken `start`
+line, its caption and the start button do not change. The strip SHALL NOT name a zone, a
+technique, a time other than the two minutes of the subtitle, or any health effect.
+
+17.4 **Drawn in code, no emoji for the brush.** THE icons SHALL be drawn with plain elements and
+stylesheet rules (as the monsters and the frame are), SHALL use no emoji for the toothbrush
+(older Android phones show an empty box), and SHALL use no `<img>`, no `url(`, no `data:` URI
+and no third-party file. The monster in step (b) SHALL be drawn by the existing `drawMonster`
+and the `plaque-puff` entry of `MONSTERS`; if that entry is missing the tooth is drawn without
+a monster and the title screen still works.
+
+17.5 **Fits.** THE strip SHALL fit a 360 px wide portrait phone with no horizontal scrolling.
+With the subtitle and the strip added, the start button, the Monster Book button and the
+privacy line (requirement 1.6) SHALL still be visible without scrolling at 360 x 640 px. IF
+they do not fit THEN the icons and the strip text shrink; the start button SHALL NOT shrink
+(requirement 11.4).
+
+17.6 **Screen readers.** THE three step lines SHALL be read in order, as a list. EVERY icon
+SHALL be `aria-hidden`, so that the words are read once and the drawn monster's own name is not
+read.
+
+17.7 **Order on the screen.** THE order SHALL be: game name, subtitle, how-to strip, start
+button, Monster Book button, the parent control (when present), the privacy line, the start
+caption. Requirement 1.1 is unchanged: still exactly one large start button.
+
+17.8 **Browser tab.** THE page `<title>` of `index.html` SHALL be "Foamtom: the 2-minute
+toothbrushing game". THE page SHALL link a toothbrush icon `public/favicon.svg` (simple,
+readable at 16 px, no emoji, no text) with one `<link rel="icon" type="image/svg+xml">`
+line. The file is served from the same origin, so it adds no third-party request and ends the
+404 for the old missing favicon.
+
+17.9 **Link preview tags.** THE `<head>` of `index.html` SHALL carry these tags, so that
+WhatsApp, Telegram and similar apps can show a preview of the link. They are plain text that
+the other app reads from the page; the page makes no request because of them.
+
+| Tag | Content |
+|-----|---------|
+| `<meta name="description">` | A free 2-minute toothbrushing game for children aged 5 to 9. Monsters hide on the teeth; brushing makes them go away. The camera picture stays on the phone. |
+| `og:title` | Foamtom: the 2-minute toothbrushing game |
+| `og:description` | the same text as `description` |
+| `og:type` | website |
+| `og:url` | https://yateen01-oralsurgeonn.github.io/Foamtom/ |
+| `og:image` | https://yateen01-oralsurgeonn.github.io/Foamtom/share-card.png (absolute: WhatsApp ignores relative image URLs) |
+| `og:image:width` | 1200 |
+| `og:image:height` | 630 |
+| `og:image:alt` | Foamtom: a cartoon monster on a tooth in a haunted mirror, and a toothbrush |
+| `twitter:card` | summary_large_image |
+
+17.10 **The share image is made later, from the share card page** (video-title-card
+requirement 12). `public/share-card.png` is NOT created by this spec. Until Dr. Yatin's
+assistant adds it, `og:image` points at a file that is not there yet; that is expected and is
+not a test failure. The CSP of `index.html` does not change: it governs what the page loads,
+and the `og:` tags load nothing.
+
+17.11 **Wording.** THE four new lines of 17.1 and 17.2 (and the tab title and the
+description of 17.8 and 17.9) claim nothing about health: no prevention, no cure, no
+replacement for a dental visit, no clinic, no phone number, no person's name. "Monsters hide on
+your teeth" is the same playful idea as the cavity monsters of `product.md`; it does not say the
+game sees a tooth (`dental-rules.md`: zones are rough areas, never single teeth).
+
+17.12 **Tests.** A test SHALL pin the four new `DISPLAY_TEXT` rows (exact text, kind `shown`).
+A test SHALL show that the title panel builds the subtitle and then the three steps, in order,
+between the name and the start button, and that every step icon is `aria-hidden`. A test SHALL
+read `index.html` and check the `<title>`, the `description`, every `og:` tag of 17.9,
+`twitter:card` and the favicon link, and that the CSP is unchanged. A test SHALL scan the new
+stylesheet rules (no `url(`, no `@font-face`; the subtitle is smaller than the name).
+
+---
+
 ## Decisions, 21 Nov 2026
 
 Dr. Yatin answered the open questions on 21 Nov 2026. The requirements above agree with
@@ -807,6 +900,18 @@ these decisions.
    (the caption plate of requirement 11.7) and a `min-height`, so the plate showed even with
    no text. It looked like a bug. While the caption is empty the plate is not painted, but
    its space stays reserved, so nothing jumps when a monster name appears (requirement 7.11).
+11. **First sight: say "toothbrushing game for children" (28 Nov 2026).** Dr. Yatin sent the
+   game link on WhatsApp to three dentists. One replied "What exactly is that?". Nothing a
+   stranger sees first (title screen, browser tab, link preview) said "toothbrushing" or
+   "children". The name stays. He approved the subtitle "The 2-minute toothbrushing game" and
+   asked for a three-step how-to strip, a new tab title and favicon, and link preview tags
+   (requirement 17; the share image page is video-title-card requirement 12). The four new
+   shown lines are rows 20 to 23 below. Two points for his confirmation, because they touch
+   steering wording: (a) the strip's words are shown, not spoken, and are an explanation of
+   what the game is, not the instructions of a brush (requirement 17.3; `kid-safety-privacy.md`
+   asks for voice + picture for instructions); (b) "Monsters hide on your teeth" says teeth,
+   while `product.md` puts the monsters on the cheek over a part of the mouth. It is read as the
+   playful idea, not as the camera seeing a tooth.
 
 ---
 
@@ -838,6 +943,15 @@ listed because they were approved (19 Nov 2026) and are unchanged. "Spoken" mean
 | 17 | Back | Shown | Label of the Monster Book's back button. |
 | 18 | Grown-ups | Shown, small, next to the icon (changed 23 Nov 2026) | Title screen, the small parent entry control (requirement 2.2). |
 | 19 | Not met yet | Name only | Monster Book, each silhouette. |
+| 20 | The 2-minute toothbrushing game | Shown (not spoken). Approved by Dr. Yatin, 28 Nov 2026 | Title screen, directly under the game name (requirement 17.1). |
+| 21 | Pick up your brush | Shown (not spoken). Dr. Yatin, 28 Nov 2026 | Title screen, how-to strip, step 1, beside the toothbrush icon (requirement 17.2). |
+| 22 | Monsters hide on your teeth | Shown (not spoken). Dr. Yatin, 28 Nov 2026 | Title screen, how-to strip, step 2, beside the monster-on-a-tooth icon (requirement 17.2). |
+| 23 | Brush them away! | Shown (not spoken). Dr. Yatin, 28 Nov 2026 | Title screen, how-to strip, step 3, beside the smoke-and-sparkle icon (requirement 17.2). |
+
+Rows 20 to 23 were added on 28 Nov 2026 (Decision 11). They are in `DISPLAY_TEXT` under the ids
+`subtitle`, `step-brush`, `step-monsters` and `step-away`. The tab title, the link preview
+text and the favicon of requirements 17.8 and 17.9 are not shown in the game; they are read by
+the browser and by other apps, and are listed in requirement 17.9.
 
 The names in rows 4 to 15 are the names already approved on 14 Nov 2026 in the monster
 table. They are listed because speaking them is new. Rows 4 to 15 are spoken from

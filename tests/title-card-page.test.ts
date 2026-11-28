@@ -62,6 +62,7 @@ describe('title card page', () => {
       '../src/ui/frame-guidance',
       '../src/ui/effects',
       '../src/ui/monster-art',
+      '../src/ui/howto-icons',
       '../src/logic/monsters',
     ]);
     const imports = [...ts.matchAll(/^\s*import\b[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
@@ -125,5 +126,29 @@ describe('title card page', () => {
     expect(ts).not.toMatch(/createElement\(\s*['"]a['"]\s*\)/);
     for (const word of ['FOAMTOM', 'Haunted', 'Kiro', 'github']) expect(ts, word).not.toContain(word);
     expect(css).toMatch(/\.mirror-frame__glass\s*\{[^}]*height:\s*\d+px/);
+  });
+});
+
+describe('share card page', () => {
+  it('sharePageParts', () => {
+    const ts = read(TS_PATH);
+    const css = read(CSS_PATH);
+    expect(ts).toContain('drawToothWithMonster(');
+    expect(ts).toContain('drawToothbrush(');
+    expect(ts).toContain("model.card === 'share'");
+    // the stage is 1200 x 630 and the text is large enough for a thumbnail
+    const stage = /\.title-card--share\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+    expect(stage).toMatch(/width:\s*1200px/);
+    expect(stage).toMatch(/height:\s*630px/);
+    const px = (selector: string): number =>
+      Number(new RegExp(`${selector.replace(/[.]/g, '\\.')}\\s*\\{[^}]*font-size:\\s*(\\d+)px`).exec(css)?.[1] ?? 0);
+    expect(px('.title-card--share .title-card__line--title')).toBeGreaterThanOrEqual(100);
+    expect(px('.title-card--share .title-card__line--subtitle')).toBeGreaterThanOrEqual(48);
+    expect(css).not.toContain('url(');
+    // the video cards keep their own sizes
+    expect(css).toMatch(/\.title-card\s*\{[^}]*width:\s*1920px[^}]*height:\s*1080px/s);
+    expect(css).toMatch(/\.title-card__line--title\s*\{[^}]*font-size:\s*84px/);
+    // the page only writes the card to the screen: no export or capture of the picture
+    expect(ts).not.toMatch(/toDataURL|toBlob|captureStream|createImageBitmap|share-card/);
   });
 });

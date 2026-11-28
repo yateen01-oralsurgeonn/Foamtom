@@ -646,6 +646,97 @@ titleControls(hasParentHandler: boolean): TitleControl[]
 
 The painter applies each pair with `style.minWidth` and `style.minHeight`.
 
+### 5.5.1 First sight: subtitle, how-to strip, tab and preview tags (req 17) — needed for the video
+
+Added 28 Nov 2026 (requirements Decision 11). Everything below is looks and words. No spoken
+line, game rule, tracking, storage, Monster Book or Grown-ups screen changes.
+
+**Text (req 17.1, 17.2).** `DISPLAY_TEXT` gets four rows, all kind `shown`:
+
+| Id | Text |
+|----|------|
+| `subtitle` | The 2-minute toothbrushing game |
+| `step-brush` | Pick up your brush |
+| `step-monsters` | Monsters hide on your teeth |
+| `step-away` | Brush them away! |
+
+`DisplayTextId` gets the four ids. The new-text guard reads every row, so the four lines are
+checked against the banned and urging words with no edit to that test. `display-text.test.ts`
+pins the exact strings.
+
+**Title panel (req 17.7).** `title-model.ts` gets `HOWTO_STEPS`, an ordered table of
+`{ id, textId, icon }` (`brush`, `monsters`, `away`), pure, so a test can read the order. The
+panel appends, right after the `h1`: a `p.title-subtitle` (text from `DISPLAY_TEXT.subtitle`),
+then an `ol.howto` with three `li.howto__step`. Each `li` holds a `span.howto__icon` with
+`aria-hidden="true"` and a `span.howto__text` with the step's words. Then the existing loop
+adds the start button, the Monster Book button and the parent control, then the privacy line
+and the start caption, unchanged. `.howto` has `role="list"` because `list-style: none`
+removes the list role in some screen readers.
+
+**Icons (req 17.4).** `src/ui/howto-icons.ts` builds the icons from plain `div`/`span`
+elements with class names; the pictures are stylesheet rules. No `<img>`, no `url(`, no SVG
+file, no emoji.
+
+- `drawToothbrush()` returns `span.tb`: a slanted handle, a neck, a head and a row of bristles.
+- `drawToothWithMonster()` returns `span.tooth` (a rounded white tooth) holding the existing
+  `drawMonster(def)` of `plaque-puff`, looked up in `MONSTERS`. If the entry is missing the
+  tooth is returned without a monster (the title screen must not fail). The monster's own
+  `role="img"` and name are inside the `aria-hidden` icon, so they are not read.
+- `drawSmokeAndSparkle()` returns `span.puff`: three overlapping soft circles and a
+  four-point sparkle (`clip-path`).
+
+All three size themselves from one custom property, `--icon` (44 px in the strip), so the same
+drawings can be large on the share card (video-title-card requirement 12). The monster inside
+the tooth gets `--u: calc(var(--icon) / 110)`; the existing `--u` mechanism of
+`monster-art.css` is used as it is.
+
+The drawing rules and the strip rules (`.title-subtitle`, `.howto`, `.howto__step`,
+`.howto__icon`, `.howto__text`) are all added to `screens.css`, which `index.html` already
+links. No new stylesheet is linked, because `tests/parent-css.test.ts` pins the five stylesheet
+links of `index.html` and no existing test is edited for this.
+
+**Layout (req 17.5).** The panel is a column (`.panel--start`). Starting values for a 360 x 640
+phone (content width 328 px, `#app` padding 16 px):
+
+| Part | Value |
+|------|-------|
+| `.title` | unchanged, 1.6 rem |
+| `.title-subtitle` | 1.1 rem, weight 600, colour `#e6dcf7`, line height 1.25, `margin: 0`, centred, wraps to at most two lines |
+| `.howto` | one row, `display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px`, `list-style: none`, `margin: 0; padding: 0`, `width: 100%` |
+| `.howto__step` | column, centred, gap 4 px |
+| `--icon` | 44 px (36 px under 340 px width) |
+| `.howto__text` | 0.8 rem, line height 1.2, `overflow-wrap: anywhere` so it never forces a horizontal scroll |
+| `.panel--start` gap | 18 px becomes 12 px, so the two new blocks fit |
+
+Height budget at 360 x 640 (608 px of content): name 2 lines about 62, subtitle 22 to 44, strip
+about 80, start button 72, Monster Book 52, Grown-ups 48, privacy about 65, caption about 64,
+and six gaps of 12. If a manual check shows the start, Monster Book button or privacy line below
+the fold, the icons (`--icon`), then the strip text, then the gap shrink. The start button's
+`TAP_TARGETS` size never changes.
+
+**Tab and preview (req 17.8 to 17.10).** `index.html` changes only in `<head>`: the `<title>`,
+one `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />` (Vite writes the build path;
+the site base is `./`), the `description` meta, the eight `og:` meta tags and `twitter:card` of the table in requirement 17.9. The Content-Security-Policy meta is
+not touched, and no inline style or script is added. `public/favicon.svg` is one plain SVG file:
+a slanted toothbrush on a rounded dark-purple square, three or four shapes, no text, no
+gradient, no external reference, `viewBox="0 0 32 32"`.
+
+The `og:` and `twitter:` tags are read by the app that receives the link (WhatsApp, Telegram),
+not by the page, so they make no request. `og:image` is absolute because WhatsApp ignores
+relative image URLs. `public/share-card.png` is not created here (req 17.10).
+
+**Tests (req 17.12).**
+
+| # | Test name | Assertion |
+|---|-----------|-----------|
+| 39 | `displayTextPinned` (extended) | the four new ids exist with the exact strings and kind `shown` |
+| 40 | `titlePanelFirstSight` | with a small fake `document`, `createTitlePanel` puts, in order: the `h1` with the game name, the subtitle, the strip with three steps in order, then the start button; the three step texts are the `DISPLAY_TEXT` strings |
+| 41 | `howtoIconsHidden` | every `.howto__icon` has `aria-hidden="true"`; the step text spans do not |
+| 42 | `howtoStepsTable` | `HOWTO_STEPS` has three rows in order, each pointing at an existing `DISPLAY_TEXT` id |
+| 43 | `howtoCss` | the new rules hold no `url(`, no `@font-face`; the subtitle `font-size` is smaller than `.title`; `.howto` has three columns and no fixed width over 100 % |
+| 44 | `indexHeadTags` | `index.html`: `<title>`, `description`, each `og:` tag, `twitter:card`, favicon link, the CSP unchanged, and no inline `<style>`, `style=`, or `data:` |
+| 45 | `faviconFile` | `public/favicon.svg` exists, is an `<svg` with a `viewBox`, has no `<script>`, no `<text>`, no `http` other than the SVG namespace, no `data:` |
+
 ### 5.6 End card (req 9) — needed for the video
 
 - **Content (req 9.1).** The four monsters of the session, each drawn with `drawMonster`, and
@@ -1032,6 +1123,10 @@ stops and the line goes to Dr. Yatin first (req 14.1).
 | 17 "Back" | `DISPLAY_TEXT['back']` |
 | 18 "Grown-ups" | `DISPLAY_TEXT['grown-ups']` (kind `shown`, changed 23 Nov 2026) |
 | 19 "Not met yet" | `DISPLAY_TEXT['not-met']` (name only) |
+| 20 "The 2-minute toothbrushing game" (28 Nov 2026) | `DISPLAY_TEXT['subtitle']` (shown) |
+| 21 "Pick up your brush" (28 Nov 2026) | `DISPLAY_TEXT['step-brush']` (shown) |
+| 22 "Monsters hide on your teeth" (28 Nov 2026) | `DISPLAY_TEXT['step-monsters']` (shown) |
+| 23 "Brush them away!" (28 Nov 2026) | `DISPLAY_TEXT['step-away']` (shown) |
 
 - **Existing lines (req 14.2).** `start`, the four `zone-` lines, `smoke` and `end` are not edited.
   `tests/existing-lines-pinned.test.ts` holds their exact `text` and `caption`.

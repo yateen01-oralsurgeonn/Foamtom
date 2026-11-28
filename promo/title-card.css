@@ -129,6 +129,58 @@ body {
   }
 }
 
+/* ---- Share card (requirement 12): 1200 x 630, for the link preview. New rules only. ---- */
+.title-card--share {
+  width: 1200px;
+  height: 630px;
+}
+
+.title-card--share .title-card__mirror {
+  top: 50px;
+  left: 70px;
+  transform: none;
+}
+
+.title-card--share .mirror-frame__glass {
+  height: 470px;
+}
+
+.title-card--share .title-card__monster {
+  --icon: 330px;
+}
+
+.title-card__brush {
+  --icon: 210px;
+  position: absolute;
+  left: 640px;
+  top: 20px;
+  animation: tc-fade-in var(--tc-text-duration) ease-out var(--tc-text-delay) both;
+}
+
+.title-card--share .title-card__text {
+  left: 600px;
+  right: 40px;
+  top: 250px;
+  height: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.title-card--share .title-card__line--title {
+  font-size: 108px;
+  line-height: 120px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #f4eefc;
+}
+
+.title-card--share .title-card__line--subtitle {
+  font-size: 54px;
+  line-height: 64px;
+  font-weight: 700;
+  color: #ffd966;
+}
 /* ---- Still image: the final frame at once ---- */
 .title-card--still,
 .title-card--still *,

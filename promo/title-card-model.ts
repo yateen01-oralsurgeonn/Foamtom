@@ -1,7 +1,7 @@
 // Title card model: the text, the timeline and the stage size for the developer-only promo page.
 // Pure: no DOM, no clock, no randomness, no import from the game.
 
-export type CardId = 'start' | 'end';
+export type CardId = 'start' | 'end' | 'share';
 export type CardLineRole = 'title' | 'subtitle' | 'tagline' | 'credit' | 'address';
 
 export interface CardLine {
@@ -16,6 +16,9 @@ export interface TitleCardModel {
 }
 
 export const STAGE = { widthPx: 1920, heightPx: 1080 } as const;
+
+/** The share card is a link-preview picture, not a video frame (requirement 12.2). */
+export const SHARE_STAGE = { widthPx: 1200, heightPx: 630 } as const;
 
 /** Id the page looks up in MONSTERS. */
 export const CARD_MONSTER_ID = 'plaque-puff';
@@ -54,9 +57,17 @@ const END_CARD: TitleCardModel = Object.freeze({
   ]),
 });
 
-/** The end card only for the exact string 'end'. Everything else is the start card. */
+// Requirement 12.3: the name and the approved subtitle (Dr. Yatin, 28 Nov 2026).
+const SHARE_CARD: TitleCardModel = Object.freeze({
+  card: 'share',
+  lines: Object.freeze([line('title', 'Foamtom'), line('subtitle', 'The 2-minute toothbrushing game')]),
+});
+
+/** The end card only for the exact string 'end', the share card only for 'share'. Everything else is the start card. */
 export function titleCardModel(card: string | null | undefined): TitleCardModel {
-  return card === 'end' ? END_CARD : START_CARD;
+  if (card === 'end') return END_CARD;
+  if (card === 'share') return SHARE_CARD;
+  return START_CARD;
 }
 
 /** True only for the exact string '1'. */

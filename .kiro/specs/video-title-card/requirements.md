@@ -290,3 +290,56 @@ record only what I have approved.**
 with `npm run dev -- --port 5180 --strictPort`.
 
 11.2 THE SYSTEM SHALL leave that task unchecked, for Dr. Yatin to check himself.
+
+
+---
+
+### 12. A share card for link previews (added 28 Nov 2026)
+
+**As the author, I want a 1200 x 630 picture that says "toothbrushing game", so that a link to
+the game shows a clear preview in WhatsApp and similar apps.**
+
+This requirement adds a third card to the same developer page. It is a new card; the start
+card and the end card are not changed. It overrides requirements 3.1, 5.4 and 10.1 only for the
+share card and only as written here (those requirements describe the two video cards).
+
+12.1 WHEN the URL has `?card=share` THE SYSTEM SHALL show the share card. Any other value of
+`card` behaves as before (requirement 4.3): the start card.
+
+12.2 THE share card SHALL be drawn in one stage exactly 1200 px wide and 630 px high, centred on
+a black page like the other cards, on the background `#1c1530`. The two video cards stay
+1920 x 1080 (requirement 3.1). The model holds the size as `SHARE_STAGE`; `STAGE` does not
+change.
+
+12.3 THE share card SHALL show exactly two lines of text: the title `Foamtom` and, under it,
+the subtitle `The 2-minute toothbrushing game` (approved by Dr. Yatin on 28 Nov 2026). Both come
+from `titleCardModel('share')`; the page holds no text of its own (requirement 5.5). The
+claim, name, clinic and health rules of requirement 5.4 apply to these lines.
+
+12.4 THE share card SHALL show the mirror frame (built with `createMirrorFrame()` and lit as in
+requirement 6.2) with the monster `plaque-puff` on a tooth inside the glass, and a large
+toothbrush beside the text. The tooth, the toothbrush and the monster are the game's own
+drawings (`src/ui/howto-icons.ts`, `drawMonster`); the page draws no new art style. THE share
+card SHALL NOT show a person, a child's face, a clinic, a score or a brush technique.
+
+12.5 THE share card SHALL be large and plain, so that it reads when an app shrinks it to a
+thumbnail: the name at least 100 px, the subtitle at least 48 px, text colour with a contrast of
+at least 4.5 to 1 against `#1c1530`.
+
+12.6 WHEN the URL has `&still=1` THE SYSTEM SHALL show the final frame at once, with no
+animation, exactly as for the other cards (requirement 8.6). Without it the card runs the same
+four fades of requirement 8.1; the toothbrush fades in with the text.
+
+12.7 THE page files SHALL follow requirements 2.1 to 2.4 and 8.3 to 8.5 (no network, no
+storage, no timer, no `url(`, no `data:`). The one new import allowed in `title-card.ts` is
+`../src/ui/howto-icons`. The page SHALL NOT export, save or capture an image itself: Dr.
+Yatin's assistant captures `public/share-card.png` from the still card after this run. The
+page SHALL NOT create `public/share-card.png`.
+
+12.8 THE share card SHALL NOT be added to the build input, and nothing in the game links to
+it (requirements 1.3, 1.4). The existing "not in the build" tests keep passing.
+
+12.9 THE two existing tests that name the two cards SHALL change only as far as this card
+needs: `unknownCardIsStart` excludes `share` from its generated strings, and
+`pageIsDevOnlyAndSafe` allows the one import of requirement 12.7. No assertion about the start
+or end card is weakened. `startCardText` and `endCardText` are not changed.

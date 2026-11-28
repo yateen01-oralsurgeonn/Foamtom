@@ -13,6 +13,20 @@ export interface TitleControl {
   readonly icon: true;
 }
 
+/** One step of the how-to strip under the subtitle (requirement 17.2). Shown, never spoken. */
+export interface HowtoStep {
+  readonly id: 'brush' | 'monsters' | 'away';
+  readonly textId: DisplayTextId;
+  readonly icon: 'toothbrush' | 'tooth-monster' | 'smoke';
+}
+
+/** The three steps, in the order they are read and drawn. */
+export const HOWTO_STEPS: readonly HowtoStep[] = Object.freeze([
+  Object.freeze({ id: 'brush', textId: 'step-brush', icon: 'toothbrush' }),
+  Object.freeze({ id: 'monsters', textId: 'step-monsters', icon: 'tooth-monster' }),
+  Object.freeze({ id: 'away', textId: 'step-away', icon: 'smoke' }),
+] as const satisfies readonly HowtoStep[]);
+
 export function titleControls(hasParentHandler = false): TitleControl[] {
   const controls: TitleControl[] = [
     { id: 'start', size: 'large', target: 'start', textId: 'start-line', icon: true },

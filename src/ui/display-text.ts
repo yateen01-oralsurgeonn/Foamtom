@@ -3,7 +3,16 @@
 // mirror-and-screens spec (requirements 1.3, 14.1, 14.4). Pure: no DOM, no clock.
 
 
-export type DisplayTextId = 'privacy' | 'book-title' | 'back' | 'grown-ups' | 'not-met';
+export type DisplayTextId =
+  | 'privacy'
+  | 'book-title'
+  | 'back'
+  | 'grown-ups'
+  | 'not-met'
+  | 'subtitle'
+  | 'step-brush'
+  | 'step-monsters'
+  | 'step-away';
 
 export interface DisplayText {
   readonly id: DisplayTextId;
@@ -22,4 +31,9 @@ export const DISPLAY_TEXT: Readonly<Record<DisplayTextId, DisplayText>> = {
   back: { id: 'back', text: 'Back', kind: 'shown' },
   'grown-ups': { id: 'grown-ups', text: 'Grown-ups', kind: 'shown' },
   'not-met': { id: 'not-met', text: 'Not met yet', kind: 'name-only' },
+  // First-sight lines (requirement 17, approved lines 20 to 23, Dr. Yatin 28 Nov 2026). Shown, never spoken.
+  subtitle: { id: 'subtitle', text: 'The 2-minute toothbrushing game', kind: 'shown' },
+  'step-brush': { id: 'step-brush', text: 'Pick up your brush', kind: 'shown' },
+  'step-monsters': { id: 'step-monsters', text: 'Monsters hide on your teeth', kind: 'shown' },
+  'step-away': { id: 'step-away', text: 'Brush them away!', kind: 'shown' },
 };

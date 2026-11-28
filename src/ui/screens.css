@@ -263,8 +263,59 @@ button.book-cell--rare-unmet:focus-visible {
 .panel--start {
   min-height: min(560px, 80dvh);
   justify-content: center;
-  gap: 18px;
+  gap: 12px;
   animation: screen-fade-in 600ms ease-out both;
+}
+
+/* First sight (requirement 17): the subtitle under the name, then the three-step strip. */
+.title-subtitle {
+  margin: 0;
+  max-width: 30ch;
+  font-size: 1.1rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #e6dcf7;
+}
+
+.howto {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.howto__step {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.howto__icon {
+  --icon: 44px;
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+
+.howto__text {
+  font-size: 0.85rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #e6dcf7;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 339px) {
+  .howto__icon {
+    --icon: 36px;
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .panel--start .small-button {
@@ -342,4 +393,164 @@ button.book-cell--rare-unmet:focus-visible {
   border-radius: 14px;
   background: var(--caption-bg);
   color: var(--caption-fg);
+}
+
+/* ---- How-to strip drawings (requirement 17.4). Plain shapes: no image, no emoji, no font. Each root takes its size
+   from the --icon of its parent (44px when none is set); every part is a percentage of its root, so the same drawing
+   works small on the title screen and large on the developer share card. ---- */
+/* ---- Toothbrush ---- */
+.tb {
+  position: relative;
+  display: block;
+  width: var(--icon, 44px);
+  height: var(--icon, 44px);
+}
+
+.tb__body {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: rotate(-40deg);
+}
+
+.tb__handle {
+  position: absolute;
+  left: 2%;
+  top: 43%;
+  width: 56%;
+  height: 14%;
+  border-radius: 999px;
+  background: #7be0c3;
+}
+
+.tb__neck {
+  position: absolute;
+  left: 56%;
+  top: 46%;
+  width: 12%;
+  height: 8%;
+  background: #c9bde6;
+}
+
+.tb__head {
+  position: absolute;
+  left: 66%;
+  top: 41%;
+  width: 30%;
+  height: 18%;
+  border-radius: 30%;
+  background: #f4eefc;
+}
+
+.tb__bristles {
+  position: absolute;
+  left: 70%;
+  top: 24%;
+  width: 22%;
+  height: 19%;
+  border-radius: 30% 30% 0 0;
+  background: #5cc8ff;
+}
+
+/* ---- Tooth with a monster on it ---- */
+.tooth {
+  --u: calc(var(--icon, 44px) / 110);
+  position: relative;
+  display: block;
+  width: var(--icon, 44px);
+  height: var(--icon, 44px);
+}
+
+.tooth__crown {
+  position: absolute;
+  left: 6%;
+  top: 4%;
+  width: 88%;
+  height: 74%;
+  border-radius: 42% 42% 38% 38% / 40% 40% 50% 50%;
+  background: #f4eefc;
+}
+
+.tooth__root {
+  position: absolute;
+  top: 66%;
+  width: 24%;
+  height: 32%;
+  border-radius: 0 0 50% 50%;
+  background: #f4eefc;
+}
+
+.tooth__root--left {
+  left: 20%;
+}
+
+.tooth__root--right {
+  left: 56%;
+}
+
+.tooth .monster {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+}
+
+/* ---- Smoke and sparkle ---- */
+.puff {
+  position: relative;
+  display: block;
+  width: var(--icon, 44px);
+  height: var(--icon, 44px);
+}
+
+.puff__cloud {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.puff__cloud--a {
+  left: 6%;
+  top: 40%;
+  width: 44%;
+  height: 44%;
+  background: #c9bde6;
+}
+
+.puff__cloud--b {
+  left: 30%;
+  top: 22%;
+  width: 48%;
+  height: 48%;
+  background: #e3dbf6;
+}
+
+.puff__cloud--c {
+  left: 52%;
+  top: 46%;
+  width: 38%;
+  height: 38%;
+  background: #b3a4dc;
+}
+
+.puff__spark {
+  position: absolute;
+  background: #ffd966;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.puff__spark--big {
+  left: 62%;
+  top: 0;
+  width: 36%;
+  height: 36%;
+}
+
+.puff__spark--small {
+  left: 2%;
+  top: 8%;
+  width: 22%;
+  height: 22%;
 }

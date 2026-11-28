@@ -647,6 +647,61 @@ Tick nothing in tasks 1 to 41 again; they stay as they are.
   - Test file: `tests/css-guards.test.ts` (extended)
   - Files this task may change: `src/ui/screens.css`, `tests/css-guards.test.ts`
 
+## Group 5: first sight (added 28 Nov 2026, requirement 17, design 5.5.1)
+
+Tasks 51 to 55 were added on 28 Nov 2026 after Dr. Yatin's WhatsApp test (requirements Decision
+11). They are **needed for the video**. They change looks and words only. They are built in
+order; each ends with `npm run test:run` and `npm run build` passing. The share image page is in
+the `video-title-card` spec (its tasks 4 and 5).
+
+- [x] 51. **Four new shown lines**
+  - Mark: needed for the video (req 17.1, 17.2, 17.12; design 5.5.1; approved lines 20 to 23).
+  - [x] 51.1 In `src/ui/display-text.ts` add the ids `subtitle`, `step-brush`, `step-monsters` and `step-away` to `DisplayTextId` and `DISPLAY_TEXT`, kind `shown`, with the exact texts of approved lines 20 to 23. Change nothing else in the file
+  - [x] 51.2 Extend `tests/display-text.test.ts`: the pinned table has the four new rows with exact strings and kind `shown`. Existing assertions keep their strength. `tests/new-text-guard.test.ts` needs no edit (it reads every row); confirm it passes
+  - [x] 51.3 Run `npm run test:run` and `npm run build`: both pass. The player sees no change yet
+  - _Requirements: 17.1, 17.2, 17.11, 17.12, 14.4_
+  - Test file: `tests/display-text.test.ts` (extended)
+  - Files this task may change: `src/ui/display-text.ts`, `tests/display-text.test.ts`
+
+- [x] 52. **Subtitle and how-to strip on the title screen**
+  - Mark: needed for the video (req 17.1 to 17.7; design 5.5.1).
+  - [x] 52.1 In `src/ui/title-model.ts` add `HOWTO_STEPS` (three rows, in order: `brush`, `monsters`, `away`, each with its `DISPLAY_TEXT` id). Pure; `titleControls` is not changed
+  - [x] 52.2 Create `src/ui/howto-icons.ts` (`drawToothbrush`, `drawToothWithMonster`, `drawSmokeAndSparkle`) per design 5.5.1: plain elements and class names only, no emoji, no `<img>`, no `url(`, no `innerHTML`, no `style=`. The drawing rules go at the end of `src/ui/screens.css`. The monster is `drawMonster` of the `plaque-puff` entry looked up in `MONSTERS`. `index.html` does not change in this task (no new stylesheet link: `tests/parent-css.test.ts` pins the five links)
+  - [x] 52.3 In `src/ui/title-panel.ts` append, right after the `h1`, `p.title-subtitle` and `ol.howto` (three `li`, each with an `aria-hidden` icon span and a text span, texts from `DISPLAY_TEXT`). The start button, its label, accessible name and `start` line, the Monster Book button, the parent control and the privacy line are not changed. In `src/ui/screens.css` add the subtitle and strip rules and set the `.panel--start` gap to 12 px
+  - [x] 52.4 Tests: `titlePanelFirstSight`, `howtoIconsHidden`, `howtoStepsTable`, `howtoCss` (design tests 40 to 43) in a new `tests/title-first-sight.test.ts`. Extend `tests/title-panel.test.ts` only if an existing assertion needs it; keep every assertion's strength
+  - [x] 52.5 Run `npm run test:run` and `npm run build`: both pass. The title screen shows the name, the subtitle, the strip, then the start button
+  - _Requirements: 17.1 to 17.7, 17.11, 17.12, 1.1, 1.6_
+  - Test files: `tests/title-first-sight.test.ts` (new), `tests/title-panel.test.ts` (only if needed)
+  - Files this task may change: `src/ui/title-model.ts`, `src/ui/howto-icons.ts`, `src/ui/title-panel.ts`, `src/ui/screens.css`, the test files above
+
+- [x] 53. **Browser tab title and toothbrush favicon**
+  - Mark: needed for the video (req 17.8; design 5.5.1).
+  - [x] 53.1 Create `public/favicon.svg` per design 5.5.1 (plain, readable at 16 px)
+  - [x] 53.2 In `index.html` change the `<title>` to `Foamtom: the 2-minute toothbrushing game` and add `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Nothing else
+  - [x] 53.3 Add `faviconFile` (design test 45) and the `<title>` and favicon checks of `indexHeadTags` to a new `tests/index-head.test.ts`
+  - [x] 53.4 Run `npm run test:run` and `npm run build`: both pass, and `dist/` holds `favicon.svg`
+  - _Requirements: 17.8, 17.12_
+  - Test file: `tests/index-head.test.ts` (new)
+  - Files this task may change: `public/favicon.svg`, `index.html`, `tests/index-head.test.ts`
+
+- [x] 54. **Link preview tags**
+  - Mark: needed for the video (req 17.9, 17.10; design 5.5.1).
+  - [x] 54.1 In the `<head>` of `index.html` add the `description` meta, the eight `og:` tags (`title`, `description`, `type`, `url`, `image`, `image:width`, `image:height`, `image:alt`) and `twitter:card`, with the exact contents of the table in requirement 17.9. Do not touch the Content-Security-Policy. Do not create `public/share-card.png`
+  - [x] 54.2 Extend `tests/index-head.test.ts` with the checks of `indexHeadTags`: every tag and content exactly; `og:description` equals `description`; `og:image` is absolute and `https`; the CSP is the same as before (also covered by `tests/csp.test.ts`); no `<style`, `style=` or `data:` in `index.html`. The test does not require `share-card.png` to exist
+  - [x] 54.3 Run `npm run test:run` and `npm run build`: both pass
+  - _Requirements: 17.9, 17.10, 17.12_
+  - Test file: `tests/index-head.test.ts` (extended)
+  - Files this task may change: `index.html`, `tests/index-head.test.ts`
+
+- [ ] 55. **Check by hand (Dr. Yatin)**
+  - Mark: needed for the video (req 17.5, 17.8, 17.10).
+  - [ ] 55.1 Check by hand: `npm run dev`, title screen at 360 x 640 (DevTools device size). The subtitle sits under the name and is clearly smaller; the three steps sit in one row with no horizontal scroll; the start button, the Monster Book button and the privacy line are all visible without scrolling; the icons are easy to understand (brush, monster on a tooth, smoke and sparkle). Also at 320 px and in landscape
+  - [ ] 55.2 Check by hand: the browser tab shows the toothbrush favicon and the new title; the console shows no 404 for a favicon
+  - [ ] 55.3 After the assistant adds `public/share-card.png` (from `promo/title-card.html?card=share&still=1`) and the site is published: send the link in WhatsApp and check that the preview shows the card, the title and the description
+  - _Requirements: 17.5, 17.8, 17.10_
+  - Test file: none (manual)
+  - Files this task may change: none
+
 ---
 
 Later specs, not in this file: `parent-screen` (the adult gate and the screen behind the small parent control, requirement 2). `hand-tracking` and `core-brushing-loop` are separate specs with their own task lists.

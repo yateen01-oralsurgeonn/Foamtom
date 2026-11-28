@@ -10,6 +10,11 @@ const APPROVED = {
   back: 'Back',
   'grown-ups': 'Grown-ups',
   'not-met': 'Not met yet',
+  // Approved lines 20 to 23 (Dr. Yatin, 28 Nov 2026).
+  subtitle: 'The 2-minute toothbrushing game',
+  'step-brush': 'Pick up your brush',
+  'step-monsters': 'Monsters hide on your teeth',
+  'step-away': 'Brush them away!',
 } as const;
 
 // Approved lines 4 to 15, in table order.
@@ -45,6 +50,16 @@ describe('displayTextPinned', () => {
     expect(DISPLAY_TEXT['grown-ups'].kind).toBe('shown');
     expect(DISPLAY_TEXT['grown-ups'].text).toBe('Grown-ups');
     expect(DISPLAY_TEXT['not-met'].kind).toBe('name-only');
+  });
+
+  it('the four first-sight lines have the exact approved strings and are shown (28 Nov 2026)', () => {
+    expect(DISPLAY_TEXT.subtitle.text).toBe('The 2-minute toothbrushing game');
+    expect(DISPLAY_TEXT['step-brush'].text).toBe('Pick up your brush');
+    expect(DISPLAY_TEXT['step-monsters'].text).toBe('Monsters hide on your teeth');
+    expect(DISPLAY_TEXT['step-away'].text).toBe('Brush them away!');
+    for (const id of ['subtitle', 'step-brush', 'step-monsters', 'step-away'] as const) {
+      expect(DISPLAY_TEXT[id].kind, id).toBe('shown');
+    }
   });
 
   it('lines.ts has rare-invite with text and caption "Brush morning AND night."', () => {

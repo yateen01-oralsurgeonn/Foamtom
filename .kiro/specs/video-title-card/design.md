@@ -393,3 +393,54 @@ carries the rules for it.
 None for Dr. Yatin's six answers. The layout numbers in section 4.4 (scale 1.2, glass height
 560 px, `--u` 4 px, font sizes, text block position) are starting values chosen so both cards
 fit at 1920 x 1080. They are drawing choices and can be tuned after the check by eye.
+
+
+---
+
+## 9. Share card (requirement 12, added 28 Nov 2026)
+
+**Model (`promo/title-card-model.ts`).** `CardId` becomes `'start' | 'end' | 'share'`. One more
+frozen constant:
+
+| Card | Role | Text |
+|------|------|------|
+| share | title | `Foamtom` |
+| share | subtitle | `The 2-minute toothbrushing game` |
+
+`titleCardModel(card)` returns the share card only for the exact string `'share'`, the end card
+only for `'end'`, and the start card for everything else. `SHARE_STAGE = { widthPx: 1200,
+heightPx: 630 }` is added next to `STAGE`; `STAGE`, `TIMELINE`, `isStill`, the start card and the
+end card are not touched.
+
+**Page (`promo/title-card.ts`).** For the share card only: the stage gets `title-card--share`
+(as it gets `title-card--<card>` today); the monster is drawn inside a tooth
+(`drawToothWithMonster(def)` from `src/ui/howto-icons.ts`, which calls `drawMonster` for the
+entry looked up in `MONSTERS`); and a `div.title-card__brush` holding `drawToothbrush()` is
+added. For `start` and `end` the page does exactly what it does today. The text lines still
+come from the model.
+
+**Styles (`promo/title-card.css`, new rules only, all under `.title-card--share`).**
+
+| Part | Starting value |
+|------|----------------|
+| stage | 1200 x 630 |
+| mirror wrapper | `left: 70px; top: 50px; width: 480px; transform: none` |
+| glass | height 470 px; the tooth is `--icon: 330px` |
+| brush | `left: 640px; top: 40px; --icon: 210px`; fades in with the text step |
+| text block | `left: 620px; right: 40px; top: 250px; text-align: left; align-items: flex-start` |
+| title | 120 px, weight 800, colour `#f4eefc`, `letter-spacing: 0.02em` |
+| subtitle | 54 px, weight 700, line height 64 px, colour `#ffd966` |
+
+The existing `.title-card--still` rule already sets `animation: none !important` on the stage and
+everything in it, so `&still=1` needs no new rule. The page links `/src/ui/screens.css` for
+the tooth and brush drawings (their rules are at the end of that file, mirror-and-screens
+design 5.5.1).
+
+**Tests.**
+
+| # | Test name | File | Assertion |
+|---|-----------|------|-----------|
+| 16 | `shareCardText` | `title-card-model.test.ts` | `titleCardModel('share')` is `card: 'share'` with exactly `Foamtom` (title) and `The 2-minute toothbrushing game` (subtitle); `SHARE_STAGE` is 1200 x 630; `STAGE` is still 1920 x 1080 |
+| 17 | `shareCardIsOnlyForShare` | same | `'Share'`, `'share '`, `'shared'` and generated strings give the start card; `'start'` and `'end'` give the same cards as before |
+| 18 | `shareCardWording` | same | the share lines pass the same banned-word, name and digit checks as test 4 |
+| 19 | `sharePageParts` | `title-card-page.test.ts` | `title-card.ts` mentions `drawToothWithMonster(` and `drawToothbrush(`; the CSS has a `.title-card--share` stage of 1200 x 630 and a title of at least 100 px and a subtitle of at least 48 px; no `url(` |
