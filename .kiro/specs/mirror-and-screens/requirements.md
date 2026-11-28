@@ -104,8 +104,8 @@ caption (core requirement 15.1). Its tap SHALL unlock sound and start the sessio
 Book button's tap also unlocks sound, requirement 7.9). THE existing `start` line SHALL NOT
 change.
 
-1.3 THE title screen SHALL show the plain line "The camera stays on this phone. Nothing is
-saved or sent." as visible text. It is a parent-facing line: it is shown, not spoken, and
+1.3 THE title screen SHALL show the plain line "The camera picture stays on this phone. It is
+never saved or sent." as visible text. It is a parent-facing line: it is shown, not spoken, and
 it is not an instruction. Because the core wording guard (core requirement 13.11) forbids
 the word "camera" in `src/audio/lines.ts`, this line SHALL live in a second table of
 display-only text outside `lines.ts` (the design names the file), and the guard of
@@ -819,7 +819,7 @@ listed because they were approved (19 Nov 2026) and are unchanged. "Spoken" mean
 
 | # | Proposed text | Kind | Where it is shown |
 |---|---------------|------|-------------------|
-| 1 | The camera stays on this phone. Nothing is saved or sent. | Shown (not spoken) | Title screen, under the start button. Kept outside `lines.ts` because the wording guard forbids "camera" there (requirement 1.3). |
+| 1 | The camera picture stays on this phone. It is never saved or sent. | Shown (not spoken) | Title screen, under the start button. Kept outside `lines.ts` because the wording guard forbids "camera" there (requirement 1.3). |
 | 2 | Two minutes. Every corner. | Spoken | End card, said after the existing `end` line (requirement 9.2; Decision 2). |
 | 3 | Brush morning AND night. | Spoken | Monster Book, one line for the rare group; also spoken when a rare silhouette is tapped (requirement 8.1; Decision 4). |
 | 4 | Plaque Puff | Spoken, and shown | Monster Book, owned cell, on tap. |

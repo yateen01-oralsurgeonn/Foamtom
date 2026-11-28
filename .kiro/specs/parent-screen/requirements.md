@@ -405,8 +405,8 @@ no seventh line (Decisions Q5, Q6, Q7):
 5. "A monster that is nearly beaten when the time is up counts as beaten."
 6. "Every monster your child meets goes into the Monster Book, beaten or not."
 
-The title screen keeps its own approved privacy line, unchanged ("The camera stays on this
-phone. Nothing is saved or sent."). It is not part of this block.
+The title screen keeps its own approved privacy line ("The camera picture stays on
+this phone. It is never saved or sent."). It is not part of this block.
 
 8.2 THE disclosure SHALL NOT include the condition on `REQUIRE_LEVEL_MATCH` (the original line
 6). It no longer applies.
@@ -739,7 +739,7 @@ Dr. Yatin approved every row on 22 Nov 2026, exactly as written, and no row is w
 marked "decided 22 Nov" were set by him earlier that day. "Shown" means visible text; nothing
 on this screen is spoken. `<...>` marks a
 part a template fills in. The title screen keeps its own approved privacy line ("The camera
-stays on this phone. Nothing is saved or sent."); it is not a row here.
+picture stays on this phone. It is never saved or sent."); it is not a row here.
 
 | # | Proposed text | Where it is shown | Status |
 |---|---------------|-------------------|--------|

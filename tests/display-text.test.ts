@@ -5,7 +5,7 @@ import { getLine } from '../src/audio/lines';
 
 // Approved lines 1, 16, 17 and 19 of requirements.md (21 Nov 2026). Row 18 was added in task 36.
 const APPROVED = {
-  privacy: 'The camera stays on this phone. Nothing is saved or sent.',
+  privacy: 'The camera picture stays on this phone. It is never saved or sent.',
   'book-title': 'Monster Book',
   back: 'Back',
   'grown-ups': 'Grown-ups',

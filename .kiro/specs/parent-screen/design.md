@@ -812,8 +812,8 @@ word. This design adds **no** parent-facing text. "Shown" means visible; nothing
 | 24 | The data on this phone could not be cleared. | `clear-failed` | `parent-screen.ts`, notice (via `clearNotice`) |
 | 25 | upper-right, upper-left, lower-left, lower-right | `ZONE_NAMES` | fills rows 10, 10b, 14 |
 
-The title screen keeps its own privacy line ("The camera stays on this phone. Nothing is
-saved or sent."), which is `DISPLAY_TEXT.privacy` and not part of this table.
+The title screen keeps its own privacy line ("The camera picture stays on this phone. It is
+never saved or sent."), which is `DISPLAY_TEXT.privacy` and not part of this table.
 
 Weekday and month names (`Mon`, `Nov`, …) and the day number are the date parts that row 6
 fills in (requirement 11.4: "numbers, dates"). They are not sentences.

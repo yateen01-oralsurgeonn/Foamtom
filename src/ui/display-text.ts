@@ -15,7 +15,7 @@ export interface DisplayText {
 export const DISPLAY_TEXT: Readonly<Record<DisplayTextId, DisplayText>> = {
   privacy: {
     id: 'privacy',
-    text: 'The camera stays on this phone. Nothing is saved or sent.',
+    text: 'The camera picture stays on this phone. It is never saved or sent.',
     kind: 'shown',
   },
   'book-title': { id: 'book-title', text: 'Monster Book', kind: 'shown' },

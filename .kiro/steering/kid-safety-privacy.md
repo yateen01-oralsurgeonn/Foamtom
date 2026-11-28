@@ -28,7 +28,7 @@ These rules override any other requirement. If a feature cannot meet them, drop 
 
 ## Parent screen
 - Behind a simple adult gate (e.g. "hold for 3 seconds" or a sum a 5-year-old can't do).
-- Plain wording a parent can trust: "The camera stays on this phone. Nothing is saved or sent."
+- Plain wording a parent can trust: "The camera picture stays on this phone. It is never saved or sent."
 
 ## Content
 - Cute-spooky only: no blood, no gore, no realistic teeth damage, no jump scares.

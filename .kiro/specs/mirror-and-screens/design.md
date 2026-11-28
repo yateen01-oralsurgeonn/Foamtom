@@ -611,8 +611,8 @@ titleControls(hasParentHandler: boolean): TitleControl[]
 - **Monster Book button (req 1.8, 7.8, 7.9).** `small`, with an icon, the visible label "Monster
   Book" and an accessible name. Its tap calls `speaker.unlock()` and the `onOpenBook` handler
   passed in by `main.ts`. It does not call `onStart`, loads no camera code and starts no session.
-- **Privacy line (req 1.3).** `DISPLAY_TEXT['privacy']` is "The camera stays on this phone.
-  Nothing is saved or sent." It is a `<p>`, visible, never spoken. It lives in `display-text.ts`
+- **Privacy line (req 1.3).** `DISPLAY_TEXT['privacy']` is "The camera picture stays on this
+  phone. It is never saved or sent." It is a `<p>`, visible, never spoken. It lives in `display-text.ts`
   and not in `lines.ts`, because the core wording guard forbids "camera" there. The new guard
   covers the file (section 6).
 - **Nothing asked (req 1.4, 1.5).** The panel has no form, no `beforeinstallprompt` handler and
@@ -1024,7 +1024,7 @@ stops and the line goes to Dr. Yatin first (req 14.1).
 
 | Approved line | Where it lives in code |
 |---------------|-----------------------|
-| 1 "The camera stays on this phone. Nothing is saved or sent." | `DISPLAY_TEXT['privacy']` (shown) |
+| 1 "The camera picture stays on this phone. It is never saved or sent." | `DISPLAY_TEXT['privacy']` (shown) |
 | 2 "Two minutes. Every corner." | `lines.ts`, id `end-close` |
 | 3 "Brush morning AND night." | `lines.ts`, id `rare-invite` |
 | 4 to 15 the twelve monster names | `monsters.ts` `name`, spoken with `sayText`, shown as caption |
